@@ -1,5 +1,10 @@
 package main
 
+import (
+	"github.com/Loopring/ringminer/types"
+	"strconv"
+)
+
 func DebugOrderBook() {
-	println("hi order book")
+	order := &types.Order{[]byte("fsjdlfkjalskdjflak"), []byte("hahahhahahha")}
 }

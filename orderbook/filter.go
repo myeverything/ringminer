@@ -1,10 +1,10 @@
 package orderbook
 
-import "github.com/Loopring/ringminer/models"
+import "github.com/Loopring/ringminer/types"
 /**
 order过滤
  */
 
 type Filter interface {
-	filter(order models.Order)
+	filter(order types.Order)
 }

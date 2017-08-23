@@ -1,6 +1,6 @@
 package matchengine
 
-import "github.com/Loopring/ringminer/models"
+import "github.com/Loopring/ringminer/types"
 
 //按照首字母，对未成环的进行存储
 //逻辑为：订单会发送给每一个bucket，每个bucket，根据结尾的coin，进行链接，
@@ -15,7 +15,7 @@ type Bucket struct {
 	MatchReg string //是否需要保存该环路
 }
 
-func (b *Bucket) NewOrder(order models.Order) {
+func (b *Bucket) NewOrder(order types.Order) {
 
 
 }

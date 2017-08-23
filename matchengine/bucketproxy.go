@@ -2,7 +2,7 @@ package matchengine
 
 import (
 	"sync"
-	"github.com/Loopring/ringminer/models"
+	"github.com/Loopring/ringminer/types"
 )
 
 /**
@@ -13,7 +13,7 @@ import (
 
 type BucketProxy struct {
  	OrderRingChan chan Ring
-	OrderChan chan models.Order
+	OrderChan chan types.Order
 	Buckets  []Bucket
 	mtx  sync.RWMutex
 }

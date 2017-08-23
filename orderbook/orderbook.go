@@ -2,11 +2,11 @@ package orderbook
 
 import (
 	"sync"
-	"github.com/Loopring/ringminer/models"
+	"github.com/Loopring/ringminer/types"
 )
 
 type OrderWrapper struct {
-	models.Order
+	types.Order
 	//被哪些环路匹配过了、剩余金额等
 }
 
@@ -17,7 +17,7 @@ type OrderBook struct {
 	Orders []OrderWrapper //保存未匹配的订单列表
 	mtx  sync.RWMutex
 
-	OrderChan chan models.Order
+	OrderChan chan types.Order
 }
 
 func (ob *OrderBook) AddListener(listener Listener) {
@@ -31,7 +31,7 @@ func (ob *OrderBook) AddFilter(filter Filter) {
 /**
 接收到新订单后，进行保存、发送到match
  */
-func (ob *OrderBook) NewOrder(order models.Order) {
+func (ob *OrderBook) NewOrder(order types.Order) {
 	for _, filter := range ob.Filters {
 		filter.filter(order)
 	}
