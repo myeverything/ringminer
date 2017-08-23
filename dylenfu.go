@@ -1,10 +1,10 @@
 package main
 
 import (
-	"github.com/Loopring/ringminer/types"
-	"strconv"
+	"github.com/Loopring/ringminer/p2p/ipfs"
 )
 
 func DebugOrderBook() {
-	order := &types.Order{[]byte("fsjdlfkjalskdjflak"), []byte("hahahhahahha")}
+	listener := ipfs.NewListener("topic")
+	listener.Start()
 }

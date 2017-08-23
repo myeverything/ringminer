@@ -5,5 +5,6 @@ package orderbook
  */
 
 type Listener interface {
-	Listen()
+	Start()
+	Stop()
 }
