@@ -30,8 +30,8 @@ func DebugOrderBook(testcase string) {
 }
 
 func ipfsListenTest() {
-	listener := ipfs.NewListener("topic")
-	listener.Start()
+	listener := ipfs.NewListener()
+	go listener.Start()
 	time.Sleep(10 * time.Second)
 	listener.Stop()
 }

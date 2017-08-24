@@ -28,17 +28,17 @@ func (ord Order) MarshalJson() ([]byte,error) {
 	var enc order
 	// TODO(fukun): set the locate ipfs peerid
 	enc.PeerId = []byte("")
-	enc.Id = []byte(ord.Id)
-	enc.Protocol = []byte(ord.Protocol)
-	enc.Owner = []byte(ord.Owner)
-	enc.OutToken = []byte(ord.OutToken)
-	enc.InToken = []byte(ord.InToken)
+	enc.Id = ord.Id.Bytes()
+	enc.Protocol = ord.Protocol.Bytes()
+	enc.Owner = ord.Owner.Bytes()
+	enc.OutToken = ord.OutToken.Bytes()
+	enc.InToken = ord.InToken.Bytes()
 	enc.Expiration = ord.Expiration
 	enc.Fee = ord.Fee.Uint64()
 	enc.SavingShare = ord.SavingShare.Uint64()
 	enc.V = ord.V
-	enc.R = []byte(ord.R)
-	enc.S = []byte(ord.S)
+	enc.R = ord.R.Bytes()
+	enc.S = ord.S.Bytes()
 	return json.Marshal(enc)
 }
 
@@ -67,27 +67,27 @@ func (ord *Order) UnMarshalJson(input []byte) error {
 	}
 
 	// TODO(fukun): create order id
-	ord.Id = Hash("")
+	ord.Id = BytesToHash([]byte(""))
 
 	if dec.Protocol == nil {
 		return errors.New("missing required field 'Protocol' for order")
 	}
-	ord.Protocol = Address(dec.Protocol)
+	ord.Protocol = BytesToAddress(dec.Protocol)
 
 	if dec.Owner == nil {
 		return errors.New("missing required field 'Owner' for order")
 	}
-	ord.Owner = Address(dec.Owner)
+	ord.Owner = BytesToAddress(dec.Owner)
 
 	if dec.OutToken == nil {
 		return errors.New("missing required field 'OutToken' for order")
 	}
-	ord.OutToken = Address(dec.OutToken)
+	ord.OutToken = BytesToAddress(dec.OutToken)
 
 	if dec.InToken == nil {
 		return errors.New("missing required field 'InToken' for order")
 	}
-	ord.InToken = Address(dec.InToken)
+	ord.InToken = BytesToAddress(dec.InToken)
 
 	if !reflect.ValueOf(dec.OutAmount).IsValid() {
 		return errors.New("missing required field 'OutAmount' for order")
@@ -122,12 +122,12 @@ func (ord *Order) UnMarshalJson(input []byte) error {
 	if dec.S == nil {
 		return errors.New("missing required field 'ECDSA.S' for order")
 	}
-	ord.S = Sign(dec.S)
+	ord.S = BytesToSign(dec.S)
 
 	if dec.R == nil {
 		return errors.New("missing required field 'ECSA.R' for order")
 	}
-	ord.R = Sign(dec.R)
+	ord.R = BytesToSign(dec.R)
 
 	return nil
 }

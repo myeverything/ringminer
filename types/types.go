@@ -1,12 +1,17 @@
 package types
 
-import "math/big"
+import (
+	"math/big"
+	"github.com/ethereum/go-ethereum/common/hexutil"
+)
 
 const (
 	HashLength    = 20
 	AddressLength = 32
 	SignLength    = 32
 )
+
+// TODO(fukun): 后续可能要整理下，有些东西没有用到
 
 // Hash represents the 32 byte Keccak256 hash of arbitrary data.
 type Hash [HashLength]byte
@@ -17,51 +22,75 @@ type Address [AddressLength]byte
 // Sign represents the 32 byte of an ECDSA r/s
 type Sign [SignLength]byte
 
-//订单原始信息
-type Order struct {
-	Id          Hash      // 订单id
-	Protocol    Address   // 智能合约地址
-	Owner       Address   // 订单发起者地址
-	OutToken    Address   // 卖出erc20代币智能合约地址
-	InToken     Address   // 买入erc20代币智能合约地址
-	OutAmount   *big.Int  // 卖出erc20代币数量上限
-	InAmount    *big.Int  // 买入erc20代币数量上限
-	Expiration  uint64    // 订单过期时间
-	Fee         *big.Int  // 交易总费用,部分成交的费用按该次撮合实际卖出代币额与比例计算
-	SavingShare *big.Int  // 不为0时支付给交易所的分润比例，否则视为100%
-	V           uint8
-	R           Sign
-	S           Sign
+// Get the string representation of the underlying hash
+func (h Hash) Str() string   { return string(h[:]) }
+func (h Hash) Bytes() []byte { return h[:] }
+func (h Hash) Big() *big.Int { return new(big.Int).SetBytes(h[:]) }
+func (h Hash) Hex() string   { return hexutil.Encode(h[:]) }
+
+// Get the string representation of the underlying address
+func (a Address) Str() string   { return string(a[:]) }
+func (a Address) Bytes() []byte { return a[:] }
+func (a Address) Big() *big.Int { return new(big.Int).SetBytes(a[:]) }
+func (a Address) Hex() string   { return hexutil.Encode(a[:]) }
+
+// Get the string representation of the underlying sign
+func (s Sign) Str() string   { return string(s[:]) }
+func (s Sign) Bytes() []byte { return s[:] }
+func (s Sign) Big() *big.Int { return new(big.Int).SetBytes(s[:]) }
+func (s Sign) Hex() string   { return hexutil.Encode(s[:]) }
+
+func StringToHash(s string) Hash { return BytesToHash([]byte(s)) }
+func BigToHash(b *big.Int) Hash  { return BytesToHash(b.Bytes()) }
+func HexToHash(s string) Hash    { return BytesToHash(FromHex(s)) }
+
+func StringToAddress(s string) Address { return BytesToAddress([]byte(s)) }
+func BigToAddress(b *big.Int) Address  { return BytesToAddress(b.Bytes()) }
+func HexToAddress(s string) Address    { return BytesToAddress(FromHex(s)) }
+
+func StringToSign(s string) Sign { return BytesToSign([]byte(s)) }
+func BitToSign(b *big.Int) Sign  { return BytesToSign(b.Bytes()) }
+func HexToSign(s string) Sign    { return BytesToSign(FromHex(s)) }
+
+func BytesToHash(b []byte) Hash {
+	var h Hash
+	h.SetBytes(b)
+	return h
 }
 
-// TODO(fukun): 包含成交记录
-type OrderWrap struct {
-	Order             `json:"order"`
-	PeerId   string   `json:"peerId"`
-	RingList []Hash   `json:"ringList"`
+func BytesToAddress(b []byte) Address {
+	var a Address
+	a.SetBytes(b)
+	return a
 }
 
-// 旷工在成本节约和fee上二选一，撮合者计算出:
-// 1.fee(lrc)的市场价(法币交易价格)
-// 2.成本节约(savingShare)的市场价(法币交易价格)
-// 撮合者在fee和savingShare中二选一，作为自己的利润，
-// 如果撮合者选择fee，则成本节约分给订单发起者，如果选择成本节约，则需要返还给用户一定的lrc
-// 这样一来，撮合者的利润判断公式应该是max(fee, savingShare - fee * s),s为固定比例
-// 此外，在选择最优环路的时候，撮合者会在确定了选择fee/savingShare后，选择某个具有最大利润的环路
-// 但是，根据谷歌竞拍法则(A出价10,B出价20,最终成交价为10)，撮合者最终获得的利润只能是利润最小的环路利润
-type Ring struct {
-	Id                Hash    `json:"id"`                // 订单链id
-	Orders            []Order `json:"orders"`            // 该次匹配的所有订单
-	FeeRecipient      Address `json:"feeRecipient"`      // 费用收取地址
-	AddtionalDiscount uint64  `json:"addtionalDiscount"` // 在费用基础上的再折扣价-eta
-	Nonce             uint64  `json:"nonce"`             // 一个随机数
-	V                 uint8   `json:"v"`
-	R                 Sign    `json:"r"`
-	S                 Sign    `json:"s"`
+func BytesToSign(b []byte) Sign {
+	var s Sign
+	s.SetBytes(b)
+	return s
 }
 
-// TODO(fukun): 添加状态判断是否成环
-type OrderRing struct {
-	Ring         `json:"ring"`     // 订单链
-	Closure bool `json:"closure"`  // 是否闭合
+// Sets the hash to the value of b. If b is larger than len(h) it will panic
+func (h Hash) SetBytes(b []byte) {
+	if len(b) > len(h) {
+		b = b[len(b)-HashLength:]
+	}
+
+	copy(h[HashLength-len(b):], b)
+}
+
+// Sets the address to the value of b. If b is larger than len(h) it will panic
+func (a Address) SetBytes(b []byte) {
+	if len(b) > len(a) {
+		b = b[len(b)-AddressLength:]
+	}
+	copy(a[AddressLength-len(b):], b)
+}
+
+// Sets the sign to the value of b. If b is larger than len(h) it will panic
+func (s Sign) SetBytes(b []byte) {
+	if len(b) > len(s) {
+		b = b[len(b)-SignLength:]
+	}
+	copy(s[SignLength-len(b):], b)
 }

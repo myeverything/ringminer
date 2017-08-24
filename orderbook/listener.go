@@ -7,4 +7,5 @@ package orderbook
 type Listener interface {
 	Start()
 	Stop()
+	Name() string
 }
