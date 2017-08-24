@@ -5,6 +5,7 @@ import (
 	. "github.com/Loopring/ringminer/types"
 )
 
+
 type OrderBook struct {
 	Filters []Filter
 	Store Store
@@ -22,10 +23,6 @@ func init() {
 
 func AddFilter(filter Filter) {
 	orderBook.Filters = append(orderBook.Filters, filter)
-}
-
-func DelFilter(filter Filter) {
-
 }
 
 /**
