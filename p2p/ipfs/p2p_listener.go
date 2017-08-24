@@ -38,9 +38,9 @@ func (listener *IPFSListener) Start() {
 		var ord types.Order
 		err := ord.UnMarshalJson(data)
 		if err != nil {
-			log.Println("p2p listener\t-", "Listen data error:", err.Error())
+			log.Println("p2p listener\t-", "Listen data unmarshal error:", err.Error())
 		} else {
-			log.Println("p2p listener\t-", "Listen data success:", string(data))
+			log.Println("p2p listener\t-", "Listen data unmarshal success:", ord)
 		}
 		orderbook.NewOrder(ord)
 	}

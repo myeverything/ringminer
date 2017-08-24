@@ -9,55 +9,55 @@ import (
 
 func (ord Order) MarshalJson() ([]byte,error) {
 	type order struct {
-		PeerId      []byte  `json:"peerId"`
-		Id          []byte  `json:"id"`
-		Protocol    []byte  `json:"protocol"`
-		Owner       []byte  `json:"owner"`
-		OutToken    []byte  `json:"outToken"`
-		InToken     []byte  `json:"inToken"`
+		PeerId      string  `json:"peerId"`
+		Id          string  `json:"id"`
+		Protocol    string  `json:"protocol"`
+		Owner       string  `json:"owner"`
+		OutToken    string  `json:"outToken"`
+		InToken     string  `json:"inToken"`
 		OutAmount   uint64  `json:"outAmount"`
 		InAmount    uint64  `json:"inAmount"`
 		Expiration  uint64  `json:"expiration"`
 		Fee         uint64  `json:"fee"`
 		SavingShare uint64  `json:"savingShare"`
 		V           uint8   `json:"v"`
-		R           []byte  `json:"r"`
-		S           []byte  `json:"s"`
+		R           string  `json:"r"`
+		S           string  `json:"s"`
 	}
 
 	var enc order
 	// TODO(fukun): set the locate ipfs peerid
-	enc.PeerId = []byte("")
-	enc.Id = ord.Id.Bytes()
-	enc.Protocol = ord.Protocol.Bytes()
-	enc.Owner = ord.Owner.Bytes()
-	enc.OutToken = ord.OutToken.Bytes()
-	enc.InToken = ord.InToken.Bytes()
+	enc.PeerId = ""
+	enc.Id = ord.Id.Str()
+	enc.Protocol = ord.Protocol.Str()
+	enc.Owner = ord.Owner.Str()
+	enc.OutToken = ord.OutToken.Str()
+	enc.InToken = ord.InToken.Str()
 	enc.Expiration = ord.Expiration
 	enc.Fee = ord.Fee.Uint64()
 	enc.SavingShare = ord.SavingShare.Uint64()
 	enc.V = ord.V
-	enc.R = ord.R.Bytes()
-	enc.S = ord.S.Bytes()
+	enc.R = ord.R.Str()
+	enc.S = ord.S.Str()
 	return json.Marshal(enc)
 }
 
 func (ord *Order) UnMarshalJson(input []byte) error {
 	type order struct {
-		PeerId      []byte  `json:"peerId"`
-		Id          []byte  `json:"id"`
-		Protocol    []byte  `json:"protocol"`
-		Owner       []byte  `json:"owner"`
-		OutToken    []byte  `json:"outToken"`
-		InToken     []byte  `json:"inToken"`
+		PeerId      string  `json:"peerId"`
+		Id          string  `json:"id"`
+		Protocol    string  `json:"protocol"`
+		Owner       string  `json:"owner"`
+		OutToken    string  `json:"outToken"`
+		InToken     string  `json:"inToken"`
 		OutAmount   uint64  `json:"outAmount"`
 		InAmount    uint64  `json:"inAmount"`
 		Expiration  uint64  `json:"expiration"`
 		Fee         uint64  `json:"fee"`
 		SavingShare uint64  `json:"savingShare"`
 		V           uint8   `json:"v"`
-		R           []byte  `json:"r"`
-		S           []byte  `json:"s"`
+		R           string  `json:"r"`
+		S           string  `json:"s"`
 	}
 
 	var dec order
@@ -69,25 +69,25 @@ func (ord *Order) UnMarshalJson(input []byte) error {
 	// TODO(fukun): create order id
 	ord.Id = BytesToHash([]byte(""))
 
-	if dec.Protocol == nil {
+	if !reflect.ValueOf(dec.Protocol).IsValid() {
 		return errors.New("missing required field 'Protocol' for order")
 	}
-	ord.Protocol = BytesToAddress(dec.Protocol)
+	ord.Protocol = StringToAddress(dec.Protocol)
 
-	if dec.Owner == nil {
+	if !reflect.ValueOf(dec.Owner).IsValid() {
 		return errors.New("missing required field 'Owner' for order")
 	}
-	ord.Owner = BytesToAddress(dec.Owner)
+	ord.Owner = StringToAddress(dec.Owner)
 
-	if dec.OutToken == nil {
+	if !reflect.ValueOf(dec.OutToken).IsValid() {
 		return errors.New("missing required field 'OutToken' for order")
 	}
-	ord.OutToken = BytesToAddress(dec.OutToken)
+	ord.OutToken = StringToAddress(dec.OutToken)
 
-	if dec.InToken == nil {
+	if !reflect.ValueOf(dec.InToken).IsValid() {
 		return errors.New("missing required field 'InToken' for order")
 	}
-	ord.InToken = BytesToAddress(dec.InToken)
+	ord.InToken = StringToAddress(dec.InToken)
 
 	if !reflect.ValueOf(dec.OutAmount).IsValid() {
 		return errors.New("missing required field 'OutAmount' for order")
@@ -119,15 +119,15 @@ func (ord *Order) UnMarshalJson(input []byte) error {
 	}
 	ord.V = dec.V
 
-	if dec.S == nil {
+	if !reflect.ValueOf(dec.S).IsValid() {
 		return errors.New("missing required field 'ECDSA.S' for order")
 	}
-	ord.S = BytesToSign(dec.S)
+	ord.S = StringToSign(dec.S)
 
-	if dec.R == nil {
+	if  !reflect.ValueOf(dec.R).IsValid() {
 		return errors.New("missing required field 'ECSA.R' for order")
 	}
-	ord.R = BytesToSign(dec.R)
+	ord.R = StringToSign(dec.R)
 
 	return nil
 }
