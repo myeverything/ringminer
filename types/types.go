@@ -71,7 +71,7 @@ func BytesToSign(b []byte) Sign {
 }
 
 // Sets the hash to the value of b. If b is larger than len(h) it will panic
-func (h Hash) SetBytes(b []byte) {
+func (h *Hash) SetBytes(b []byte) {
 	if len(b) > len(h) {
 		b = b[len(b)-HashLength:]
 	}
@@ -80,7 +80,7 @@ func (h Hash) SetBytes(b []byte) {
 }
 
 // Sets the address to the value of b. If b is larger than len(h) it will panic
-func (a Address) SetBytes(b []byte) {
+func (a *Address) SetBytes(b []byte) {
 	if len(b) > len(a) {
 		b = b[len(b)-AddressLength:]
 	}
@@ -88,7 +88,7 @@ func (a Address) SetBytes(b []byte) {
 }
 
 // Sets the sign to the value of b. If b is larger than len(h) it will panic
-func (s Sign) SetBytes(b []byte) {
+func (s *Sign) SetBytes(b []byte) {
 	if len(b) > len(s) {
 		b = b[len(b)-SignLength:]
 	}
