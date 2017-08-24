@@ -1,5 +1,7 @@
 package types
 
+import "math/big"
+
 const (
 	HashLength    = 20
 	AddressLength = 32
@@ -17,19 +19,19 @@ type Sign [SignLength]byte
 
 //订单原始信息
 type Order struct {
-	Id          Hash    `json:"id"`         // 订单id
-	Protocol    Address `json:"protocol"`   // 智能合约地址
-	Owner       Address `json:"owner"`      // 订单发起者地址
-	OutToken    Address `json:"outToken"`   // 卖出erc20代币智能合约地址
-	InToken     Address `json:"inToken"`    // 买入erc20代币智能合约地址
-	OutAmount   uint64  `json:"outAmount"`  // 卖出erc20代币数量上限
-	InAmount    uint64  `json:"inAmount"`   // 买入erc20代币数量上限
-	Expiration  uint64  `json:"expiration"` // 订单过期时间
-	Fee         uint64  `json:"fee"`        // 交易总费用,部分成交的费用按该次撮合实际卖出代币额与比例计算
-	SavingShare uint64  `json:"savingShare"`// 不为0时支付给交易所的分润比例，否则视为100%
-	V           uint8   `json:"v"`
-	R           Sign    `json:"r"`
-	S           Sign    `json:"s"`
+	Id          Hash      // 订单id
+	Protocol    Address   // 智能合约地址
+	Owner       Address   // 订单发起者地址
+	OutToken    Address   // 卖出erc20代币智能合约地址
+	InToken     Address   // 买入erc20代币智能合约地址
+	OutAmount   *big.Int  // 卖出erc20代币数量上限
+	InAmount    *big.Int  // 买入erc20代币数量上限
+	Expiration  uint64    // 订单过期时间
+	Fee         *big.Int  // 交易总费用,部分成交的费用按该次撮合实际卖出代币额与比例计算
+	SavingShare *big.Int  // 不为0时支付给交易所的分润比例，否则视为100%
+	V           uint8
+	R           Sign
+	S           Sign
 }
 
 // TODO(fukun): 包含成交记录

@@ -36,6 +36,7 @@ func (listener *IPFSListener) Start() {
 			if len(peerId) > 0 {
 				log.Printf("p2p listener\t- Listen peerId %s,data %s", peerId, string(data))
 			}
+
 		}
 	}()
 }

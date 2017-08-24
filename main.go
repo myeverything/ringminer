@@ -10,6 +10,8 @@ var (
 )
 
 func main() {
+	flag.Parse()
+
 	switch *auth {
 	case "dylenfu":
 		DebugOrderBook(*testcase)
