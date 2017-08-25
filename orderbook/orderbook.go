@@ -11,7 +11,6 @@ type OrderBook struct {
 	Store Store
 	Orders []Order//保存未匹配的订单列表
 	mtx  sync.RWMutex
-
 	OrderChan chan Order
 }
 
@@ -32,6 +31,8 @@ func NewOrder(order Order) {
 	for _, filter := range orderBook.Filters {
 		filter.filter(order)
 	}
+	orderBook.mtx.Lock()
+	defer orderBook.mtx.Unlock()
 	orderBook.Orders = append(orderBook.Orders, order)
 }
 
