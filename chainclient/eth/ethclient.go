@@ -16,7 +16,10 @@ todo：未完成：
 3、余额等变动的处理
 4、应当给orderbook持有listener，然后在orderbook内部处理各种event，否则处理逻辑分散
  */
+
 var RPCClient *rpc.Client
+
+var Client *chainclient.Client
 
 func newRpcMethod(name string) func(result interface{}, args ...interface{}) error {
 	return func(result interface{}, args ...interface{}) error  {
@@ -134,4 +137,10 @@ func applyMethod(client *chainclient.Client) error {
 		}
 	}
 	return nil
+}
+
+
+func init() {
+	//change to inject
+	Client = NewClient()
 }
