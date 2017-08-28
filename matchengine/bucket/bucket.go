@@ -143,4 +143,7 @@ func (b *Bucket) UpdateOrder(order types.Order) {
 func (b *Bucket) Start() {
 
 }
+func (b *Bucket) Stop() {
+
+}
 

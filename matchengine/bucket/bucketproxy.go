@@ -59,7 +59,11 @@ func (bp *BucketProxy) Start() {
 }
 
 func (bp *BucketProxy) Stop() {
-
+	close(bp.ringChan)
+	close(bp.OrderChan)
+	for _,bucket := range bp.Buckets {
+		bucket.Stop()
+	}
 }
 
 func (bp *BucketProxy) newOrder(order *types.Order) {
