@@ -25,3 +25,20 @@ type OrderWrap struct {
 	PeerId   string   `json:"peerId"`
 	RingList []Hash   `json:"ringList"`
 }
+
+
+type NewOrderEvent struct {
+	Order
+	PeerId   string   `json:"peerId"`
+}
+
+type OrderRingEvent struct {
+	OrderRing
+}
+
+//todo:order、ring、event等重新整理定义
+type BalanceChangeEvent struct {
+	Address	Address
+	Balance	*big.Int
+	Change	*big.Int
+}
