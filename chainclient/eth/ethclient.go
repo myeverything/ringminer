@@ -28,7 +28,7 @@ func newRpcMethod(name string) func(result interface{}, args ...interface{}) err
 	}
 }
 
-//todo:rpc.HexNumber是否应被更合理地替换
+//todo:hexutil.Big是否应被更合理地替换
 type CallArgs struct {
 	From	string
 	To	string

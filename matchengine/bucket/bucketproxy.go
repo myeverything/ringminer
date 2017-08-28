@@ -24,25 +24,33 @@ reactor模式
 负责协调各个bucket，将ring发送到区块链，
 该处负责接受neworder, updateorder等事件，并把事件广播给所有的bucket，同时调用client将已形成的环路发送至区块链，发送时需要再次查询订单的最新状态，保证无错，一旦出错需要更改ring的各种数据，如交易量、费用分成等
  */
+
+//todo：地址长度
+var TokenAddressLength int64
+
+type TokenAddress [TokenAddressLength]byte
+
 type BucketProxy struct {
- 	OrderRingChan chan Ring
-	OrderChan chan types.Order
-	Buckets  []Bucket
-	mtx  sync.RWMutex
+ 	ringChan *chan *types.Ring
+	OrderChan *chan *types.Order
+	Buckets  map[TokenAddress]Bucket
+	mtx  *sync.RWMutex
 }
 
-func (bp *BucketProxy) Start()  {
+func (bp *BucketProxy) Start() {
 	proxy := bp
+	ringChan := make(chan *types.Ring)
+	proxy.ringChan = &ringChan
 	for {
 		select {
-		case orderRing := <- proxy.OrderRingChan:
-			newOrderRing(orderRing)
-		//发送给每个bucket
-			for _, bucket := range proxy.Buckets {
-				go bucket.NewOrderRing(orderRing)
-			}
+		//case orderRing := <- proxy.OrderRingChan:
+		//	newOrderRing(orderRing)
+		////发送给每个bucket
+		//	for _, bucket := range proxy.Buckets {
+		//		go bucket.NewOrderRing(orderRing)
+		//	}
 		case order := <- proxy.OrderChan:
-			newOrder(order)
+			proxy.newOrder(order)
 			for _, bucket := range proxy.Buckets {
 				go bucket.NewOrder(order)
 			}
@@ -54,33 +62,32 @@ func (bp *BucketProxy) Stop() {
 
 }
 
-func (bp *BucketProxy) NewOrder() {
+func (bp *BucketProxy) newOrder(order *types.Order) {
+	//如果没有则，新建bucket
+	if _,ok := bp.Buckets[order.OutToken] ; !ok {
+		bucket := &Bucket{}
+		bucket.ringChan = bp.ringChan
+		bp.mtx = &sync.RWMutex{}
+	}
+
+	for _, bucket := range bp.Buckets {
+		bucket.NewOrder(*order)
+	}
+}
+
+func (bp *BucketProxy) updateOrder(order *types.Order) {
+	for _, bucket := range bp.Buckets {
+		bucket.UpdateOrder(*order)
+	}
+} //订单的更新
+
+func (bp *BucketProxy) AddFilter() {
 
 }
 
-func (bp *BucketProxy) NewOrderRing(ring Ring) {
-
-}
-
-func (bp *BucketProxy) UpdateOrder()  //订单的更新
-
-//环路检验
-func (bp *BucketProxy) ringVerify() {
-
-}
-
-//ring提交失败的处理
-
-func newOrderRing(ring Ring) {
-	println(ring)
-}
-
-func newOrder(order types.Order) {
-	println(order)
-}
+//todo:ring提交失败的处理
 
 func init() {
-
 
 }
 

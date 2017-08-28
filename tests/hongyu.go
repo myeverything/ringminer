@@ -30,6 +30,10 @@ func f1(a string) func(b string) error {
 }
 
 func DebugMatch() {
+
+
+
+
 	//	abiStr := `
 	//[
 	//	{ "type" : "function", "name" : "balance", "constant" : true ,"outputs": [ { "type": "uint256" } ]},

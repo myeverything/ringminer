@@ -24,3 +24,4 @@ type OrderRing struct {
 	Ring         `json:"ring"`     // 订单链
 	Closure bool `json:"closure"`  // 是否闭合
 }
+

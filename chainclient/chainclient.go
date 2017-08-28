@@ -59,6 +59,11 @@ type Client struct {
 	NewAccount	RpcMethod	`methodName:"newAccount"`
 	UnlockAccount	RpcMethod	`methodName:"unlockAccount"`
 
+	//发送环路
+	SendRingHash RpcMethod	`methodName:"sendRingHash"`//发送环路凭证
+
+	SendRing RpcMethod	`methodName:"sendRing"`//发送环路
+
 
 }
 
