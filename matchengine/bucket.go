@@ -2,11 +2,14 @@ package matchengine
 
 import "github.com/Loopring/ringminer/types"
 
+//负责生成ring，并计算ring相关的所有参数
+
 //按照首字母，对未成环的进行存储
 //逻辑为：订单会发送给每一个bucket，每个bucket，根据结尾的coin，进行链接，
 //订单开始的coin为对应的bucket的标号时，查询订单结尾的coin的bucket，并进行对应的链接
 
 //同时会监听proxy发送过来的订单环，及时进行订单的删除与修改
+
 
 type Bucket struct {
 	//OrderChan chan string

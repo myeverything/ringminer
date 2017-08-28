@@ -21,8 +21,8 @@ todo：下周计划：完成以太坊链接、开始开发bucket、bucket的数�
 思路：设计符合要求的数据格式，
 orderbook的所有的事件监听都需要实现，如：neworder、banlanceChange等
 reactor模式
-
-该处负责接受neworder等事件，并把事件广播给所有的bucket，同时调用client将已形成的环路发送至区块链，发送时需要再次查询订单的最新状态，保证无错
+负责协调各个bucket，将ring发送到区块链，
+该处负责接受neworder, updateorder等事件，并把事件广播给所有的bucket，同时调用client将已形成的环路发送至区块链，发送时需要再次查询订单的最新状态，保证无错，一旦出错需要更改ring的各种数据，如交易量、费用分成等
  */
 type BucketProxy struct {
  	OrderRingChan chan Ring

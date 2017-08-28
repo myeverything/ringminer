@@ -1,12 +1,12 @@
 package eth
 
 import (
-	"github.com/ethereum/go-ethereum/rpc"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
 //通用数据结构
 type Block struct {
-	Number	rpc.HexNumber
+	Number	hexutil.Big
 	Hash	string
 	ParentHash	string
 	Nonce	string
@@ -15,13 +15,13 @@ type Block struct {
 	TransactionsRoot	string
 	ReceiptsRoot	string
 	Miner	string
-	Difficulty	rpc.HexNumber
-	TotalDifficulty	rpc.HexNumber
+	Difficulty	hexutil.Big
+	TotalDifficulty	hexutil.Big
 	ExtraData	string
-	Size	rpc.HexNumber
-	GasLimit	rpc.HexNumber
-	GasUsed	rpc.HexNumber
-	Timestamp	rpc.HexNumber
+	Size	hexutil.Big
+	GasLimit	hexutil.Big
+	GasUsed	hexutil.Big
+	Timestamp	hexutil.Big
 	Uncles	[]string
 }
 
@@ -37,21 +37,21 @@ type BlockWithTxHash struct {
 
 type Transaction struct {
 	Hash	string
-	Nonce	rpc.HexNumber
+	Nonce	hexutil.Big
 	BlockHash	string
-	BlockNumber	rpc.HexNumber
-	TransactionIndex	rpc.HexNumber
+	BlockNumber	hexutil.Big
+	TransactionIndex	hexutil.Big
 	From	string
 	To	string
-	Value	rpc.HexNumber
-	GasPrice	rpc.HexNumber
-	Gas	rpc.HexNumber
+	Value	hexutil.Big
+	GasPrice	hexutil.Big
+	Gas	hexutil.Big
 	Input	string
 }
 
 type Log struct {
-	LogIndex rpc.HexNumber
-	BlockNumber rpc.HexNumber
+	LogIndex hexutil.Big
+	BlockNumber hexutil.Big
 	BlockHash	string
 	TransactionHash	string
 	Address	string

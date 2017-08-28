@@ -7,6 +7,7 @@ import (
 	"github.com/Loopring/ringminer/types"
 	"time"
 	"strconv"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
 /**
@@ -31,9 +32,9 @@ func newRpcMethod(name string) func(result interface{}, args ...interface{}) err
 type CallArgs struct {
 	From	string
 	To	string
-	Gas      rpc.HexNumber
-	GasPrice rpc.HexNumber
-	Value	rpc.HexNumber
+	Gas      hexutil.Big
+	GasPrice hexutil.Big
+	Value	hexutil.Big
 	Data	string
 }
 
