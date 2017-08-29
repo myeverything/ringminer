@@ -18,3 +18,9 @@ func Test_BigInt(t *testing.T) {
 	t.Log(big.NewInt(46877).Uint64())
 	t.Log(reflect.ValueOf(nil).IsValid())
 }
+
+func Test_Hi(t *testing.T) {
+	m := map[string]int{"a":1, "b":2}
+	delete(m, "a")
+	t.Log(m)
+}

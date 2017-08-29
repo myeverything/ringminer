@@ -9,6 +9,3 @@ type Listener interface {
 	Stop()
 	Name() string
 }
-
-
-

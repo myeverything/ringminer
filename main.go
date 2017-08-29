@@ -7,13 +7,17 @@ import(
 	"runtime"
 	"os"
 	"fmt"
+	"github.com/Loopring/ringminer/log"
+	"github.com/Loopring/ringminer/node"
 )
 
 var (
 	app = cmd.NewApp()
+	logger = log.NewLogger()
 )
 
 // TODO(fukun): matchengine与order的通信
+// TODO(fukun): inject logger
 
 func init() {
 	app.Action = miner
@@ -41,9 +45,13 @@ func main() {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
+
+	defer logger.Sync()
 }
 
-func miner() {
-
+func miner(c *cli.Context) error {
+	n := node.NewNode(logger)
+	n.Start()
+	n.Wait()
+	return nil
 }
-
