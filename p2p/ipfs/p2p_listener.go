@@ -2,10 +2,8 @@ package ipfs
 
 import (
 	"github.com/ipfs/go-ipfs-api"
-	"github.com/Loopring/ringminer/types"
-	"github.com/Loopring/ringminer/orderbook"
 	"sync"
-	"github.com/Loopring/ringminer/log"
+	"github.com/Loopring/ringminer/p2p"
 )
 
 /**
@@ -40,14 +38,7 @@ func (l *IPFSListener) Start() {
 		for {
 			record, _ := l.sub.Next()
 			data := record.Data()
-			var ord types.Order
-			err := ord.UnMarshalJson(data)
-			if err != nil {
-				log.Error(log.ERROR_P2P_LISTEN_ACCEPT, "content", "")
-			} else {
-				log.Info(log.LOG_P2P_ACCEPT, "data", string(data))
-			}
-			orderbook.NewOrder(ord)
+			p2p.Send(data)
 		}
 	}()
 }

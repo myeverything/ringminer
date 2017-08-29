@@ -2,26 +2,17 @@ package orderbook
 
 import (
 	"sync"
-	. "github.com/Loopring/ringminer/types"
-	"go.uber.org/zap"
+	"github.com/Loopring/ringminer/types"
 )
-
 
 type OrderBook struct {
 	Filters []Filter
 	Store Store
-	Orders []Order//保存未匹配的订单列表
+	Orders []types.Order//保存未匹配的订单列表
 	mtx  sync.RWMutex
-	OrderChan chan Order
-	logger *zap.Logger `inject:""`
-	listeners []*Listener
 }
 
 var orderBook OrderBook
-
-func init() {
-	orderBook.OrderChan = make(chan Order)
-}
 
 func AddFilter(filter Filter) {
 	orderBook.Filters = append(orderBook.Filters, filter)
@@ -40,7 +31,7 @@ func (ob *OrderBook) InitializeOrderBook() {
 	//orderBook.Orders = append(orderBook.Orders, ob)
 }
 
-func NewOrder(o Order) {
+func NewOrder(ord *types.Order) {
 
 }
 
