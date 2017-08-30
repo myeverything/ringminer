@@ -6,7 +6,7 @@ import (
 	"github.com/Loopring/ringminer/chainclient"
 	"go.uber.org/zap"
 	"github.com/Loopring/ringminer/orderbook"
-	"github.com/Loopring/ringminer/p2p/ipfs"
+	"github.com/Loopring/ringminer/p2p"
 )
 
 // TODO(fukun): should add multi service
@@ -60,5 +60,5 @@ func (n *Node) Stop() {
 }
 
 func (n *Node) registerP2PListener() {
-	n.p2pListener = ipfs.NewListener()
+	n.p2pListener = p2p.NewListener()
 }

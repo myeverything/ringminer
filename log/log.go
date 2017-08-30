@@ -6,19 +6,21 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-func Info(level, key, value string) {
+const key = "content"
+
+func Info(level, value string) {
 	logger.Info(level, setTime(), zap.String(key, value))
 }
 
-func Error(level, key, value string) {
+func Error(level, value string) {
 	logger.Error(level, zap.String(key, value))
 }
 
-func Warn(level, key,value string) {
+func Warn(level, value string) {
 	logger.Warn(level, zap.String(key, value))
 }
 
-func Crit(level, key, value string) {
+func Crit(level, value string) {
 	logger.Fatal(level, zap.String(key, value))
 }
 
