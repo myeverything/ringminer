@@ -56,8 +56,26 @@ func SetOrder() {
 
 }
 
-func GetOrder() {
+func GetOrder(id types.Hash) (*types.OrderWrap, error) {
+	var (
+		value []byte
+		err error
+		ord types.OrderWrap
+	)
 
+	if value, err = orderBook.partialTable.Get(id.Bytes()); err != nil {
+		value, err = orderBook.finishTable.Get(id.Bytes())
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	err = ord.UnMarshalJson(value)
+	if err != nil {
+		return nil, err
+	}
+
+	return &ord, nil
 }
 
 //根据查询条件以及排序返回订单列表

@@ -9,6 +9,7 @@ import (
 p2p Listener
  */
 
+// TODO(fukun): 后面需要修改该topic
 const TOPIC = "topic"
 
 type IPFSListener struct {

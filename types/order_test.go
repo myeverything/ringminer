@@ -12,6 +12,7 @@ func TestOrder_MarshalJson(t *testing.T) {
 		odw types.OrderWrap
 	)
 
+	ord.Id = types.StringToHash("test1")
 	ord.Protocol = types.StringToAddress("0xb794f5ea0ba39494ce839613fffba74279579268")
 	ord.Owner = types.StringToAddress("0xb794f5ea0ba39494ce839613fffba74279579268")
 	ord.OutToken = types.StringToAddress("0xb794f5ea0ba39494ce839613fffba74279579268")
@@ -39,7 +40,7 @@ func TestOrder_MarshalJson(t *testing.T) {
 }
 
 func TestOrder_UnMarshalJson(t *testing.T) {
-	input := `{"rawOrder":{"Id":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+	input := `{"rawOrder":{"Id":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,116,101,115,116,49],
 	"Protocol":[48,98,97,51,57,52,57,52,99,101,56,51,57,54,49,51,102,102,102,98,97,55,52,50,55,57,53,55,57,50,54,56],
 	"Owner":[48,98,97,51,57,52,57,52,99,101,56,51,57,54,49,51,102,102,102,98,97,55,52,50,55,57,53,55,57,50,54,56],
 	"OutToken":[48,98,97,51,57,52,57,52,99,101,56,51,57,54,49,51,102,102,102,98,97,55,52,50,55,57,53,55,57,50,54,56],
@@ -52,6 +53,7 @@ func TestOrder_UnMarshalJson(t *testing.T) {
 	if err := odw.UnMarshalJson([]byte(input)); err != nil {
 		t.Log(err.Error())
 	} else {
+		t.Log(odw.RawOrder.Id.Str())
 		t.Log(odw.PeerId)
 		t.Log(odw.Fee)
 		t.Log(odw.InAmount)
