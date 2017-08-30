@@ -2,3 +2,4 @@
 ringminer.iml
 ringminer
 *.log
+leveldb

@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestIpfsListener(t *testing.T) {
+func Test_IpfsListener(t *testing.T) {
 	listener := ipfs.NewListener()
 	go listener.Start()
 	time.Sleep(100 * time.Second)

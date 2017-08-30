@@ -3,13 +3,14 @@ package orderbook
 import (
 	"sync"
 	"github.com/Loopring/ringminer/types"
+	"github.com/Loopring/ringminer/db"
 )
 
 type OrderBook struct {
 	Filters []Filter
-	Store Store
-	Orders []types.Order//保存未匹配的订单列表
-	mtx  sync.RWMutex
+	Store   db.Store
+	Orders  []types.Order//保存未匹配的订单列表
+	mtx     sync.RWMutex
 }
 
 var orderBook OrderBook
