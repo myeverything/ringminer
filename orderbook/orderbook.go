@@ -3,34 +3,38 @@ package orderbook
 import (
 	"sync"
 	"github.com/Loopring/ringminer/types"
+	"github.com/Loopring/ringminer/lrcdb"
+	"errors"
 )
 
 type OrderBook struct {
-	Filters []Filter
-	Orders  []types.Order//保存未匹配的订单列表
-	mtx     sync.RWMutex
+	db      lrcdb.Database
+	tables  map[string]lrcdb.Database
+	lock    sync.RWMutex
 }
 
 var orderBook OrderBook
 
-func AddFilter(filter Filter) {
-	orderBook.Filters = append(orderBook.Filters, filter)
+type OrderBookConfig struct {
+	DBName           string
+	DBCacheCapcity   int
+	DBBufferCapcity  int
 }
 
-/**
-接收到新订单后，进行保存、发送到match
- */
-func (ob *OrderBook) InitializeOrderBook() {
-	// TODO(fukun): add filter
-	//for _, filter := range orderBook.Filters {
-	//	filter.filter(ob)
-	//}
-	//orderBook.mtx.Lock()
-	//defer orderBook.mtx.Unlock()
-	//orderBook.Orders = append(orderBook.Orders, ob)
+// TODO(fukun): 通过智能合约查询未完成订单状态，完成后开始与matchengine交互
+func (ob *OrderBook) InitializeOrderBook(c *OrderBookConfig) {
+	orderBook.db = lrcdb.NewDB(c.DBName, c.DBCacheCapcity, c.DBBufferCapcity)
+	//orderBook.tables
 }
 
+// 订单只会来源于p2p网络
+// 1.判断订单是否合法
+// 2.存储订单到db
+// 3.发送订单到matchengine
 func NewOrder(ord *types.Order) {
+	// TODO(fukun): 判断订单是否合法
+
+	// 存储订单
 
 }
 
@@ -44,5 +48,23 @@ func GetOrder() {
 
 //根据查询条件以及排序返回订单列表
 func GetOrders() {
+
+}
+
+func (ob *OrderBook) checkTableExist(prefix string) bool {
+	if _, ok := ob.tables[prefix]; !ok {
+		return false
+	}
+	return true
+}
+
+func (ob *OrderBook) getTable(tn string) (lrcdb.Database, error) {
+	if table,ok := ob.tables[tn]; ok {
+		return table, nil
+	}
+	return nil, errors.New("table " + tn + " doesn't exist")
+}
+
+func (ob *OrderBook) moveOrder(src,dst string, ord *types.Order) {
 
 }

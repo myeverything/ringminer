@@ -1,8 +1,8 @@
-package db_test
+package lrcdb_test
 
 import (
 	"testing"
-	"github.com/Loopring/ringminer/db"
+	"github.com/Loopring/ringminer/lrcdb"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -18,12 +18,12 @@ func file() string {
 	return gopath + sep() + "src" + sep() + proj + sep() + dbname
 }
 
-func getdb() db.Database {
-	return db.NewDB(file(), 12,12)
+func getdb() lrcdb.Database {
+	return lrcdb.NewDB(file(), 12,12)
 }
 
 func TestLDBDatabase_Path(t *testing.T) {
-	path := db.NewDB(file(),12,12).Path()
+	path := lrcdb.NewDB(file(),12,12).Path()
 	t.Log("db path is:",path)
 }
 
@@ -64,7 +64,7 @@ func TestLDBDatabase_Close(t *testing.T) {
 // 这里要注意，batch是一次性的，put&write在一起操作
 // batch不能再次寻址
 /////////////////////////////////////////////////////////////////////////////////////
-func getbatch() db.Batch {
+func getbatch() lrcdb.Batch {
 	ldb := getdb()
 	return ldb.NewBatch()
 }
@@ -86,9 +86,9 @@ func TestLdbBatch_Put(t *testing.T) {
 // 即便是table和ldb的key相同，也会存储到不同的地方
 /////////////////////////////////////////////////////////////////////////////////////
 
-func gettable() db.Database {
+func gettable() lrcdb.Database {
 	ldb := getdb()
-	return db.NewTable(ldb, "lrc_test")
+	return lrcdb.NewTable(ldb, "lrc_test")
 }
 
 func TestTable_Put(t *testing.T) {
@@ -110,7 +110,7 @@ func TestTable_Get(t *testing.T) {
 // tablebatch跟batch类似
 /////////////////////////////////////////////////////////////////////////////////////
 
-func gettablebatch() db.Batch {
+func gettablebatch() lrcdb.Batch {
 	table := gettable()
 	return table.NewBatch()
 }

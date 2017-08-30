@@ -1,4 +1,4 @@
-package db
+package lrcdb
 
 import (
 	"github.com/syndtr/goleveldb/leveldb"
@@ -28,11 +28,11 @@ func NewDB(file string, cache, handles int) *LDBDatabase {
 	l := &LDBDatabase{}
 
 	// Ensure we have some minimal caching and file guarantees
-	if cache < 16 {
-		cache = 16
+	if cache < 8 {
+		cache = 8
 	}
-	if handles < 16 {
-		handles = 16
+	if handles < 4 {
+		handles = 4
 	}
 
 	// log.Info("Allocated cache and file handles", cache)
@@ -40,8 +40,8 @@ func NewDB(file string, cache, handles int) *LDBDatabase {
 	// Open the db and recover any potential corruptions
 	db, err := leveldb.OpenFile(file, &opt.Options{
 		OpenFilesCacheCapacity: handles,
-		BlockCacheCapacity:     cache / 2 * opt.MiB,
-		WriteBuffer:            cache / 4 * opt.MiB, // Two of these are used internally
+		BlockCacheCapacity:     cache * opt.MiB,
+		WriteBuffer:            cache * opt.MiB, // Two of these are used internally
 	})
 	if err != nil {
 		log.Crit(log.ERROR_LDB_CREATE_FAILED, err.Error())

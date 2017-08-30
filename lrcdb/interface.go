@@ -1,4 +1,4 @@
-package db
+package lrcdb
 
 // ldb与table公用同一个interface
 type Database interface {
