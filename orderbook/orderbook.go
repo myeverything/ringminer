@@ -4,7 +4,6 @@ import (
 	"sync"
 	"github.com/Loopring/ringminer/types"
 	"github.com/Loopring/ringminer/lrcdb"
-	"errors"
 )
 
 const (
@@ -38,15 +37,18 @@ func InitializeOrderBook(c *OrderBookConfig) {
 // 1.判断订单是否合法
 // 2.存储订单到db
 // 3.发送订单到matchengine
-func NewOrder(ord *types.Order) error {
+func NewOrder(ord *types.OrderWrap) error {
 	// TODO(fukun): 判断订单是否合法
 
-	// 存储订单
-	//commit, err := ord.MarshalJson()
-	//if err != nil {
-	//	return err
-	//}
+	key := ord.RawOrder.Id.Bytes()
+	value,err := ord.MarshalJson()
+	if err != nil {
+		return err
+	}
 
+	orderBook.partialTable.Put(key, value)
+
+	// TODO(fukun): 发送订单到
 	return nil
 }
 

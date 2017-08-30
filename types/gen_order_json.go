@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"reflect"
-	"math/big"
 )
 
 func (ord Order) MarshalJson() ([]byte,error) {
@@ -92,12 +91,12 @@ func (ord *Order) UnMarshalJson(input []byte) error {
 	if !reflect.ValueOf(dec.OutAmount).IsValid() {
 		return errors.New("missing required field 'OutAmount' for order")
 	}
-	ord.OutAmount = big.NewInt(int64(dec.OutAmount))
+	ord.OutAmount = IntToBig(int64(dec.OutAmount))
 
 	if !reflect.ValueOf(dec.InAmount).IsValid() {
 		return errors.New("missing required field 'InAmount' for order")
 	}
-	ord.InAmount = big.NewInt(int64(dec.InAmount))
+	ord.InAmount = IntToBig(int64(dec.InAmount))
 
 	if !reflect.ValueOf(dec.Expiration).IsValid() {
 		return errors.New("missing required field 'Expiration' for order")
@@ -107,12 +106,12 @@ func (ord *Order) UnMarshalJson(input []byte) error {
 	if !reflect.ValueOf(dec.Fee).IsValid() {
 		return errors.New("missing required field 'Fee' for order")
 	}
-	ord.Fee = big.NewInt(int64(dec.Fee))
+	ord.Fee = IntToBig(int64(dec.Fee))
 
 	if !reflect.ValueOf(dec.SavingShare).IsValid() {
 		return errors.New("missing required field 'SavingShare' for order")
 	}
-	ord.SavingShare = big.NewInt(int64(dec.SavingShare))
+	ord.SavingShare = IntToBig(int64(dec.SavingShare))
 
 	if !reflect.ValueOf(dec.V).IsValid() {
 		return errors.New("missing required field 'ECDSA.V' for order")
