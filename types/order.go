@@ -33,7 +33,7 @@ type Order struct {
 
 // TODO(fukun): 包含成交记录
 type OrderWrap struct {
-	RawOrder Order             `json:"rawOrder"`
+	RawOrder *Order             `json:"rawOrder"`
 	PeerId   string   `json:"peerId"`
 	OutAmount *big.Int	`json:"outAmount"`
 	InAmount  *big.Int	`json:"inAmount"`
