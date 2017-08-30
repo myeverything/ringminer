@@ -3,6 +3,13 @@ package types
 import "math/big"
 
 //订单原始信息
+/**
+1、是否整体成交
+2、指定成交对象，对方单的hash
+3、分润比例 是否需要设置
+4、成交方向 待定
+5、过期时间，使用块数
+ */
 type Order struct {
 	Id          Hash      // 订单id
 	Protocol    Address   // 智能合约地址
@@ -19,11 +26,19 @@ type Order struct {
 	S           Sign
 }
 
+/**ring
+1、撮合者费用的收益的地址
+2、
+ */
+
 // TODO(fukun): 包含成交记录
 type OrderWrap struct {
-	Order             `json:"order"`
+	RawOrder Order             `json:"rawOrder"`
 	PeerId   string   `json:"peerId"`
-	RingList []Hash   `json:"ringList"`
+	OutAmount *big.Int	`json:"outAmount"`
+	InAmount  *big.Int	`json:"inAmount"`
+	Fee *big.Int	`json:"fee"`
+	//RingList []Hash   `json:"ringList"`
 }
 
 
