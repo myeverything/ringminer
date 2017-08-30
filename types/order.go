@@ -35,8 +35,8 @@ type Order struct {
 type OrderWrap struct {
 	RawOrder *Order             `json:"rawOrder"`
 	PeerId   string   `json:"peerId"`
-	OutAmount *big.Int	`json:"outAmount"`
-	InAmount  *big.Int	`json:"inAmount"`
+	OutAmount *big.Int	`json:"outAmount"` // 剩余量
+	InAmount  *big.Int	`json:"inAmount"`  // 剩余量
 	Fee *big.Int	`json:"fee"`
 	//RingList []Hash   `json:"ringList"`
 }

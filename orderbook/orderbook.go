@@ -83,6 +83,21 @@ func GetOrders() {
 
 }
 
-func (ob *OrderBook) moveOrder(ord *types.Order) {
+// 只会从partial移动到finish
+func (ob *OrderBook) moveOrder(odw *types.OrderWrap) error {
+	key := odw.RawOrder.Id.Bytes()
+	value, err := odw.MarshalJson()
+	if err != nil {
+		return err
+	}
+	ob.partialTable.Delete(key)
+	ob.finishTable.Put(key, value)
+	return nil
+}
 
+// TODO(fukun): 从配置文件中读取不同合约地址对应代币的尘埃差值
+func isFinished(odw *types.OrderWrap) bool {
+	//if odw.RawOrder.
+
+	return true
 }
