@@ -1,9 +1,8 @@
-package ipfs
+package p2p
 
 import (
 	"github.com/ipfs/go-ipfs-api"
 	"sync"
-	"github.com/Loopring/ringminer/p2p"
 )
 
 /**
@@ -38,7 +37,7 @@ func (l *IPFSListener) Start() {
 		for {
 			record, _ := l.sub.Next()
 			data := record.Data()
-			p2p.Send(data)
+			Send(data)
 		}
 	}()
 }

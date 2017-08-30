@@ -6,12 +6,6 @@ import (
 	"github.com/Loopring/ringminer/orderbook"
 )
 
-type Listener interface {
-	Start()
-	Stop()
-	Name() string
-}
-
 func Send(data []byte) {
 	var ord types.Order
 	err := ord.UnMarshalJson(data)
