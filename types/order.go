@@ -41,25 +41,25 @@ type Order struct {
 
 //RateAmountS、RateAmountB、FeeSelection 需要提交到contract
 type FilledOrder struct {
-	RawOrder			*Order
-	FeeSelection 		int
-	RateAmountS 		*big.Int
-	RateAmountB 		*big.Int
-	AvailableAmountS 	*big.Int
-	FillAmountS 		*big.Int
-	LrcReward 			*big.Int
-	LrcFee 				*big.Int
-	FeeSForThisOrder 	*big.Int
-	FeeSForNextOrder 	*big.Int
+	RawOrder *Order
+	FeeSelection int
+	RateAmountS *big.Int
+	RateAmountB *big.Int
+	AvailableAmountS *big.Int
+	FillAmountS *big.Int
+	LrcReward *big.Int
+	LrcFee *big.Int
+	FeeSForThisOrder *big.Int
+	FeeSForNextOrder *big.Int
 }
 
 type OrderState struct {
-	RawOrder 		*Order
-	Owner 			Address
-	OrderHash 		Hash
+	RawOrder *Order
+	Owner Address
+	OrderHash Hash
 	RemainedAmountS *big.Int
 	RemainedAmountB *big.Int
-	Status 			OrderStatus
+	Status OrderStatus
 }
 
 // TODO(fukun): 来自以太坊的订单
