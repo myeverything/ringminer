@@ -32,8 +32,9 @@ func TestOrder_MarshalJson(t *testing.T) {
 }
 
 func TestOrder_UnMarshalJson(t *testing.T) {
-	input := `{"protocol":"0xb794f5ea0ba39494ce839613fffba74279579268","tokenS":"0xb794f5ea0ba39494ce839613fffba74279579268","tokenB":"0xb794f5ea0ba39494ce839613fffba74279579268","amountS":20000,"amountB":800,"rand":3,"expiration":1504259530,"lrcFee":30,"savingShareRate":51,"v":8,"r":"\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000hhhhhhhh","s":"\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000fjalskdf"}`
-
+	input := `
+	{"protocol":"0xb794f5ea0ba39494ce839613fffba74279579268","tokenS":"0xb794f5ea0ba39494ce839613fffba74279579268","tokenB":"0xb794f5ea0ba39494ce839613fffba74279579268","amountS":20000,"amountB":800,"rand":3,"expiration":1504259224,"lrcFee":30,"savingShareRate":51,"v":8,"r":"\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000hhhhhhhh","s":"\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000fjalskdf"}
+	`
 	ord := &types.Order{}
 	if err := ord.UnMarshalJson([]byte(input)); err != nil {
 		t.Log(err.Error())
