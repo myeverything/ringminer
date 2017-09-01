@@ -1,5 +1,7 @@
 package types
 
+import "math/big"
+
 // 旷工在成本节约和fee上二选一，撮合者计算出:
 // 1.fee(lrc)的市场价(法币交易价格)
 // 2.成本节约(savingShare)的市场价(法币交易价格)
@@ -9,19 +11,26 @@ package types
 // 此外，在选择最优环路的时候，撮合者会在确定了选择fee/savingShare后，选择某个具有最大利润的环路
 // 但是，根据谷歌竞拍法则(A出价10,B出价20,最终成交价为10)，撮合者最终获得的利润只能是利润最小的环路利润
 type Ring struct {
-	Id                Hash    `json:"id"`                // 订单链id
-	Orders            []Order `json:"orders"`            // 该次匹配的所有订单
-	FeeRecipient      Address `json:"feeRecipient"`      // 费用收取地址
-	AddtionalDiscount uint64  `json:"addtionalDiscount"` // 在费用基础上的再折扣价-eta
-	Nonce             uint64  `json:"nonce"`             // 一个随机数
+	Orders []*OrderState
+	Miner Address
+	FeeRecepient Address
+	ThrowIfTokenAllowanceOrBalanceIsInsuffcient bool
 	V                 uint8   `json:"v"`
 	R                 Sign    `json:"r"`
 	S                 Sign    `json:"s"`
 }
 
-// TODO(fukun): 添加状态判断是否成环
-type OrderRing struct {
-	Ring         `json:"ring"`     // 订单链
-	Closure bool `json:"closure"`  // 是否闭合
+type RingState struct {
+	Ring *Ring
+	Hash                Hash    `json:"hash"`                // 订单链id
+	ReducedRate	float64 //价格折扣
+	LegalTenderAmount *big.Float //法币计算的fee
+	FeeMode int 	//收费方式，0 lrc 1 share
 }
+
+// TODO(fukun): 添加状态判断是否成环
+//type OrderRing struct {
+//	Ring         `json:"ring"`     // 订单链
+//	Closure bool `json:"closure"`  // 是否闭合
+//}
 

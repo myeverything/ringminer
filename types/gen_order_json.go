@@ -19,7 +19,7 @@ func (ord Order) MarshalJson() ([]byte,error) {
 		InAmount    uint64  `json:"inAmount"`
 		Expiration  uint64  `json:"expiration"`
 		Fee         uint64  `json:"fee"`
-		SavingShare uint64  `json:"savingShare"`
+		ShareRate int  `json:"shareRate"`
 		V           uint8   `json:"v"`
 		R           string  `json:"r"`
 		S           string  `json:"s"`
@@ -28,14 +28,14 @@ func (ord Order) MarshalJson() ([]byte,error) {
 	var enc order
 	// TODO(fukun): set the locate ipfs peerid
 	enc.PeerId = ""
-	enc.Id = ord.Id.Str()
+	//enc.Id = ord.Id.Str()
 	enc.Protocol = ord.Protocol.Str()
-	enc.Owner = ord.Owner.Str()
-	enc.OutToken = ord.OutToken.Str()
-	enc.InToken = ord.InToken.Str()
+	//enc.Owner = ord.Owner.Str()
+	enc.OutToken = ord.TokenS.Str()
+	enc.InToken = ord.TokenB.Str()
 	enc.Expiration = ord.Expiration
-	enc.Fee = ord.Fee.Uint64()
-	enc.SavingShare = ord.SavingShare.Uint64()
+	enc.Fee = ord.LrcFee.Uint64()
+	enc.ShareRate = ord.SavingSharePercentage
 	enc.V = ord.V
 	enc.R = ord.R.Str()
 	enc.S = ord.S.Str()
@@ -54,7 +54,7 @@ func (ord *Order) UnMarshalJson(input []byte) error {
 		InAmount    uint64  `json:"inAmount"`
 		Expiration  uint64  `json:"expiration"`
 		Fee         uint64  `json:"fee"`
-		SavingShare uint64  `json:"savingShare"`
+		ShareRate int  `json:"shareRate"`
 		V           uint8   `json:"v"`
 		R           string  `json:"r"`
 		S           string  `json:"s"`
@@ -67,7 +67,7 @@ func (ord *Order) UnMarshalJson(input []byte) error {
 	}
 
 	// TODO(fukun): create order id
-	ord.Id = BytesToHash([]byte(""))
+	//ord.Id = BytesToHash([]byte(""))
 
 	if !reflect.ValueOf(dec.Protocol).IsValid() {
 		return errors.New("missing required field 'Protocol' for order")
@@ -77,27 +77,27 @@ func (ord *Order) UnMarshalJson(input []byte) error {
 	if !reflect.ValueOf(dec.Owner).IsValid() {
 		return errors.New("missing required field 'Owner' for order")
 	}
-	ord.Owner = StringToAddress(dec.Owner)
+	//ord.Owner = StringToAddress(dec.Owner)
 
 	if !reflect.ValueOf(dec.OutToken).IsValid() {
 		return errors.New("missing required field 'OutToken' for order")
 	}
-	ord.OutToken = StringToAddress(dec.OutToken)
+	ord.TokenS = StringToAddress(dec.OutToken)
 
 	if !reflect.ValueOf(dec.InToken).IsValid() {
 		return errors.New("missing required field 'InToken' for order")
 	}
-	ord.InToken = StringToAddress(dec.InToken)
+	ord.TokenB = StringToAddress(dec.InToken)
 
 	if !reflect.ValueOf(dec.OutAmount).IsValid() {
 		return errors.New("missing required field 'OutAmount' for order")
 	}
-	ord.OutAmount = big.NewInt(int64(dec.OutAmount))
+	ord.AmountS = big.NewInt(int64(dec.OutAmount))
 
 	if !reflect.ValueOf(dec.InAmount).IsValid() {
 		return errors.New("missing required field 'InAmount' for order")
 	}
-	ord.InAmount = big.NewInt(int64(dec.InAmount))
+	ord.AmountB = big.NewInt(int64(dec.InAmount))
 
 	if !reflect.ValueOf(dec.Expiration).IsValid() {
 		return errors.New("missing required field 'Expiration' for order")
@@ -107,12 +107,12 @@ func (ord *Order) UnMarshalJson(input []byte) error {
 	if !reflect.ValueOf(dec.Fee).IsValid() {
 		return errors.New("missing required field 'Fee' for order")
 	}
-	ord.Fee = big.NewInt(int64(dec.Fee))
+	ord.LrcFee = big.NewInt(int64(dec.Fee))
 
-	if !reflect.ValueOf(dec.SavingShare).IsValid() {
+	if !reflect.ValueOf(dec.ShareRate).IsValid() {
 		return errors.New("missing required field 'SavingShare' for order")
 	}
-	ord.SavingShare = big.NewInt(int64(dec.SavingShare))
+	ord.SavingSharePercentage = int(dec.ShareRate)
 
 	if !reflect.ValueOf(dec.V).IsValid() {
 		return errors.New("missing required field 'ECDSA.V' for order")
