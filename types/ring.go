@@ -11,7 +11,7 @@ import "math/big"
 // 此外，在选择最优环路的时候，撮合者会在确定了选择fee/savingShare后，选择某个具有最大利润的环路
 // 但是，根据谷歌竞拍法则(A出价10,B出价20,最终成交价为10)，撮合者最终获得的利润只能是利润最小的环路利润
 type Ring struct {
-	Orders []*OrderState
+	Orders []*FilledOrder
 	Miner Address
 	FeeRecepient Address
 	ThrowIfTokenAllowanceOrBalanceIsInsuffcient bool

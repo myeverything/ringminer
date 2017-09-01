@@ -13,9 +13,7 @@ import (
 5、过期时间，使用块数
  */
 type Order struct {
-				       //Id          Hash      // 订单id
 	Protocol              Address  // 智能合约地址
-				       //Owner       Address   // 订单发起者地址，通过签名计算
 	TokenS                Address  // 卖出erc20代币智能合约地址
 	TokenB                Address  // 买入erc20代币智能合约地址
 	AmountS               *big.Int // 卖出erc20代币数量上限
@@ -30,10 +28,9 @@ type Order struct {
 	S                     Sign
 }
 
-type OrderState struct {
-	Order Order
-	OrderHash Hash
-	Owner Address
+//RateAmountS、RateAmountB、FeeSelection 需要提交到contract
+type FilledOrder struct {
+	Order *Order
 	FeeSelection int
 	RateAmountS *big.Int
 	RateAmountB *big.Int
@@ -43,6 +40,15 @@ type OrderState struct {
 	LrcFee *big.Int
 	FeeSForThisOrder *big.Int
 	FeeSForNextOrder *big.Int
+}
+
+type OrderState struct {
+	Order *Order
+	Owner Address
+	OrderHash Hash
+	RemainedAmountS int
+	RemainedAmountB int
+	//....
 }
 
 /**ring
@@ -61,7 +67,8 @@ type OrderWrap struct {
 
 type NewOrderEvent struct {
 	Order
-	PeerId   string   `json:"peerId"`
+	//PeerId   string   `json:"peerId"`
+	//OrderHash Hash
 }
 
 type OrderRingEvent struct {
