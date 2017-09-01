@@ -52,6 +52,8 @@ func StringToSign(s string) Sign { return BytesToSign([]byte(s)) }
 func BitToSign(b *big.Int) Sign  { return BytesToSign(b.Bytes()) }
 func HexToSign(s string) Sign    { return BytesToSign(FromHex(s)) }
 
+func IntToBig(i int64) *big.Int { return big.NewInt(i) }
+
 func BytesToHash(b []byte) Hash {
 	var h Hash
 	h.SetBytes(b)

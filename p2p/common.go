@@ -14,5 +14,14 @@ func Send(data []byte) {
 	} else {
 		log.Info(log.LOG_P2P_ACCEPT, string(data))
 	}
-	orderbook.NewOrder(&ord)
+
+	// 添加相关参数
+	odw := &types.OrderWrap{}
+	odw.RawOrder = &ord
+	odw.PeerId = "0xdylenfu"
+	odw.InAmount = types.IntToBig(0)
+	odw.OutAmount = types.IntToBig(0)
+	odw.Fee = types.IntToBig(0)
+
+	orderbook.NewOrder(odw)
 }

@@ -54,9 +54,8 @@ type OrderState struct {
 type OrderWrap struct {
 	RawOrder *Order             `json:"rawOrder"`
 	PeerId   string   `json:"peerId"`
-	OutAmount *big.Int	`json:"outAmount"`
-	InAmount  *big.Int	`json:"inAmount"`
-	Volume *big.Int	//成交量
+	OutAmount *big.Int	`json:"outAmount"` // 剩余量
+	InAmount  *big.Int	`json:"inAmount"`  // 剩余量
 	Fee *big.Int	`json:"fee"`
 	ShareFee *big.Int ``
 }
