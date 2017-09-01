@@ -2,7 +2,6 @@ package types
 
 import (
 	"math/big"
-	"math/rand"
 )
 
 //订单原始信息
