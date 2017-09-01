@@ -8,55 +8,58 @@ import (
 
 func (ord Order) MarshalJson() ([]byte,error) {
 	type order struct {
-		PeerId      string  `json:"peerId"`
-		Id          string  `json:"id"`
-		Protocol    string  `json:"protocol"`
-		Owner       string  `json:"owner"`
-		OutToken    string  `json:"outToken"`
-		InToken     string  `json:"inToken"`
-		OutAmount   uint64  `json:"outAmount"`
-		InAmount    uint64  `json:"inAmount"`
-		Expiration  uint64  `json:"expiration"`
-		Fee         uint64  `json:"fee"`
-		ShareRate int  `json:"shareRate"`
-		V           uint8   `json:"v"`
-		R           string  `json:"r"`
-		S           string  `json:"s"`
+		Protocol              string	`json:"protocol"`
+		TokenS                string	`json:"tokenS"`
+		TokenB                string	`json:"tokenB"`
+		AmountS               uint64	`json:"amountS"`
+		AmountB               uint64	`json:"amountB"`
+		Rand                  uint64	`json:"rand"`
+		Expiration            uint64	`json:"expiration"`
+		LrcFee                uint64	`json:"lrcFee"`
+		SavingSharePercentage int		`json:"savingShareRate"`
+		fullyFilled           bool		`json:"fullyFilled"`
+		V                     uint8		`json:"v"`
+		R                     string	`json:"r"`
+		S                     string	`json:"s"`
 	}
 
 	var enc order
-	// TODO(fukun): set the locate ipfs peerid
-	enc.PeerId = ""
-	//enc.Id = ord.Id.Str()
+
 	enc.Protocol = ord.Protocol.Str()
-	//enc.Owner = ord.Owner.Str()
-	enc.OutToken = ord.TokenS.Str()
-	enc.InToken = ord.TokenB.Str()
+	enc.TokenS = ord.TokenS.Str()
+	enc.TokenB = ord.TokenB.Str()
+
+	enc.AmountS = ord.AmountS.Uint64()
+	enc.AmountB = ord.AmountB.Uint64()
+
+	enc.Rand = ord.Rand.Uint64()
 	enc.Expiration = ord.Expiration
-	enc.Fee = ord.LrcFee.Uint64()
-	enc.ShareRate = ord.SavingSharePercentage
+	enc.LrcFee = ord.LrcFee.Uint64()
+	enc.SavingSharePercentage = ord.SavingSharePercentage
+	enc.fullyFilled = ord.IsCompleteFillMeasuredByTokenSDepleted
+
 	enc.V = ord.V
 	enc.R = ord.R.Str()
 	enc.S = ord.S.Str()
+
 	return json.Marshal(enc)
 }
 
 func (ord *Order) UnMarshalJson(input []byte) error {
 	type order struct {
-		PeerId      string  `json:"peerId"`
-		Id          string  `json:"id"`
-		Protocol    string  `json:"protocol"`
-		Owner       string  `json:"owner"`
-		OutToken    string  `json:"outToken"`
-		InToken     string  `json:"inToken"`
-		OutAmount   uint64  `json:"outAmount"`
-		InAmount    uint64  `json:"inAmount"`
-		Expiration  uint64  `json:"expiration"`
-		Fee         uint64  `json:"fee"`
-		ShareRate int  `json:"shareRate"`
-		V           uint8   `json:"v"`
-		R           string  `json:"r"`
-		S           string  `json:"s"`
+		Protocol              string	`json:"protocol"`
+		TokenS                string	`json:"tokenS"`
+		TokenB                string	`json:"tokenB"`
+		AmountS               uint64	`json:"amountS"`
+		AmountB               uint64	`json:"amountB"`
+		Rand                  uint64	`json:"rand"`
+		Expiration            uint64	`json:"expiration"`
+		LrcFee                uint64	`json:"lrcFee"`
+		SavingSharePercentage int		`json:"savingShareRate"`
+		fullyFilled           bool		`json:"fullyFilled"`
+		V                     uint8		`json:"v"`
+		R                     string	`json:"r"`
+		S                     string	`json:"s"`
 	}
 
 	var dec order
@@ -65,53 +68,55 @@ func (ord *Order) UnMarshalJson(input []byte) error {
 		return err
 	}
 
-	// TODO(fukun): create order id
-	//ord.Id = BytesToHash([]byte(""))
-
 	if !reflect.ValueOf(dec.Protocol).IsValid() {
 		return errors.New("missing required field 'Protocol' for order")
 	}
 	ord.Protocol = StringToAddress(dec.Protocol)
 
-	if !reflect.ValueOf(dec.Owner).IsValid() {
-		return errors.New("missing required field 'Owner' for order")
+	if !reflect.ValueOf(dec.TokenS).IsValid() {
+		return errors.New("missing required field 'tokenS' for order")
 	}
-	//ord.Owner = StringToAddress(dec.Owner)
+	ord.TokenS = StringToAddress(dec.TokenS)
 
-	if !reflect.ValueOf(dec.OutToken).IsValid() {
-		return errors.New("missing required field 'OutToken' for order")
+	if !reflect.ValueOf(dec.TokenB).IsValid() {
+		return errors.New("missing required field 'tokenB' for order")
 	}
-	ord.TokenS = StringToAddress(dec.OutToken)
+	ord.TokenB = StringToAddress(dec.TokenB)
 
-	if !reflect.ValueOf(dec.InToken).IsValid() {
-		return errors.New("missing required field 'InToken' for order")
+	if !reflect.ValueOf(dec.AmountS).IsValid() {
+		return errors.New("missing required field 'amountS' for order")
 	}
-	ord.TokenB = StringToAddress(dec.InToken)
+	ord.AmountS = IntToBig(int64(dec.AmountS))
 
-	if !reflect.ValueOf(dec.OutAmount).IsValid() {
-		return errors.New("missing required field 'OutAmount' for order")
+	if !reflect.ValueOf(dec.AmountB).IsValid() {
+		return errors.New("missing required field 'amountB' for order")
 	}
-	ord.AmountS = IntToBig(int64(dec.OutAmount))
+	ord.AmountB = IntToBig(int64(dec.AmountB))
 
-	if !reflect.ValueOf(dec.InAmount).IsValid() {
-		return errors.New("missing required field 'InAmount' for order")
+	if !reflect.ValueOf(dec.Rand).IsValid() {
+		return errors.New("missing required field 'rand' for order")
 	}
-	ord.AmountB = IntToBig(int64(dec.InAmount))
+	ord.Rand = IntToBig(int64(dec.Rand))
 
 	if !reflect.ValueOf(dec.Expiration).IsValid() {
-		return errors.New("missing required field 'Expiration' for order")
+		return errors.New("missing required field 'expiration' for order")
 	}
 	ord.Expiration = dec.Expiration
 
-	if !reflect.ValueOf(dec.Fee).IsValid() {
-		return errors.New("missing required field 'Fee' for order")
+	if !reflect.ValueOf(dec.LrcFee).IsValid() {
+		return errors.New("missing required field 'lrcFee' for order")
 	}
-	ord.LrcFee = IntToBig(int64(dec.Fee))
+	ord.LrcFee = IntToBig(int64(dec.LrcFee))
 
-	if !reflect.ValueOf(dec.ShareRate).IsValid() {
-		return errors.New("missing required field 'SavingShare' for order")
+	if !reflect.ValueOf(dec.SavingSharePercentage).IsValid() {
+		return errors.New("missing required field 'savingSharePercentage' for order")
 	}
-	ord.SavingSharePercentage = IntToBig(int64(dec.SavingShare))
+	ord.SavingSharePercentage = dec.SavingSharePercentage
+
+	if !reflect.ValueOf(dec.fullyFilled).IsValid() {
+		return errors.New("missing required field 'fullyFilled' for order")
+	}
+	ord.IsCompleteFillMeasuredByTokenSDepleted = dec.fullyFilled
 
 	if !reflect.ValueOf(dec.V).IsValid() {
 		return errors.New("missing required field 'ECDSA.V' for order")
@@ -129,4 +134,175 @@ func (ord *Order) UnMarshalJson(input []byte) error {
 	ord.R = StringToSign(dec.R)
 
 	return nil
+}
+
+func (ord OrderState) MarshalJson() ([]byte,error) {
+	type orderState struct {
+		Protocol              string	`json:"protocol"`
+		TokenS                string	`json:"tokenS"`
+		TokenB                string	`json:"tokenB"`
+		AmountS               uint64	`json:"amountS"`
+		AmountB               uint64	`json:"amountB"`
+		Rand                  uint64	`json:"rand"`
+		Expiration            uint64	`json:"expiration"`
+		LrcFee                uint64	`json:"lrcFee"`
+		SavingSharePercentage int		`json:"savingShareRate"`
+		fullyFilled           bool		`json:"fullyFilled"`
+		V                     uint8		`json:"v"`
+		R                     string	`json:"r"`
+		S                     string	`json:"s"`
+		Owner 				  string	`json:"owner"`
+		OrderHash 			  string    `json:"hash"`
+		RemainedAmountS 	  uint64  	`json:"remainedAmountS"`
+		RemainedAmountB 	  uint64	`json:"remainedAmountB"`
+		Status 				  uint8		`json:"status"`
+	}
+
+	var enc orderState
+
+	enc.Protocol = ord.RawOrder.Protocol.Str()
+	enc.TokenS = ord.RawOrder.TokenS.Str()
+	enc.TokenB = ord.RawOrder.TokenB.Str()
+
+	enc.AmountS = ord.RawOrder.AmountS.Uint64()
+	enc.AmountB = ord.RawOrder.AmountB.Uint64()
+
+	enc.Rand = ord.RawOrder.Rand.Uint64()
+	enc.Expiration = ord.RawOrder.Expiration
+	enc.LrcFee = ord.RawOrder.LrcFee.Uint64()
+	enc.SavingSharePercentage = ord.RawOrder.SavingSharePercentage
+	enc.fullyFilled = ord.RawOrder.IsCompleteFillMeasuredByTokenSDepleted
+
+	enc.V = ord.RawOrder.V
+	enc.R = ord.RawOrder.R.Str()
+	enc.S = ord.RawOrder.S.Str()
+
+	enc.Owner = ord.Owner.Str()
+	enc.OrderHash = ord.OrderHash.Str()
+	enc.RemainedAmountS = ord.RemainedAmountS.Uint64()
+	enc.RemainedAmountB = ord.RemainedAmountB.Uint64()
+	enc.Status = uint8(ord.Status)
+
+	return json.Marshal(enc)
+}
+
+func (ord *OrderState) UnMarshalJson(input []byte) error {
+	type orderState struct {
+		Protocol              string	`json:"protocol"`
+		TokenS                string	`json:"tokenS"`
+		TokenB                string	`json:"tokenB"`
+		AmountS               uint64	`json:"amountS"`
+		AmountB               uint64	`json:"amountB"`
+		Rand                  uint64	`json:"rand"`
+		Expiration            uint64	`json:"expiration"`
+		LrcFee                uint64	`json:"lrcFee"`
+		SavingSharePercentage int		`json:"savingShareRate"`
+		fullyFilled           bool		`json:"fullyFilled"`
+		V                     uint8		`json:"v"`
+		R                     string	`json:"r"`
+		S                     string	`json:"s"`
+		Owner 				  string	`json:"owner"`
+		OrderHash 			  string    `json:"hash"`
+		RemainedAmountS 	  uint64  	`json:"remainedAmountS"`
+		RemainedAmountB 	  uint64	`json:"remainedAmountB"`
+		Status 				  uint8		`json:"status"`
+	}
+
+	var dec orderState
+	err := json.Unmarshal(input, &dec)
+	if err != nil {
+		return err
+	}
+
+	if !reflect.ValueOf(dec.Protocol).IsValid() {
+		return errors.New("missing required field 'Protocol' for orderState")
+	}
+	ord.RawOrder.Protocol = StringToAddress(dec.Protocol)
+
+	if !reflect.ValueOf(dec.TokenS).IsValid() {
+		return errors.New("missing required field 'tokenS' for orderState")
+	}
+	ord.RawOrder.TokenS = StringToAddress(dec.TokenS)
+
+	if !reflect.ValueOf(dec.TokenB).IsValid() {
+		return errors.New("missing required field 'tokenB' for orderState")
+	}
+	ord.RawOrder.TokenB = StringToAddress(dec.TokenB)
+
+	if !reflect.ValueOf(dec.AmountS).IsValid() {
+		return errors.New("missing required field 'amountS' for orderState")
+	}
+	ord.RawOrder.AmountS = IntToBig(int64(dec.AmountS))
+
+	if !reflect.ValueOf(dec.AmountB).IsValid() {
+		return errors.New("missing required field 'amountB' for orderState")
+	}
+	ord.RawOrder.AmountB = IntToBig(int64(dec.AmountB))
+
+	if !reflect.ValueOf(dec.Rand).IsValid() {
+		return errors.New("missing required field 'rand' for orderState")
+	}
+	ord.RawOrder.Rand = IntToBig(int64(dec.Rand))
+
+	if !reflect.ValueOf(dec.Expiration).IsValid() {
+		return errors.New("missing required field 'expiration' for orderState")
+	}
+	ord.RawOrder.Expiration = dec.Expiration
+
+	if !reflect.ValueOf(dec.LrcFee).IsValid() {
+		return errors.New("missing required field 'lrcFee' for orderState")
+	}
+	ord.RawOrder.LrcFee = IntToBig(int64(dec.LrcFee))
+
+	if !reflect.ValueOf(dec.SavingSharePercentage).IsValid() {
+		return errors.New("missing required field 'savingSharePercentage' for orderState")
+	}
+	ord.RawOrder.SavingSharePercentage = dec.SavingSharePercentage
+
+	if !reflect.ValueOf(dec.fullyFilled).IsValid() {
+		return errors.New("missing required field 'fullyFilled' for orderState")
+	}
+	ord.RawOrder.IsCompleteFillMeasuredByTokenSDepleted = dec.fullyFilled
+
+	if !reflect.ValueOf(dec.V).IsValid() {
+		return errors.New("missing required field 'ECDSA.V' for orderState")
+	}
+	ord.RawOrder.V = dec.V
+
+	if !reflect.ValueOf(dec.S).IsValid() {
+		return errors.New("missing required field 'ECDSA.S' for orderState")
+	}
+	ord.RawOrder.S = StringToSign(dec.S)
+
+	if  !reflect.ValueOf(dec.R).IsValid() {
+		return errors.New("missing required field 'ECSA.R' for orderState")
+	}
+	ord.RawOrder.R = StringToSign(dec.R)
+
+	if !reflect.ValueOf(dec.Owner).IsValid() {
+		return errors.New("missing required field 'owner' for orderState")
+	}
+	ord.Owner = StringToAddress(dec.Owner)
+
+	if !reflect.ValueOf(dec.OrderHash).IsValid() {
+		return errors.New("missing required field 'orderHash' for orderState")
+	}
+	ord.OrderHash = StringToHash(dec.OrderHash)
+
+	if !reflect.ValueOf(dec.RemainedAmountS).IsValid() {
+		return errors.New("missing required field 'remainedAmountS' for orderState")
+	}
+	ord.RemainedAmountS = IntToBig(int64(dec.RemainedAmountS))
+
+	if !reflect.ValueOf(dec.RemainedAmountB).IsValid() {
+		return errors.New("missing required field 'remainedAmountB' for orderState")
+	}
+	ord.RemainedAmountB = IntToBig(int64(dec.RemainedAmountB))
+
+	if !reflect.ValueOf(dec.Status).IsValid() {
+		return errors.New("missing required field 'status' for orderState")
+	}
+	ord.Status = OrderStatus(dec.Status)
+
+	return json.Unmarshal(input, ord)
 }

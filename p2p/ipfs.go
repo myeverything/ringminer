@@ -3,6 +3,7 @@ package p2p
 import (
 	"github.com/ipfs/go-ipfs-api"
 	"sync"
+	"github.com/Loopring/ringminer/types"
 )
 
 /**
@@ -16,6 +17,7 @@ type IPFSListener struct {
 	sh *shell.Shell
 	sub *shell.PubSubSubscription
 	stop chan struct{}
+	whisper *types.Whispers
 	lock sync.RWMutex
 }
 
@@ -38,7 +40,8 @@ func (l *IPFSListener) Start() {
 		for {
 			record, _ := l.sub.Next()
 			data := record.Data()
-			Send(data)
+			ord := GenOrder(data)
+			l.whisper.PeerOrderChan <- ord
 		}
 	}()
 }

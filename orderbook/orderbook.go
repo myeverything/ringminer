@@ -6,65 +6,99 @@ import (
 	"github.com/Loopring/ringminer/lrcdb"
 )
 
+type ORDER_STATUS int
+
 const (
 	FINISH_TABLE_NAME = "finished"
 	PARTIAL_TABLE_NAME = "partial"
 )
 
-type OrderBook struct {
-	db           lrcdb.Database
-	finishTable  lrcdb.Database
-	partialTable lrcdb.Database
-	lock         sync.RWMutex
-}
-
-var orderBook OrderBook
-
-type OrderBookConfig struct {
+type Config struct {
 	DBName           string
 	DBCacheCapcity   int
 	DBBufferCapcity  int
 }
 
+type OrderBook struct {
+	conf         *Config
+	db           lrcdb.Database
+	finishTable  lrcdb.Database
+	partialTable lrcdb.Database
+	whisper      *types.Whispers
+	lock         sync.RWMutex
+}
+
 // TODO(fukun): 通过智能合约查询未完成订单状态，完成后开始与matchengine交互
-func InitializeOrderBook(c *OrderBookConfig) {
-	orderBook.db = lrcdb.NewDB(c.DBName, c.DBCacheCapcity, c.DBBufferCapcity)
-	orderBook.finishTable = lrcdb.NewTable(orderBook.db, FINISH_TABLE_NAME)
-	orderBook.partialTable = lrcdb.NewTable(orderBook.db, PARTIAL_TABLE_NAME)
+func (s *OrderBook) Start() {
+	s.db = lrcdb.NewDB(s.conf.DBName, s.conf.DBCacheCapcity, s.conf.DBBufferCapcity)
+	s.finishTable = lrcdb.NewTable(s.db, FINISH_TABLE_NAME)
+	s.partialTable = lrcdb.NewTable(s.db, PARTIAL_TABLE_NAME)
+}
+
+func (s *OrderBook) Stop() {
+	s.lock.Lock()
+	defer s.lock.Unlock()
+
+	s.finishTable.Close()
+	s.partialTable.Close()
+	s.db.Close()
+}
+
+func (s *OrderBook) Reload() {
+	s.Stop()
+	s.Start()
 }
 
 // 订单只会来源于p2p网络
 // 1.判断订单是否合法
 // 2.存储订单到db
 // 3.发送订单到matchengine
-func NewOrder(ord *types.OrderWrap) error {
-	// TODO(fukun): 判断订单是否合法
+func (s *OrderBook) Run() {
+	go func() {
+		for {
+			select {
+			case ord := <- s.whisper.PeerOrderChan:
+				s.peerOrderHook(ord)
+			case ord := <- s.whisper.ChainOrderChan:
+				s.chainOrderHook(ord)
+			}
+		}
+	}()
+}
 
-	key := ord.RawOrder.Id.Bytes()
+func (ob *OrderBook) peerOrderHook(ord *types.Order) error {
+	// TODO(fukun): 判断订单是否合法
+	ob.lock.Lock()
+	defer ob.lock.Unlock()
+
+	key := ord.GenHash().Bytes()
 	value,err := ord.MarshalJson()
 	if err != nil {
 		return err
 	}
 
-	orderBook.partialTable.Put(key, value)
+	ob.partialTable.Put(key, value)
 
 	// TODO(fukun): 发送订单到
 	return nil
 }
 
-func SetOrder() {
+func (ob *OrderBook) chainOrderHook(ord *types.OrderMined) error {
+	ob.lock.Lock()
+	defer ob.lock.Unlock()
 
+	return nil
 }
 
-func GetOrder(id types.Hash) (*types.OrderWrap, error) {
+func (ob *OrderBook) GetOrder(id types.Hash) (*types.OrderState, error) {
 	var (
 		value []byte
 		err error
-		ord types.OrderWrap
+		ord types.OrderState
 	)
 
-	if value, err = orderBook.partialTable.Get(id.Bytes()); err != nil {
-		value, err = orderBook.finishTable.Get(id.Bytes())
+	if value, err = ob.partialTable.Get(id.Bytes()); err != nil {
+		value, err = ob.finishTable.Get(id.Bytes())
 	}
 	if err != nil {
 		return nil, err
@@ -79,13 +113,13 @@ func GetOrder(id types.Hash) (*types.OrderWrap, error) {
 }
 
 //根据查询条件以及排序返回订单列表
-func GetOrders() {
+func (ob *OrderBook) GetOrders() {
 
 }
 
 // 只会从partial移动到finish
-func (ob *OrderBook) moveOrder(odw *types.OrderWrap) error {
-	key := odw.RawOrder.Id.Bytes()
+func (ob *OrderBook) moveOrder(odw *types.OrderState) error {
+	key := odw.OrderHash.Bytes()
 	value, err := odw.MarshalJson()
 	if err != nil {
 		return err
@@ -96,7 +130,7 @@ func (ob *OrderBook) moveOrder(odw *types.OrderWrap) error {
 }
 
 // TODO(fukun): 从配置文件中读取不同合约地址对应代币的尘埃差值
-func isFinished(odw *types.OrderWrap) bool {
+func isFinished(odw *types.OrderState) bool {
 	//if odw.RawOrder.
 
 	return true

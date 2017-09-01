@@ -1,4 +1,4 @@
-package cmd
+package utils
 
 
 import "gopkg.in/urfave/cli.v1"

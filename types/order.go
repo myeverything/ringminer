@@ -4,6 +4,17 @@ import (
 	"math/big"
 )
 
+type OrderStatus uint8
+
+const (
+	ORDER_NEW OrderStatus = iota
+	ORDER_PENDING
+	ORDER_PARTIAL
+	ORDER_FINISHED
+	ORDER_CANCEL
+	ORDER_REJECT
+)
+
 //订单原始信息
 /**
 1、是否整体成交
@@ -30,54 +41,44 @@ type Order struct {
 
 //RateAmountS、RateAmountB、FeeSelection 需要提交到contract
 type FilledOrder struct {
-	Order *Order
-	FeeSelection int
-	RateAmountS *big.Int
-	RateAmountB *big.Int
-	AvailableAmountS *big.Int
-	FillAmountS *big.Int
-	LrcReward *big.Int
-	LrcFee *big.Int
-	FeeSForThisOrder *big.Int
-	FeeSForNextOrder *big.Int
+	RawOrder			*Order
+	FeeSelection 		int
+	RateAmountS 		*big.Int
+	RateAmountB 		*big.Int
+	AvailableAmountS 	*big.Int
+	FillAmountS 		*big.Int
+	LrcReward 			*big.Int
+	LrcFee 				*big.Int
+	FeeSForThisOrder 	*big.Int
+	FeeSForNextOrder 	*big.Int
 }
 
 type OrderState struct {
-	Order *Order
-	Owner Address
-	OrderHash Hash
-	RemainedAmountS int
-	RemainedAmountB int
-	//....
+	RawOrder 		*Order
+	Owner 			Address
+	OrderHash 		Hash
+	RemainedAmountS *big.Int
+	RemainedAmountB *big.Int
+	Status 			OrderStatus
 }
 
-/**ring
-1、撮合者费用的收益的地址
-2、
- */
-// TODO(fukun): 包含成交记录
-type OrderWrap struct {
-	RawOrder *Order             `json:"rawOrder"`
-	PeerId   string   `json:"peerId"`
-	OutAmount *big.Int	`json:"outAmount"` // 剩余量
-	InAmount  *big.Int	`json:"inAmount"`  // 剩余量
-	Fee *big.Int	`json:"fee"`
-	ShareFee *big.Int ``
+// TODO(fukun): 来自以太坊的订单
+type OrderMined struct {
+
 }
 
-type NewOrderEvent struct {
-	Order
-	//PeerId   string   `json:"peerId"`
-	//OrderHash Hash
+type Whispers struct {
+	PeerOrderChan			chan *Order
+	ChainOrderChan			chan *OrderMined
+	EngineOrderChan			chan *OrderState
 }
 
-type OrderRingEvent struct {
-	RingState
+// TODO(fukun):
+func (ord *Order) GenHash() Hash {
+	return StringToHash("")
 }
 
-//todo:order、ring、event等重新整理定义
-type BalanceChangeEvent struct {
-	Address	Address
-	Balance	*big.Int
-	Change	*big.Int
+// TODO(fukun)
+func (ord *Order) VerifyHash() error {
+	return nil
 }

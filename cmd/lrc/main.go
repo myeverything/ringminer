@@ -1,7 +1,7 @@
 package main
 
 import(
-	"github.com/Loopring/ringminer/cmd"
+	"github.com/Loopring/ringminer/cmd/utils"
 	"sort"
 	"gopkg.in/urfave/cli.v1"
 	"runtime"
@@ -12,7 +12,7 @@ import(
 )
 
 var (
-	app = cmd.NewApp()
+	app = utils.NewApp()
 	logger = log.NewLogger()
 )
 
