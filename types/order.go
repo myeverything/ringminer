@@ -41,7 +41,7 @@ type Order struct {
 
 //RateAmountS、RateAmountB、FeeSelection 需要提交到contract
 type FilledOrder struct {
-	RawOrder *Order
+	RawOrder Order
 	FeeSelection int
 	RateAmountS *big.Int
 	RateAmountB *big.Int
@@ -54,7 +54,7 @@ type FilledOrder struct {
 }
 
 type OrderState struct {
-	RawOrder *Order
+	Order
 	Owner Address
 	OrderHash Hash
 	RemainedAmountS *big.Int

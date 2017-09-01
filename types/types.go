@@ -6,8 +6,8 @@ import (
 )
 
 const (
-	HashLength    = 20
-	AddressLength = 32
+	HashLength    = 66  // 以太坊中为
+	AddressLength = 42  // 以太坊中为20 20*2 + "0x"
 	SignLength    = 32
 )
 
