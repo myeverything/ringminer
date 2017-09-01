@@ -49,18 +49,18 @@ func TestOrder_UnMarshalJson(t *testing.T) {
 func TestOrderState_MarshalJson(t *testing.T) {
 	var ord types.OrderState
 
-	ord.Protocol = types.StringToAddress("0xb794f5ea0ba39494ce839613fffba74279579268")
-	ord.TokenS = types.StringToAddress("0xb794f5ea0ba39494ce839613fffba74279579268")
-	ord.TokenB = types.StringToAddress("0xb794f5ea0ba39494ce839613fffba74279579268")
-	ord.AmountS = types.IntToBig(20000)
-	ord.AmountB = types.IntToBig(800)
-	ord.Expiration = uint64(time.Now().Unix())
-	ord.Rand = types.IntToBig(int64(3))
-	ord.LrcFee = types.IntToBig(30)
-	ord.SavingSharePercentage = 51
-	ord.V = 8
-	ord.R = types.StringToSign("hhhhhhhh")
-	ord.S = types.StringToSign("fjalskdf")
+	ord.RawOrder.Protocol = types.StringToAddress("0xb794f5ea0ba39494ce839613fffba74279579268")
+	ord.RawOrder.TokenS = types.StringToAddress("0xb794f5ea0ba39494ce839613fffba74279579268")
+	ord.RawOrder.TokenB = types.StringToAddress("0xb794f5ea0ba39494ce839613fffba74279579268")
+	ord.RawOrder.AmountS = types.IntToBig(20000)
+	ord.RawOrder.AmountB = types.IntToBig(800)
+	ord.RawOrder.Expiration = uint64(time.Now().Unix())
+	ord.RawOrder.Rand = types.IntToBig(int64(3))
+	ord.RawOrder.LrcFee = types.IntToBig(30)
+	ord.RawOrder.SavingSharePercentage = 51
+	ord.RawOrder.V = 8
+	ord.RawOrder.R = types.StringToSign("hhhhhhhh")
+	ord.RawOrder.S = types.StringToSign("fjalskdf")
 
 	ord.RemainedAmountS = types.IntToBig(10000)
 	ord.RemainedAmountB = types.IntToBig(400)
@@ -102,10 +102,10 @@ func TestOrderState_UnMarshalJson(t *testing.T) {
 		t.Log(ord.OrderHash.Str())
 		t.Log(ord.RemainedAmountS)
 		t.Log(ord.RemainedAmountB)
-		t.Log(ord.TokenS.Str())
-		t.Log(ord.TokenB.Str())
-		t.Log(ord.AmountS)
-		t.Log(ord.AmountB)
-		t.Log(ord.LrcFee)
+		t.Log(ord.RawOrder.TokenS.Str())
+		t.Log(ord.RawOrder.TokenB.Str())
+		t.Log(ord.RawOrder.AmountS)
+		t.Log(ord.RawOrder.AmountB)
+		t.Log(ord.RawOrder.LrcFee)
 	}
 }

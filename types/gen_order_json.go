@@ -161,22 +161,22 @@ func (ord OrderState) MarshalJson() ([]byte,error) {
 
 	var enc state
 
-	enc.Protocol = ord.Protocol.Str()
-	enc.TokenS = ord.TokenS.Str()
-	enc.TokenB = ord.TokenB.Str()
+	enc.Protocol = ord.RawOrder.Protocol.Str()
+	enc.TokenS = ord.RawOrder.TokenS.Str()
+	enc.TokenB = ord.RawOrder.TokenB.Str()
 
-	enc.AmountS = ord.AmountS.Uint64()
-	enc.AmountB = ord.AmountB.Uint64()
+	enc.AmountS = ord.RawOrder.AmountS.Uint64()
+	enc.AmountB = ord.RawOrder.AmountB.Uint64()
 
-	enc.Rand = ord.Rand.Uint64()
-	enc.Expiration = ord.Expiration
-	enc.LrcFee = ord.LrcFee.Uint64()
-	enc.SavingSharePercentage = ord.SavingSharePercentage
-	enc.fullyFilled = ord.IsCompleteFillMeasuredByTokenSDepleted
+	enc.Rand = ord.RawOrder.Rand.Uint64()
+	enc.Expiration = ord.RawOrder.Expiration
+	enc.LrcFee = ord.RawOrder.LrcFee.Uint64()
+	enc.SavingSharePercentage = ord.RawOrder.SavingSharePercentage
+	enc.fullyFilled = ord.RawOrder.IsCompleteFillMeasuredByTokenSDepleted
 
-	enc.V = ord.V
-	enc.R = ord.R.Str()
-	enc.S = ord.S.Str()
+	enc.V = ord.RawOrder.V
+	enc.R = ord.RawOrder.R.Str()
+	enc.S = ord.RawOrder.S.Str()
 
 	enc.Owner = ord.Owner.Str()
 	enc.OrderHash = ord.OrderHash.Str()
@@ -218,67 +218,67 @@ func (ord *OrderState) UnMarshalJson(input []byte) error {
 	if !reflect.ValueOf(dec.Protocol).IsValid() {
 		return errors.New("missing required field 'Protocol' for orderState")
 	}
-	ord.Protocol = StringToAddress(dec.Protocol)
+	ord.RawOrder.Protocol = StringToAddress(dec.Protocol)
 
 	if !reflect.ValueOf(dec.TokenS).IsValid() {
 		return errors.New("missing required field 'tokenS' for orderState")
 	}
-	ord.TokenS = StringToAddress(dec.TokenS)
+	ord.RawOrder.TokenS = StringToAddress(dec.TokenS)
 
 	if !reflect.ValueOf(dec.TokenB).IsValid() {
 		return errors.New("missing required field 'tokenB' for orderState")
 	}
-	ord.TokenB = StringToAddress(dec.TokenB)
+	ord.RawOrder.TokenB = StringToAddress(dec.TokenB)
 
 	if !reflect.ValueOf(dec.AmountS).IsValid() {
 		return errors.New("missing required field 'amountS' for orderState")
 	}
-	ord.AmountS = IntToBig(int64(dec.AmountS))
+	ord.RawOrder.AmountS = IntToBig(int64(dec.AmountS))
 
 	if !reflect.ValueOf(dec.AmountB).IsValid() {
 		return errors.New("missing required field 'amountB' for orderState")
 	}
-	ord.AmountB = IntToBig(int64(dec.AmountB))
+	ord.RawOrder.AmountB = IntToBig(int64(dec.AmountB))
 
 	if !reflect.ValueOf(dec.Rand).IsValid() {
 		return errors.New("missing required field 'rand' for orderState")
 	}
-	ord.Rand = IntToBig(int64(dec.Rand))
+	ord.RawOrder.Rand = IntToBig(int64(dec.Rand))
 
 	if !reflect.ValueOf(dec.Expiration).IsValid() {
 		return errors.New("missing required field 'expiration' for orderState")
 	}
-	ord.Expiration = dec.Expiration
+	ord.RawOrder.Expiration = dec.Expiration
 
 	if !reflect.ValueOf(dec.LrcFee).IsValid() {
 		return errors.New("missing required field 'lrcFee' for orderState")
 	}
-	ord.LrcFee = IntToBig(int64(dec.LrcFee))
+	ord.RawOrder.LrcFee = IntToBig(int64(dec.LrcFee))
 
 	if !reflect.ValueOf(dec.SavingSharePercentage).IsValid() {
 		return errors.New("missing required field 'savingSharePercentage' for orderState")
 	}
-	ord.SavingSharePercentage = dec.SavingSharePercentage
+	ord.RawOrder.SavingSharePercentage = dec.SavingSharePercentage
 
 	if !reflect.ValueOf(dec.fullyFilled).IsValid() {
 		return errors.New("missing required field 'fullyFilled' for orderState")
 	}
-	ord.IsCompleteFillMeasuredByTokenSDepleted = dec.fullyFilled
+	ord.RawOrder.IsCompleteFillMeasuredByTokenSDepleted = dec.fullyFilled
 
 	if !reflect.ValueOf(dec.V).IsValid() {
 		return errors.New("missing required field 'ECDSA.V' for orderState")
 	}
-	ord.V = dec.V
+	ord.RawOrder.V = dec.V
 
 	if !reflect.ValueOf(dec.S).IsValid() {
 		return errors.New("missing required field 'ECDSA.S' for orderState")
 	}
-	ord.S = StringToSign(dec.S)
+	ord.RawOrder.S = StringToSign(dec.S)
 
 	if  !reflect.ValueOf(dec.R).IsValid() {
 		return errors.New("missing required field 'ECSA.R' for orderState")
 	}
-	ord.R = StringToSign(dec.R)
+	ord.RawOrder.R = StringToSign(dec.R)
 
 	if !reflect.ValueOf(dec.Owner).IsValid() {
 		return errors.New("missing required field 'owner' for orderState")

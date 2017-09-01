@@ -54,7 +54,7 @@ type FilledOrder struct {
 }
 
 type OrderState struct {
-	Order
+	RawOrder Order
 	Owner Address
 	OrderHash Hash
 	RemainedAmountS *big.Int
