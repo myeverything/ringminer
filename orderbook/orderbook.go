@@ -6,6 +6,7 @@ import (
 	"github.com/Loopring/ringminer/lrcdb"
 	"log"
 	"os"
+	"github.com/Loopring/ringminer/config"
 )
 
 type ORDER_STATUS int
@@ -15,14 +16,15 @@ const (
 	PARTIAL_TABLE_NAME = "partial"
 )
 
-type Config struct {
-	DBName           string
-	DBCacheCapcity   int
-	DBBufferCapcity  int
+type OrderBookConfig struct {
+	name           string
+	cacheCapacity   int
+	bufferCapacity  int
 }
 
 type OrderBook struct {
-	conf         Config
+	conf         OrderBookConfig
+	toml         config.DbOptions
 	db           lrcdb.Database
 	finishTable  lrcdb.Database
 	partialTable lrcdb.Database
@@ -30,17 +32,25 @@ type OrderBook struct {
 	lock         sync.RWMutex
 }
 
-func (ob *OrderBook) defaultConfig() {
+func (ob *OrderBook) loadConfig() {
+	// load default config
 	dir := os.Getenv("GOPATH") + "/github.com/Loopring/ringminer/"
-	file := dir + "leveldb"
-	ob.conf = Config{file, 8, 4}
+	file := dir + ob.toml.Name
+	cache := ob.toml.CacheCapacity
+	buffer := ob.toml.BufferCapacity
+
+	// TODO(fukun): 除了加载默认toml配置外，可能还有来自命令行参数配置
+
+	ob.conf = OrderBookConfig{file, cache, buffer}
 }
 
-// TODO(fukun): 通过智能合约查询未完成订单状态，完成后开始与matchengine交互
-func NewOrderBook(whisper *types.Whispers) *OrderBook {
+func NewOrderBook(whisper *types.Whispers, options config.DbOptions) *OrderBook {
 	s := &OrderBook{}
-	s.defaultConfig()
-	s.db = lrcdb.NewDB(s.conf.DBName, s.conf.DBCacheCapcity, s.conf.DBBufferCapcity)
+
+	s.toml = options
+	s.loadConfig()
+
+	s.db = lrcdb.NewDB(s.conf.name, s.conf.cacheCapacity, s.conf.bufferCapacity)
 	s.finishTable = lrcdb.NewTable(s.db, FINISH_TABLE_NAME)
 	s.partialTable = lrcdb.NewTable(s.db, PARTIAL_TABLE_NAME)
 	s.whisper = whisper

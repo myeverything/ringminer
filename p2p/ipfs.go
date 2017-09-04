@@ -4,16 +4,20 @@ import (
 	"github.com/ipfs/go-ipfs-api"
 	"sync"
 	"github.com/Loopring/ringminer/types"
+	"github.com/Loopring/ringminer/config"
 )
 
 /**
 p2p Listener
  */
 
-// TODO(fukun): 后面需要修改该topic
-const TOPIC = "topic"
+type IpfsConfig struct {
+	topic string
+}
 
 type IPFSListener struct {
+	conf IpfsConfig
+	toml config.IpfsOptions
 	sh *shell.Shell
 	sub *shell.PubSubSubscription
 	stop chan struct{}
@@ -21,11 +25,18 @@ type IPFSListener struct {
 	lock sync.RWMutex
 }
 
-func NewListener(whisper *types.Whispers) *IPFSListener {
+func (l *IPFSListener) loadConfig() {
+	l.conf.topic = l.toml.Topic
+}
+
+func NewListener(whisper *types.Whispers, options config.IpfsOptions) *IPFSListener {
 	l := &IPFSListener{}
 
+	l.toml = options
+	l.loadConfig()
+
 	l.sh = shell.NewLocalShell()
-	sub, err := l.sh.PubSubSubscribe(TOPIC)
+	sub, err := l.sh.PubSubSubscribe(l.conf.topic)
 	if err != nil {
 		panic(err.Error())
 	}
