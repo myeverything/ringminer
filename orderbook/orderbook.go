@@ -97,8 +97,6 @@ func (ob *OrderBook) peerOrderHook(ord *types.Order) error {
 
 	ob.partialTable.Put(key, value)
 
-	// TODO(fukun): 发送订单到
-
 	// TODO(fukun): delete after test
 	if input, err := ob.partialTable.Get(key); err != nil {
 		panic(err)
@@ -111,6 +109,9 @@ func (ob *OrderBook) peerOrderHook(ord *types.Order) error {
 		log.Println(ord.AmountB.Uint64())
 	}
 
+	// TODO(fukun): matchengine 接受orderState
+	//state := ord.Convert()
+	//ob.whisper.EngineOrderChan <- state
 	return nil
 }
 

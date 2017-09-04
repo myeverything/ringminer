@@ -73,6 +73,21 @@ type Whispers struct {
 	EngineOrderChan			chan *OrderState
 }
 
+// convert order to ordersate
+func (ord *Order) Convert() *OrderState {
+	var s OrderState
+	s.RawOrder = *ord
+
+	// TODO(fukun): 计算owner，hash等
+	s.Owner = StringToAddress("")
+	s.OrderHash = StringToHash("")
+	s.RemainedAmountS = s.RawOrder.AmountS
+	s.RemainedAmountB = s.RawOrder.AmountB
+	s.Status = ORDER_NEW
+
+	return &s
+}
+
 // TODO(fukun):
 func (ord *Order) GenHash() Hash {
 	return StringToHash("")
