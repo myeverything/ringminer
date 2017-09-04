@@ -4,6 +4,8 @@ import (
 	"sync"
 	"github.com/Loopring/ringminer/types"
 	"github.com/Loopring/ringminer/lrcdb"
+	"log"
+	"os"
 )
 
 type ORDER_STATUS int
@@ -20,7 +22,7 @@ type Config struct {
 }
 
 type OrderBook struct {
-	conf         *Config
+	conf         Config
 	db           lrcdb.Database
 	finishTable  lrcdb.Database
 	partialTable lrcdb.Database
@@ -28,32 +30,29 @@ type OrderBook struct {
 	lock         sync.RWMutex
 }
 
+func (ob *OrderBook) defaultConfig() {
+	dir := os.Getenv("GOPATH") + "/github.com/Loopring/ringminer/"
+	file := dir + "leveldb"
+	ob.conf = Config{file, 8, 4}
+}
+
 // TODO(fukun): 通过智能合约查询未完成订单状态，完成后开始与matchengine交互
-func (s *OrderBook) Start() {
+func NewOrderBook(whisper *types.Whispers) *OrderBook {
+	s := &OrderBook{}
+	s.defaultConfig()
 	s.db = lrcdb.NewDB(s.conf.DBName, s.conf.DBCacheCapcity, s.conf.DBBufferCapcity)
 	s.finishTable = lrcdb.NewTable(s.db, FINISH_TABLE_NAME)
 	s.partialTable = lrcdb.NewTable(s.db, PARTIAL_TABLE_NAME)
-}
+	s.whisper = whisper
 
-func (s *OrderBook) Stop() {
-	s.lock.Lock()
-	defer s.lock.Unlock()
-
-	s.finishTable.Close()
-	s.partialTable.Close()
-	s.db.Close()
-}
-
-func (s *OrderBook) Reload() {
-	s.Stop()
-	s.Start()
+	return s
 }
 
 // 订单只会来源于p2p网络
 // 1.判断订单是否合法
 // 2.存储订单到db
 // 3.发送订单到matchengine
-func (s *OrderBook) Run() {
+func (s *OrderBook) Start() {
 	go func() {
 		for {
 			select {
@@ -64,6 +63,15 @@ func (s *OrderBook) Run() {
 			}
 		}
 	}()
+}
+
+func (s *OrderBook) Stop() {
+	s.lock.Lock()
+	defer s.lock.Unlock()
+
+	s.finishTable.Close()
+	s.partialTable.Close()
+	s.db.Close()
 }
 
 func (ob *OrderBook) peerOrderHook(ord *types.Order) error {
@@ -80,6 +88,19 @@ func (ob *OrderBook) peerOrderHook(ord *types.Order) error {
 	ob.partialTable.Put(key, value)
 
 	// TODO(fukun): 发送订单到
+
+	// TODO(fukun): delete after test
+	if input, err := ob.partialTable.Get(key); err != nil {
+		panic(err)
+	} else {
+		var ord types.Order
+		ord.UnMarshalJson(input)
+		log.Println(ord.TokenS.Str())
+		log.Println(ord.TokenB.Str())
+		log.Println(ord.AmountS.Uint64())
+		log.Println(ord.AmountB.Uint64())
+	}
+
 	return nil
 }
 

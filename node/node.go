@@ -7,6 +7,7 @@ import (
 	"go.uber.org/zap"
 	"github.com/Loopring/ringminer/orderbook"
 	"github.com/Loopring/ringminer/p2p"
+	"github.com/Loopring/ringminer/types"
 )
 
 // TODO(fukun): should add multi service
@@ -15,6 +16,7 @@ type Node struct {
 	server *matchengine.Proxy
 	p2pListener orderbook.Listener
 	ethListener *chainclient.Client
+	orderbook *orderbook.OrderBook
 	stop chan struct{}
 	lock sync.RWMutex
 	logger *zap.Logger
@@ -25,13 +27,20 @@ func NewNode(logger *zap.Logger) *Node {
 	n := &Node{}
 	n.logger = logger
 
-	n.registerP2PListener()
+	whisper := &types.Whispers{}
+	whisper.PeerOrderChan = make(chan *types.Order)
+	whisper.ChainOrderChan = make(chan *types.OrderMined)
+	whisper.EngineOrderChan = make(chan *types.OrderState)
+
+	n.registerP2PListener(whisper)
+	n.registerOrderBook(whisper)
 
 	return n
 }
 
 func (n *Node) Start() {
 	n.p2pListener.Start()
+	n.orderbook.Start()
 }
 
 func (n *Node) Wait() {
@@ -59,6 +68,10 @@ func (n *Node) Stop() {
 	n.lock.RUnlock()
 }
 
-func (n *Node) registerP2PListener() {
-	n.p2pListener = p2p.NewListener()
+func (n *Node) registerP2PListener(whisper *types.Whispers) {
+	n.p2pListener = p2p.NewListener(whisper)
+}
+
+func (n *Node) registerOrderBook(whisper *types.Whispers) {
+	n.orderbook = orderbook.NewOrderBook(whisper)
 }

@@ -21,7 +21,7 @@ type IPFSListener struct {
 	lock sync.RWMutex
 }
 
-func NewListener() *IPFSListener {
+func NewListener(whisper *types.Whispers) *IPFSListener {
 	l := &IPFSListener{}
 
 	l.sh = shell.NewLocalShell()
@@ -30,6 +30,7 @@ func NewListener() *IPFSListener {
 		panic(err.Error())
 	}
 	l.sub = sub
+	l.whisper = whisper
 
 	return l
 }
