@@ -3,12 +3,12 @@ package node
 import (
 	"sync"
 	"github.com/Loopring/ringminer/matchengine"
-	"github.com/Loopring/ringminer/chainclient"
 	"go.uber.org/zap"
 	"github.com/Loopring/ringminer/orderbook"
 	"github.com/Loopring/ringminer/p2p"
 	"github.com/Loopring/ringminer/types"
 	"github.com/Loopring/ringminer/config"
+	"github.com/Loopring/ringminer/chainclient/eth"
 )
 
 // TODO(fukun): should add multi service
@@ -16,8 +16,8 @@ import (
 type Node struct {
 	options *config.GlobalConfig
 	server *matchengine.Proxy
-	p2pListener orderbook.Listener
-	ethListener *chainclient.Client
+	p2pListener p2p.Listener
+	ethListener eth.Listener
 	orderbook *orderbook.OrderBook
 	whisper *types.Whispers
 	stop chan struct{}
@@ -47,6 +47,7 @@ func NewNode(logger *zap.Logger) *Node {
 func (n *Node) Start() {
 	n.p2pListener.Start()
 	n.orderbook.Start()
+	n.ethListener.Start()
 }
 
 func (n *Node) Wait() {
@@ -67,9 +68,9 @@ func (n *Node) Wait() {
 func (n *Node) Stop() {
 	n.lock.RLock()
 
-	close(n.stop)
-
 	n.p2pListener.Stop()
+	n.ethListener.Stop()
+	close(n.stop)
 
 	n.lock.RUnlock()
 }
@@ -80,4 +81,8 @@ func (n *Node) registerP2PListener() {
 
 func (n *Node) registerOrderBook() {
 	n.orderbook = orderbook.NewOrderBook(n.whisper, n.options.Database)
+}
+
+func (n *Node) registerEthClient() {
+	n.ethListener = eth.NewListener(n.whisper, n.options.EthClient)
 }

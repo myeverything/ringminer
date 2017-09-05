@@ -32,14 +32,17 @@ func (l *EthClientListener) loadConfig() {
 
 }
 
-func NewListener() *EthClientListener {
+func NewListener(whisper *types.Whispers, options config.EthClientOptions) *EthClientListener {
 	var l EthClientListener
 	l.loadConfig()
+
+	l.whisper = whisper
+	l.toml = options
 
 	return &l
 }
 
-//应当返回channel
+// TODO(fukun): 这里调试调不通,应当返回channel
 func (l *EthClientListener) Start() {
 	l.stop = make(chan struct{})
 

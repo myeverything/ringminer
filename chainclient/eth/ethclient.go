@@ -6,7 +6,6 @@ import (
 	"reflect"
 	"github.com/Loopring/ringminer/types"
 	"time"
-	"strconv"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
@@ -59,7 +58,8 @@ func dGetOrder(chanVal reflect.Value) {
 		i = i + 1
 		select {
 		case <-time.Tick(1000000):
-			ord := &types.NewOrderEvent{Order:types.Order{Id:types.BytesToHash([]byte("idx:" + strconv.Itoa(i)))}}
+			// Id:types.BytesToHash([]byte("idx:" + strconv.Itoa(i)))
+			ord := &types.OrderState{RawOrder:types.Order{}}
 			//(*r) <- ord
 			chanVal.Send(reflect.ValueOf(ord))
 		}

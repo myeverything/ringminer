@@ -5,7 +5,6 @@ import (
 	"reflect"
 	"strings"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/Loopring/ringminer/matchengine"
 	"github.com/Loopring/ringminer/chainclient"
 )
 
@@ -70,7 +69,7 @@ func  applyAbiMethod(token *chainclient.Erc20Token) {
 		methodName := strings.ToUpper(method.Name[0:1]) + method.Name[1:]
 		abiMethod := &AbiMethod{}
 		abiMethod.Name = method.Name
-		abiMethod.Abi = abi
+		abiMethod.Abi = &abi
 		abiMethod.Address = token.GetAddress()
 		e.FieldByName(methodName).Set(reflect.ValueOf(abiMethod))
 	}
@@ -85,7 +84,7 @@ func NewErc20Token(address string) *chainclient.Erc20Token {
 	contract.Abi = cabi
 	contract.Address = address
 
-	erc20Token.Contract = *contract
+	erc20Token.Contract = contract
 	applyAbiMethod(erc20Token)
 	return erc20Token
 }
