@@ -17,7 +17,7 @@ func (ord Order) MarshalJson() ([]byte,error) {
 		Expiration            uint64	`json:"expiration"`
 		LrcFee                uint64	`json:"lrcFee"`
 		SavingSharePercentage int		`json:"savingShareRate"`
-		fullyFilled           bool		`json:"fullyFilled"`
+		buyNoMoreThanAmountB  bool		`json:"buyNoMoreThanAmountB"`
 		V                     uint8		`json:"v"`
 		R                     string	`json:"r"`
 		S                     string	`json:"s"`
@@ -36,7 +36,7 @@ func (ord Order) MarshalJson() ([]byte,error) {
 	enc.Expiration = ord.Expiration
 	enc.LrcFee = ord.LrcFee.Uint64()
 	enc.SavingSharePercentage = ord.SavingSharePercentage
-	enc.fullyFilled = ord.IsCompleteFillMeasuredByTokenSDepleted
+	enc.buyNoMoreThanAmountB = ord.BuyNoMoreThanAmountB
 
 	enc.V = ord.V
 	enc.R = ord.R.Str()
@@ -56,7 +56,7 @@ func (ord *Order) UnMarshalJson(input []byte) error {
 		Expiration            uint64	`json:"expiration"`
 		LrcFee                uint64	`json:"lrcFee"`
 		SavingSharePercentage int		`json:"savingShareRate"`
-		fullyFilled           bool		`json:"fullyFilled"`
+		buyNoMoreThanAmountB  bool		`json:"buyNoMoreThanAmountB"`
 		V                     uint8		`json:"v"`
 		R                     string	`json:"r"`
 		S                     string	`json:"s"`
@@ -113,10 +113,10 @@ func (ord *Order) UnMarshalJson(input []byte) error {
 	}
 	ord.SavingSharePercentage = dec.SavingSharePercentage
 
-	if !reflect.ValueOf(dec.fullyFilled).IsValid() {
+	if !reflect.ValueOf(dec.buyNoMoreThanAmountB).IsValid() {
 		return errors.New("missing required field 'fullyFilled' for order")
 	}
-	ord.IsCompleteFillMeasuredByTokenSDepleted = dec.fullyFilled
+	ord.BuyNoMoreThanAmountB = dec.buyNoMoreThanAmountB
 
 	if !reflect.ValueOf(dec.V).IsValid() {
 		return errors.New("missing required field 'ECDSA.V' for order")
@@ -147,7 +147,7 @@ func (ord OrderState) MarshalJson() ([]byte,error) {
 		Expiration            uint64	`json:"expiration"`
 		LrcFee                uint64	`json:"lrcFee"`
 		SavingSharePercentage int		`json:"savingShareRate"`
-		fullyFilled           bool		`json:"fullyFilled"`
+		buyNoMoreThanAmountB  bool		`json:"buyNoMoreThanAmountB"`
 		V                     uint8		`json:"v"`
 		R                     string	`json:"r"`
 		S                     string	`json:"s"`
@@ -171,7 +171,7 @@ func (ord OrderState) MarshalJson() ([]byte,error) {
 	enc.Expiration = ord.RawOrder.Expiration
 	enc.LrcFee = ord.RawOrder.LrcFee.Uint64()
 	enc.SavingSharePercentage = ord.RawOrder.SavingSharePercentage
-	enc.fullyFilled = ord.RawOrder.IsCompleteFillMeasuredByTokenSDepleted
+	enc.buyNoMoreThanAmountB = ord.RawOrder.BuyNoMoreThanAmountB
 
 	enc.V = ord.RawOrder.V
 	enc.R = ord.RawOrder.R.Str()
@@ -197,7 +197,7 @@ func (ord *OrderState) UnMarshalJson(input []byte) error {
 		Expiration            uint64	`json:"expiration"`
 		LrcFee                uint64	`json:"lrcFee"`
 		SavingSharePercentage int		`json:"savingShareRate"`
-		fullyFilled           bool		`json:"fullyFilled"`
+		buyNoMoreThanAmountB  bool		`json:"buyNoMoreThanAmountB"`
 		V                     uint8		`json:"v"`
 		R                     string	`json:"r"`
 		S                     string	`json:"s"`
@@ -259,10 +259,10 @@ func (ord *OrderState) UnMarshalJson(input []byte) error {
 	}
 	ord.RawOrder.SavingSharePercentage = dec.SavingSharePercentage
 
-	if !reflect.ValueOf(dec.fullyFilled).IsValid() {
+	if !reflect.ValueOf(dec.buyNoMoreThanAmountB).IsValid() {
 		return errors.New("missing required field 'fullyFilled' for orderState")
 	}
-	ord.RawOrder.IsCompleteFillMeasuredByTokenSDepleted = dec.fullyFilled
+	ord.RawOrder.BuyNoMoreThanAmountB = dec.buyNoMoreThanAmountB
 
 	if !reflect.ValueOf(dec.V).IsValid() {
 		return errors.New("missing required field 'ECDSA.V' for orderState")
