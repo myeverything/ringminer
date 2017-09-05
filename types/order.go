@@ -29,11 +29,11 @@ type Order struct {
 	TokenB                Address  // 买入erc20代币智能合约地址
 	AmountS               *big.Int // 卖出erc20代币数量上限
 	AmountB               *big.Int // 买入erc20代币数量上限
-	Rand                  *big.Int
 	Expiration            uint64   // 订单过期时间
+	Rand                  *big.Int
 	LrcFee                *big.Int // 交易总费用,部分成交的费用按该次撮合实际卖出代币额与比例计算
+	BuyNoMoreThanAmountB  bool
 	SavingSharePercentage int      // 不为0时支付给交易所的分润比例，否则视为100%
-	IsCompleteFillMeasuredByTokenSDepleted bool
 	V                     uint8
 	R                     Sign
 	S                     Sign
@@ -41,16 +41,19 @@ type Order struct {
 
 //RateAmountS、RateAmountB、FeeSelection 需要提交到contract
 type FilledOrder struct {
-	RawOrder Order
-	FeeSelection int
-	RateAmountS *big.Int
-	RateAmountB *big.Int
-	AvailableAmountS *big.Int
+	RawOrder *Order
+	OrderHash Hash
+	FeeSelection int	//0 -> lrc
+	RateAmountS *big.Int	//提交需要
+	//RateAmountB *big.Int
+	AvailableAmountS *big.Int	//需要，也是用于计算fee
 	FillAmountS *big.Int
+	FillAmountB *big.Int	//协议中并没有，但是为了不重复计算
 	LrcReward *big.Int
 	LrcFee *big.Int
-	FeeSForThisOrder *big.Int
-	FeeSForNextOrder *big.Int
+	FeeS *big.Int
+	LegalFee    *big.Int //法币计算的fee
+	//FeeSForNextOrder *big.Int
 }
 
 type OrderState struct {

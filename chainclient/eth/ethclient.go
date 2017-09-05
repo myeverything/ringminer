@@ -142,6 +142,6 @@ func applyMethod(client *chainclient.Client) error {
 
 
 func init() {
-	//change to inject
+	//TODO：change to inject
 	Client = NewClient()
 }

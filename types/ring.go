@@ -21,11 +21,11 @@ type Ring struct {
 }
 
 type RingState struct {
-	Ring *Ring
-	Hash                Hash    `json:"hash"`                // 订单链id
-	ReducedRate	float64 //价格折扣
-	LegalTenderAmount *big.Float //法币计算的fee
-	FeeMode int 	//收费方式，0 lrc 1 share
+	RawRing     *Ring
+	Hash        Hash    `json:"hash"` // 订单链id
+	ReducedRate *big.Int              //成环之后，折价比例
+	LegalFee    *big.Int //法币计算的fee
+	FeeMode     int                   //收费方式，0 lrc 1 share
 }
 
 // TODO(fukun): 添加状态判断是否成环

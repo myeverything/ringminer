@@ -1,6 +1,9 @@
 package matchengine
 
-import "math/big"
+import (
+	"math/big"
+	"github.com/Loopring/ringminer/types"
+)
 
 
 
@@ -11,8 +14,8 @@ var orderMinAmount big.Int	//todo：订单的最小金额，可能需要用map�
 type Proxy interface {
 	Start()  //启动
 	Stop() //停止
-	NewOrder()
-	UpdateOrder()  //订单的更新
+	NewOrder(order *types.OrderState)
+	UpdateOrder(order *types.OrderState)  //订单的更新
 	//NewOrderRing() //todo:并不需要处理新环事件，只是处理新订单、订单修改的事件
 	AddFilter()	//增加ring的
 }

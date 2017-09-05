@@ -24,7 +24,8 @@ func (listener *EthListener) StartNewOrder() {
 	for {
 		select {
 		case ord := <- listener.NewOrderChan:
-			println(ord.Id.Hex())
+			println(ord.SavingSharePercentage)
+			//println(ord.Id.Hex())
 			//orderbook.NewOrder(ord.Order)
 		}
 	}

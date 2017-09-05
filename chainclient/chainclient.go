@@ -63,9 +63,30 @@ type Client struct {
 	SendRingHash RpcMethod	`methodName:"sendRingHash"`//发送环路凭证
 
 	SendRing RpcMethod	`methodName:"sendRing"`//发送环路
-
-
 }
 
+type AbiMethod interface {
+	Call(result interface{}, blockParameter string, args ...interface{}) error
+	SendTransaction(contractAddress string, args ...interface{}) error
+}
 
+type Erc20Token struct {
+	Contract
+	Name string
+	TotalSupply AbiMethod
+	BalanceOf AbiMethod
+	Transfer AbiMethod
+	TransferFrom AbiMethod
+	Approve AbiMethod
+	Allowance AbiMethod
+}
+
+type LoopringContract struct {
+	RemainAmount AbiMethod
+}
+
+type Contract interface {
+	GetAbi() interface{}
+	GetAddress()     string
+}
 

@@ -5,6 +5,8 @@ import (
 	"reflect"
 	"strings"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/Loopring/ringminer/matchengine"
+	"github.com/Loopring/ringminer/chainclient"
 )
 
 //合约的数据结构相关的，其余的不在此处
@@ -15,6 +17,14 @@ type Contract struct {
 	Address     string
 }
 
+func (c *Contract) GetAbi() interface{} {
+	return c.Abi
+}
+
+func (c *Contract) GetAddress() string {
+	return c.Address
+}
+
 type AbiMethod struct {
 	Abi *abi.ABI
 	Address	string
@@ -22,7 +32,6 @@ type AbiMethod struct {
 }
 
 //todo：如何进行签名等处理～～～
-
 //调用eth_call，不会产生交易
 func (m *AbiMethod) Call(result interface{}, blockParameter string, args ...interface{}) error {
 	dataBytes, err := m.Abi.Pack(m.Name, args...)
@@ -39,7 +48,7 @@ func (m *AbiMethod) Call(result interface{}, blockParameter string, args ...inte
 	return Client.Call(result, arg, blockParameter)
 }
 
-func (m *AbiMethod) SendTransaction(contractAddress string, args ...interface{}) (error) {
+func (m *AbiMethod) SendTransaction(contractAddress string, args ...interface{}) error {
 	//如何签名
 	dataBytes, err := m.Abi.Pack(m.Name, args)
 	if (nil != err) {
@@ -52,31 +61,23 @@ func (m *AbiMethod) SendTransaction(contractAddress string, args ...interface{})
 	return nil
 }
 
-type Erc20Token struct {
-	Contract
-	Name string
-	TotalSupply *AbiMethod
-	BalanceOf *AbiMethod
-	Transfer *AbiMethod
-	TransferFrom *AbiMethod
-	Approve *AbiMethod
-	Allowance *AbiMethod
-}
 
-func (token *Erc20Token) applyAbiMethod() {
+func  applyAbiMethod(token *chainclient.Erc20Token) {
 	e := reflect.ValueOf(token).Elem()
-	for _, method := range token.Abi.Methods {
+	abi := token.GetAbi().(abi.ABI)
+
+	for _, method := range abi.Methods {
 		methodName := strings.ToUpper(method.Name[0:1]) + method.Name[1:]
 		abiMethod := &AbiMethod{}
 		abiMethod.Name = method.Name
-		abiMethod.Abi = token.Abi
-		abiMethod.Address = token.Address
+		abiMethod.Abi = abi
+		abiMethod.Address = token.GetAddress()
 		e.FieldByName(methodName).Set(reflect.ValueOf(abiMethod))
 	}
 }
 
-func NewErc20Token(address string) *Erc20Token {
-	erc20Token := &Erc20Token{}
+func NewErc20Token(address string) *chainclient.Erc20Token {
+	erc20Token := &chainclient.Erc20Token{}
 
 	contract := &Contract{}
 	cabi := &abi.ABI{}
@@ -85,7 +86,7 @@ func NewErc20Token(address string) *Erc20Token {
 	contract.Address = address
 
 	erc20Token.Contract = *contract
-	erc20Token.applyAbiMethod()
+	applyAbiMethod(erc20Token)
 	return erc20Token
 }
 
