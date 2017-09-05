@@ -14,3 +14,7 @@ buffer_capacity = 4
 server = "localhost"
 port = 9001
 topic = "topic"
+
+[eth_client]
+server = "localhost"
+port = 9092

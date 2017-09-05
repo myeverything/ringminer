@@ -30,6 +30,7 @@ type GlobalConfig struct {
 	}
 	Database DbOptions
 	Ipfs IpfsOptions
+	EthClient EthClientOptions
 }
 
 type IpfsOptions struct {
@@ -44,6 +45,11 @@ type DbOptions struct {
 	Name string
 	CacheCapacity int
 	BufferCapacity int
+}
+
+type EthClientOptions struct {
+	Server string
+	Port int
 }
 
 func defaultConfig() {
