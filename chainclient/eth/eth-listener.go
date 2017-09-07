@@ -34,11 +34,10 @@ func (l *EthClientListener) loadConfig() {
 
 func NewListener(whisper *types.Whispers, options config.EthClientOptions) *EthClientListener {
 	var l EthClientListener
+	l.toml = options
 	l.loadConfig()
 
 	l.whisper = whisper
-	l.toml = options
-
 	return &l
 }
 

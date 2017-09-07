@@ -5,6 +5,7 @@ import (
 	"github.com/Loopring/ringminer/types"
 	"time"
 	"encoding/json"
+	"math/big"
 )
 
 func TestOrder_MarshalJson(t *testing.T) {
@@ -108,5 +109,24 @@ func TestOrderState_UnMarshalJson(t *testing.T) {
 		t.Log(ord.RawOrder.AmountS)
 		t.Log(ord.RawOrder.AmountB)
 		t.Log(ord.RawOrder.LrcFee)
+	}
+}
+
+func TestNewOrderUnMarshal(t *testing.T) {
+
+	type Address [10]byte
+	type order struct {
+		Protocol              Address	`json:"protocol"`
+		Amount                *big.Int  `json:"amount"`
+	}
+
+	str := `{"protocol":"aaaaabbbbb","amount":10000001000000100000010000001000000100000010000001000000}`
+	var res order
+	json.Unmarshal([]byte(str), &res)
+	t.Log("protocol", len(res.Protocol))
+	t.Log("amount", res.Amount)
+
+	for i:=0;i<8;i++ {
+		t.Log(res.Amount.Div(res.Amount, big.NewInt(1000000)))
 	}
 }

@@ -47,7 +47,9 @@ func NewNode(logger *zap.Logger) *Node {
 func (n *Node) Start() {
 	n.p2pListener.Start()
 	n.orderbook.Start()
-	n.ethListener.Start()
+
+	// TODO(fukun): 放开eth监听
+	//n.ethListener.Start()
 }
 
 func (n *Node) Wait() {
