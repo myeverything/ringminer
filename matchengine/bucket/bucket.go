@@ -197,17 +197,10 @@ func (b *Bucket) NewOrder(ord types.OrderState) {
 	b.mtx.Lock()
 	defer b.mtx.Unlock()
 
-	//最后一个token为当前token，则可以组成环，匹配出最大环，并发送到proxy
-	if (ord.RawOrder.TokenB == b.token) {
-		b.generateRing(&ord)
-	} else if (ord.RawOrder.TokenS == b.token) {
-		//卖出的token为当前token时，需要将所有的买入semiRing加入进来
-		b.generateSemiRing(&ord)
-	} else {
-		//其他情况
-		b.appendToSemiRing(&ord)
-	}
+	b.newOrderWithoutLock(ord)
 }
+
+
 
 func (b *Bucket) UpdateOrder(ord types.OrderState) {
 	//order的更改，除了订单容量和是否取消等，其他的并不能修改
@@ -242,19 +235,22 @@ func (b *Bucket) NewRing(ring *types.RingState) {
 func (b *Bucket) SubmitFailed(ring *types.RingState) {
 	b.mtx.Lock()
 	defer b.mtx.Unlock()
-	//todo：更改每个order的交易量, order的更新应当综合orderbook以及当前值
 	for _,order := range ring.RawRing.Orders {
-		//position中删除
-		//b.orders[order.OrderHash].position
-		//更改交易量
-		remainedAmountB := big.NewInt(0)
-		remainedAmountS := big.NewInt(0)
+		_, ok := b.orders[order.OrderState.OrderHash]
+		if !ok {
+			//todo:查询orderbook获取最新值
+			b.newOrderWithoutLock(order.OrderState)
+		} else {
+			//更改交易量
+			remainedAmountB := big.NewInt(0)
+			remainedAmountS := big.NewInt(0)
 
-		remainedAmountB.Add(b.orders[order.OrderState.OrderHash].RemainedAmountB, order.FillAmountB.RealValue())
-		remainedAmountS.Add(b.orders[order.OrderState.OrderHash].RemainedAmountS, order.FillAmountS.RealValue())
-		//todo：查询orderbook中的最新值，取最小值
-		b.orders[order.OrderState.OrderHash].RemainedAmountB = remainedAmountB
-		b.orders[order.OrderState.OrderHash].RemainedAmountS = remainedAmountS
+			remainedAmountB.Add(b.orders[order.OrderState.OrderHash].RemainedAmountB, order.FillAmountB.RealValue())
+			remainedAmountS.Add(b.orders[order.OrderState.OrderHash].RemainedAmountS, order.FillAmountS.RealValue())
+			//todo：查询orderbook中的最新值，取最小值
+			b.orders[order.OrderState.OrderHash].RemainedAmountB = remainedAmountB
+			b.orders[order.OrderState.OrderHash].RemainedAmountS = remainedAmountS
+		}
 	}
 }
 
@@ -272,3 +268,15 @@ func (b *Bucket) newRingWithoutLock(ring *types.RingState) {
 	}
 }
 
+func (b *Bucket) newOrderWithoutLock(ord types.OrderState) {
+	//最后一个token为当前token，则可以组成环，匹配出最大环，并发送到proxy
+	if (ord.RawOrder.TokenB == b.token) {
+		b.generateRing(&ord)
+	} else if (ord.RawOrder.TokenS == b.token) {
+		//卖出的token为当前token时，需要将所有的买入semiRing加入进来
+		b.generateSemiRing(&ord)
+	} else {
+		//其他情况
+		b.appendToSemiRing(&ord)
+	}
+}
