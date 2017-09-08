@@ -244,8 +244,7 @@ func ComputeRing(ring *types.RingState) {
 
 		legalAmountOfLrc.Mul(GetLegalRate(CNY, *lrcAddress), order.LrcFee)
 
-
-		//todo：比例
+		//todo：比例以及lrc需要*2
 		if (legalAmountOfLrc.Cmp(legalAmountOfSaving) > 0) {
 			order.FeeSelection = 0
 			order.LegalFee = legalAmountOfLrc
@@ -259,12 +258,9 @@ func ComputeRing(ring *types.RingState) {
 			legalAmountOfSaving.DivBigInt(legalAmountOfSaving, PERCENT)
 			order.LegalFee = legalAmountOfSaving
 			lrcReward := &types.EnlargedInt{Value:legalAmountOfSaving.Value, Decimals:legalAmountOfSaving.Decimals}
-			lrcReward
-			lrcReward.Div(legalAmountOfSaving, GetLegalRate(CNY, *lrcAddress))
-
+			lrcReward.DivBigInt(lrcReward, big.NewInt(2))
+			lrcReward.Div(lrcReward, GetLegalRate(CNY, *lrcAddress))
 			order.LrcReward = lrcReward
-
-
 		}
 
 
