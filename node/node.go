@@ -11,8 +11,7 @@ import (
 	"github.com/Loopring/ringminer/chainclient/eth"
 )
 
-// TODO(fukun): should add multi service
-// TODO(fukun): 考虑使用微服务框架
+// TODO(fk): add services
 type Node struct {
 	options *config.GlobalConfig
 	server *matchengine.Proxy
@@ -25,7 +24,7 @@ type Node struct {
 	logger *zap.Logger
 }
 
-// TODO(fukun): modify server
+// TODO(fk): inject whisper and logger
 func NewNode(logger *zap.Logger) *Node {
 	n := &Node{}
 
@@ -48,18 +47,14 @@ func (n *Node) Start() {
 	n.p2pListener.Start()
 	n.orderbook.Start()
 
-	// TODO(fukun): 放开eth监听
+	// TODO(fk): start eth client
 	//n.ethListener.Start()
 }
 
 func (n *Node) Wait() {
 	n.lock.RLock()
 
-	//if n.server == nil {
-	//	n.lock.RUnlock()
-	//	n.logger.Error("matchengine should not be empty")
-	//	return
-	//}
+	// TODO(fk): states should be judged
 
 	stop := n.stop
 	n.lock.RUnlock()

@@ -23,7 +23,7 @@ type LDBDatabase struct {
 	lock sync.Mutex      // Mutex protecting the quit channel access
 }
 
-// TODO(fukun): 可能后续需要补充一些配置
+// TODO(fk): use config and log
 func NewDB(file string, cache, handles int) *LDBDatabase {
 	l := &LDBDatabase{}
 
@@ -50,9 +50,9 @@ func NewDB(file string, cache, handles int) *LDBDatabase {
 	l.db = db
 	l.fn = file
 
-	// TODO(fukun): 如果文件不存在了，应该recover文件
+	// TODO(fk): implement recovery
 
-	// TODO(fukun): (Re)check for errors and abort if opening of the db failed
+	// TODO(fk): (Re)check for errors and abort if opening of the db failed
 
 	return l
 }
@@ -81,7 +81,7 @@ func (db *LDBDatabase) NewIterator() iterator.Iterator {
 	return db.db.NewIterator(nil, nil)
 }
 
-// TODO(fukun): 根据条件范围获取数据库中内容
+// TODO(fk): scan db with iterator means nothing
 func (db *LDBDatabase) Scan() {
 	iter := db.db.NewIterator(nil, nil)
 	for iter.Next() {
@@ -90,9 +90,7 @@ func (db *LDBDatabase) Scan() {
 	}
 }
 
-// TODO(fukun): 生成查询条件,
-// MENTION(fukun): 但是，既然我们已经有了table的操作，是否可以不要这玩意了
-// MENTION(fukun): 因为，table其实也是根据prefix来进行操作的
+// Range create prefix
 func Range() {
 	prefix := []byte("")
 	util.BytesPrefix(prefix)

@@ -8,6 +8,8 @@ import (
 
 const key = "content"
 
+// TODO(fk): logger should be used more convenient
+
 func Info(level, value string) {
 	logger.Info(level, setTime(), zap.String(key, value))
 }

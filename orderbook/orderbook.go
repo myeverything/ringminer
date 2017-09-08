@@ -33,13 +33,13 @@ type OrderBook struct {
 }
 
 func (ob *OrderBook) loadConfig() {
-	// load default config
+	// TODO(fk): set path as global variable
 	dir := os.Getenv("GOPATH") + "/github.com/Loopring/ringminer/"
 	file := dir + ob.toml.Name
 	cache := ob.toml.CacheCapacity
 	buffer := ob.toml.BufferCapacity
 
-	// TODO(fukun): 除了加载默认toml配置外，可能还有来自命令行参数配置
+	// TODO(fk): load config from cli or genesis
 
 	ob.conf = OrderBookConfig{file, cache, buffer}
 }
@@ -58,10 +58,7 @@ func NewOrderBook(whisper *types.Whispers, options config.DbOptions) *OrderBook 
 	return s
 }
 
-// 订单只会来源于p2p网络
-// 1.判断订单是否合法
-// 2.存储订单到db
-// 3.发送订单到matchengine
+// Start start orderbook as a service
 func (s *OrderBook) Start() {
 	go func() {
 		for {
@@ -85,7 +82,9 @@ func (s *OrderBook) Stop() {
 }
 
 func (ob *OrderBook) peerOrderHook(ord *types.Order) error {
-	// TODO(fukun): 判断订单是否合法
+
+	// TODO(fk): order filtering
+
 	ob.lock.Lock()
 	defer ob.lock.Unlock()
 
@@ -97,7 +96,7 @@ func (ob *OrderBook) peerOrderHook(ord *types.Order) error {
 
 	ob.partialTable.Put(key, value)
 
-	// TODO(fukun): delete after test
+	// TODO(fk): delete after test
 	if input, err := ob.partialTable.Get(key); err != nil {
 		panic(err)
 	} else {
@@ -109,7 +108,7 @@ func (ob *OrderBook) peerOrderHook(ord *types.Order) error {
 		log.Println(ord.AmountB.Uint64())
 	}
 
-	// TODO(fukun): matchengine 接受orderState
+	// TODO(fk): send orderState to matchengine
 	//state := ord.Convert()
 	//ob.whisper.EngineOrderChan <- state
 	return nil
@@ -122,6 +121,7 @@ func (ob *OrderBook) chainOrderHook(ord *types.OrderMined) error {
 	return nil
 }
 
+// GetOrder get single order with hash
 func (ob *OrderBook) GetOrder(id types.Hash) (*types.OrderState, error) {
 	var (
 		value []byte
@@ -144,12 +144,12 @@ func (ob *OrderBook) GetOrder(id types.Hash) (*types.OrderState, error) {
 	return &ord, nil
 }
 
-//根据查询条件以及排序返回订单列表
+// GetOrders get orders from persistence database
 func (ob *OrderBook) GetOrders() {
 
 }
 
-// 只会从partial移动到finish
+// moveOrder move order when partial finished order fully exchanged
 func (ob *OrderBook) moveOrder(odw *types.OrderState) error {
 	key := odw.OrderHash.Bytes()
 	value, err := odw.MarshalJson()
@@ -161,7 +161,7 @@ func (ob *OrderBook) moveOrder(odw *types.OrderState) error {
 	return nil
 }
 
-// TODO(fukun): 从配置文件中读取不同合约地址对应代币的尘埃差值
+// isFinished judge order state
 func isFinished(odw *types.OrderState) bool {
 	//if odw.RawOrder.
 

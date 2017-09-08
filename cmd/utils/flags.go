@@ -3,7 +3,6 @@ package utils
 
 import "gopkg.in/urfave/cli.v1"
 
-// 各个模块根据相关flag生成config
 var (
 	p2pFlag = cli.StringFlag{
 		Name: "network",

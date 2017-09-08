@@ -1,6 +1,6 @@
 package lrcdb
 
-// ldb与table公用同一个interface
+// interface for ldb and table
 type Database interface {
 	Put(key []byte, value []byte) error
 	Get(key []byte) ([]byte, error)
@@ -9,7 +9,7 @@ type Database interface {
 	NewBatch() Batch
 }
 
-// batch&tablebatch公用同一个interface
+// interface for batch and table batch
 type Batch interface {
 	Put(key, value []byte) error
 	Write() error

@@ -16,9 +16,6 @@ var (
 	logger = log.NewLogger()
 )
 
-// TODO(fukun): matchengine与order的通信
-// TODO(fukun): inject logger
-
 func init() {
 	app.Action = miner
 	app.HideVersion = true // we have a command to print the version

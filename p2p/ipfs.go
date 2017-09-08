@@ -7,10 +7,6 @@ import (
 	"github.com/Loopring/ringminer/config"
 )
 
-/**
-p2p Listener
- */
-
 type IpfsConfig struct {
 	topic string
 }
