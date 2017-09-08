@@ -22,7 +22,6 @@ import (
 	"sync"
 	"github.com/Loopring/ringminer/types"
 	"github.com/Loopring/ringminer/matchengine"
-	"strconv"
 	"github.com/Loopring/ringminer/chainclient"
 )
 

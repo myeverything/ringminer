@@ -216,21 +216,24 @@ func ComputeRing(ring *types.RingState) {
 		lrcAddress := &types.Address{}
 		lrcAddress.SetBytes([]byte(LRC_ADDRESS))
 
-		//todo:成本节约为：
+		//todo:成本节约
 		legalAmountOfSaving := &types.EnlargedInt{Value:big.NewInt(1),Decimals:big.NewInt(1)}
 		if (order.OrderState.RawOrder.BuyNoMoreThanAmountB) {
 			savingAmount := &types.EnlargedInt{Value:big.NewInt(1), Decimals:big.NewInt(1)}
 			enlargedFillAmountS := &types.EnlargedInt{Value:big.NewInt(1), Decimals:big.NewInt(1)}
 			enlargedFillAmountS.MulBigInt(order.FillAmountS, DECIMALS)
-
 			savingAmount.Mul(enlargedFillAmountS, ring.ReducedRate)
-
 			order.FeeS = savingAmount
 			//todo:address of sell token
 			legalAmountOfSaving.Mul(order.FeeS, GetLegalRate(CNY, *lrcAddress))
 		} else {
-			//todo:
-
+			savingAmount := &types.EnlargedInt{Value:big.NewInt(1), Decimals:big.NewInt(1)}
+			enlargedFillAmountB := &types.EnlargedInt{Value:big.NewInt(1), Decimals:big.NewInt(1)}
+			enlargedFillAmountB.MulBigInt(order.FillAmountB, DECIMALS)
+			savingAmount.Mul(enlargedFillAmountB, ring.ReducedRate)
+			order.FeeS = savingAmount
+			//todo:address of buy token
+			legalAmountOfSaving.Mul(order.FeeS, GetLegalRate(CNY, *lrcAddress))
 		}
 
 		//lrcFee等比例
@@ -254,7 +257,7 @@ func ComputeRing(ring *types.RingState) {
 			if (shareRate > order.OrderState.RawOrder.SavingSharePercentage) {
 				shareRate = order.OrderState.RawOrder.SavingSharePercentage
 			}
-			legalAmountOfSaving.Value.Mul(legalAmountOfSaving.Value, big.NewInt(shareRate))
+			legalAmountOfSaving.Value.Mul(legalAmountOfSaving.Value, big.NewInt(int64(shareRate)))
 			legalAmountOfSaving.DivBigInt(legalAmountOfSaving, PERCENT)
 			order.LegalFee = legalAmountOfSaving
 			lrcReward := &types.EnlargedInt{Value:legalAmountOfSaving.Value, Decimals:legalAmountOfSaving.Decimals}
