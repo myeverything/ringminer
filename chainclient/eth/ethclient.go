@@ -19,7 +19,7 @@ todo：未完成：
 
 var RPCClient *rpc.Client
 
-var Client *chainclient.Client
+var EthClient *chainclient.Client
 
 func newRpcMethod(name string) func(result interface{}, args ...interface{}) error {
 	return func(result interface{}, args ...interface{}) error  {
@@ -42,11 +42,7 @@ func NewClient() *chainclient.Client {
 
 	//set rpcmethod
 	applyMethod(client)
-	//client.SendRawTransaction = newRpcMethod("eth_sendRawTransaction")
-	//client.BlockNumber = newRpcMethod("eth_blockNumber")
-	//client.GetTransactionCount = newRpcMethod("eth_getTransactionCount")
-
-	//Subscribe单独处理
+	//Subscribe
 	client.Subscribe = subscribe
 	return client
 }
@@ -140,8 +136,7 @@ func applyMethod(client *chainclient.Client) error {
 	return nil
 }
 
-
 func init() {
 	//TODO：change to inject
-	Client = NewClient()
+	EthClient = NewClient()
 }

@@ -1,7 +1,5 @@
 package types
 
-import "math/big"
-
 // 旷工在成本节约和fee上二选一，撮合者计算出:
 // 1.fee(lrc)的市场价(法币交易价格)
 // 2.成本节约(savingShare)的市场价(法币交易价格)
@@ -23,8 +21,8 @@ type Ring struct {
 type RingState struct {
 	RawRing     *Ring
 	Hash        Hash    `json:"hash"` // 订单链id
-	ReducedRate *big.Int              //成环之后，折价比例
-	LegalFee    *big.Int //法币计算的fee
+	ReducedRate *EnlargedInt              //成环之后，折价比例
+	LegalFee    *EnlargedInt //法币计算的fee
 	FeeMode     int                   //收费方式，0 lrc 1 share
 }
 

@@ -1,5 +1,7 @@
 package chainclient
 
+import "github.com/Loopring/ringminer/types"
+
 //提供接口，如：订阅事件、获取区块、获取交易、获取合约等接口
 
 type RpcMethod func(result interface{}, args ...interface{}) error
@@ -70,6 +72,12 @@ type AbiMethod interface {
 	SendTransaction(contractAddress string, args ...interface{}) error
 }
 
+//兼容不同区块链
+type Contract interface {
+	GetAbi() interface{}
+	GetAddress()     string
+}
+
 type Erc20Token struct {
 	Contract
 	Name string
@@ -81,12 +89,48 @@ type Erc20Token struct {
 	Allowance AbiMethod
 }
 
-type LoopringContract struct {
-	RemainAmount AbiMethod
+type LoopringProtocolImpl struct {
+	Contract
+
+	RemainAmount AbiMethod //todo:
+
+	SubmitRing AbiMethod
+	SubmitRingFingerPrint AbiMethod
+	CancelOrder AbiMethod
+	VerifyTokensRegistered AbiMethod
+	CalculateSignerAddress AbiMethod
+	CalculateOrderHash AbiMethod
+	ValidateOrder AbiMethod
+	AssembleOrders AbiMethod
+	CalculateOrderFillAmount AbiMethod
+	CalculateRingFillAmount AbiMethod
+	CalculateRingFees AbiMethod
+	VerifyMinerSuppliedFillRates AbiMethod
+	SettleRing AbiMethod
+	VerifyRingHasNoSubRing AbiMethod
 }
 
-type Contract interface {
-	GetAbi() interface{}
-	GetAddress()     string
+type LoopringFingerprintRegistry struct {
+	Contract
+	SubmitRingFingerprint AbiMethod
+	CanSubmit AbiMethod
+	FingerprintFound AbiMethod
+	IsExpired AbiMethod
+	GetRingHash AbiMethod
 }
+
+type TokenRegistry struct {
+	Contract
+	RegisterToken AbiMethod
+	UnregisterToken AbiMethod
+	IsTokenRegistered AbiMethod
+}
+
+type Loopring struct {
+	Client *Client
+	Tokens map[types.Address]*Erc20Token
+	LoopringImpls map[types.Address]*LoopringProtocolImpl
+	LoopringFingerprints map[types.Address]*LoopringFingerprintRegistry
+}
+
 

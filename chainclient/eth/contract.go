@@ -44,7 +44,7 @@ func (m *AbiMethod) Call(result interface{}, blockParameter string, args ...inte
 	arg.To = m.Address
 	arg.Data = data
 	//发送到区块链
-	return Client.Call(result, arg, blockParameter)
+	return EthClient.Call(result, arg, blockParameter)
 }
 
 func (m *AbiMethod) SendTransaction(contractAddress string, args ...interface{}) error {

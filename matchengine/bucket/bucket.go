@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"math/rand"
 	"github.com/Loopring/ringminer/types"
+	"math/big"
 )
 
 //负责生成ring，并计算ring相关的所有参数
@@ -39,6 +40,7 @@ type SemiRing struct {
 }
 
 func (r *SemiRing) hashFunc() string {
+	//todo:just for test
 	return strconv.Itoa(rand.Int())
 }
 
@@ -46,8 +48,7 @@ type Bucket struct {
 	ringChan chan *types.RingState;
 	token         types.Address            //开始的地址
 	semiRings     map[string]*SemiRing     //每个semiRing都给定一个key
-	orders        map[string]*OrderWithPos //order hash -> order
-					       //matchedRings	map[string]*SemiRing
+	orders        map[types.Hash]*OrderWithPos //order hash -> order
 	mtx           *sync.RWMutex
 }
 
@@ -56,8 +57,7 @@ func NewBucket(token types.Address, ringChan chan *types.RingState) *Bucket {
 	bucket := &Bucket{}
 	bucket.token = token
 	bucket.ringChan = ringChan
-	bucket.orders = make(map[string]*OrderWithPos)
-	//bucket.matchedRings = make(map[string]*SemiRing)
+	bucket.orders = make(map[types.Hash]*OrderWithPos)
 	bucket.semiRings = make(map[string]*SemiRing)
 	bucket.mtx = &sync.RWMutex{}
 	return bucket
@@ -65,7 +65,7 @@ func NewBucket(token types.Address, ringChan chan *types.RingState) *Bucket {
 
 func convertOrderStateToFilledOrder(order *types.OrderState) *types.FilledOrder {
 	filledOrder := &types.FilledOrder{}
-	filledOrder.RawOrder = order.RawOrder
+	filledOrder.OrderState = *order
 	return filledOrder
 }
 
@@ -87,8 +87,8 @@ func (b *Bucket) generateRing (order *types.OrderState) {
 			ringTmp.RawRing.Orders = append(ringTmp.RawRing.Orders, convertOrderStateToFilledOrder(order))
 			//兑换率是否匹配
 			if (matchengine.PriceValid(ringTmp)) {
-				matchengine.ComputeRing(ringTmp) //todo:计算兑换的费用、折扣率等，便于计算收益，选择最大环
-				//todo:选择收益最大的环
+				matchengine.ComputeRing(ringTmp) //计算兑换的费用、折扣率等，便于计算收益，选择最大环
+				//选择收益最大的环
 				if (ring == nil || ringTmp.LegalFee.Cmp(ring.LegalFee) > 0) {
 					ringTmp.Hash = matchengine.Hash(ringTmp)
 					ring = ringTmp
@@ -103,6 +103,7 @@ func (b *Bucket) generateRing (order *types.OrderState) {
 		b.newRingWithoutLock(ring)
 		b.ringChan <- ring
 	}
+
 }
 
 func (b *Bucket) generateSemiRing( order *types.OrderState) {
@@ -112,11 +113,10 @@ func (b *Bucket) generateSemiRing( order *types.OrderState) {
 	//首先生成包含自己的semiRing
 	selfSemiRing := &SemiRing{}
 	selfSemiRing.orders = []*OrderWithPos{orderWithPos}
-	//todo:
 	selfSemiRing.hash = selfSemiRing.hashFunc()
 	pos := &semiRingPos{semiRingKey:selfSemiRing.hash, index:len(selfSemiRing.orders)}
 	orderWithPos.postions = []*semiRingPos{pos}
-	b.orders[string(orderWithPos.OrderHash.Bytes())] = orderWithPos
+	b.orders[orderWithPos.OrderHash] = orderWithPos
 	b.semiRings[selfSemiRing.hash] = selfSemiRing
 
 	//新半环列表
@@ -160,7 +160,7 @@ func (b *Bucket) appendToSemiRing( order *types.OrderState) {
 			orderWithPos := &OrderWithPos{}
 			orderWithPos.OrderState = *order
 			orderWithPos.postions = []*semiRingPos{}
-			b.orders[string(orderWithPos.OrderHash.Bytes())] = orderWithPos
+			b.orders[orderWithPos.OrderHash] = orderWithPos
 
 			semiRingNew := &SemiRing{}
 			semiRingNew.orders = append(semiRing.orders, orderWithPos)
@@ -204,7 +204,7 @@ func (b *Bucket) UpdateOrder(ord types.OrderState) {
 
 	o := &OrderWithPos{}
 	o.RawOrder = ord.RawOrder
-	b.orders[ord.OrderHash.Hex()] = o
+	b.orders[ord.OrderHash] = o
 	//todo：如果环路已经计算了交易量等信息，需要修改对应的环路
 	//for _,ring := range b.orders[order.Id].ReachPath {
 	//	for
@@ -224,15 +224,34 @@ func (b *Bucket) NewRing(ring *types.RingState) {
 	defer b.mtx.Unlock()
 	b.newRingWithoutLock(ring)
 }
+func (b *Bucket) SubmitFailed(ring *types.RingState) {
+	b.mtx.Lock()
+	defer b.mtx.Unlock()
+	//todo：更改每个order的交易量, order的更新应当综合orderbook以及当前值
+	for _,order := range ring.RawRing.Orders {
+		//position中删除
+		//b.orders[order.OrderHash].position
+		//更改交易量
+		remainedAmountB := big.NewInt(0)
+		remainedAmountS := big.NewInt(0)
 
+		remainedAmountB.Add(b.orders[order.OrderState.OrderHash].RemainedAmountB, order.FillAmountB.RealValue())
+		remainedAmountS.Add(b.orders[order.OrderState.OrderHash].RemainedAmountS, order.FillAmountS.RealValue())
+		//todo：查询orderbook中的最新值，取最小值
+		b.orders[order.OrderState.OrderHash].RemainedAmountB = remainedAmountB
+		b.orders[order.OrderState.OrderHash].RemainedAmountS = remainedAmountS
+	}
+}
+
+//this fun should not be called without mtx.lock()
 func (b *Bucket) newRingWithoutLock(ring *types.RingState) {
 	//新环生成后，需要将对应的订单、环路信息修改
 	for _,ord := range ring.RawRing.Orders {
 		//todo：需要根据成交的金额等信息进行修改, 现在简单删除
-		if o,ok := b.orders[string(ord.OrderHash.Bytes())]; ok {
+		if o,ok := b.orders[ord.OrderState.OrderHash]; ok {
 			for _,pos := range o.postions {
 				delete(b.semiRings, pos.semiRingKey)
-				delete(b.orders, string(ord.OrderHash.Bytes()))
+				delete(b.orders, ord.OrderState.OrderHash)
 			}
 		}
 	}

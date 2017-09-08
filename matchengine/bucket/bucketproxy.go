@@ -5,6 +5,7 @@ import (
 	"github.com/Loopring/ringminer/types"
 	"github.com/Loopring/ringminer/matchengine"
 	"strconv"
+	"github.com/Loopring/ringminer/chainclient"
 )
 
 /**
@@ -13,11 +14,6 @@ import (
  */
 
 //todo:采用这种方式，需要计算出可能的所有的semiring的数量，对于增长数量，需要有理论支撑
-
-/**
-todo：设计合理的数据结构，需要满足，便于双向查找，便于添加、删除、修改等
-todo：下周计划：完成以太坊链接、开始开发bucket、bucket的数据结构设计
- */
 
 /**
 暂时不处理以下情况
@@ -33,11 +29,12 @@ todo：此时环路的撮合驱动是由新订单的到来进行驱动，但是�
 
 /**
 思路：设计符合要求的数据格式，
-orderbook的所有的事件监听都需要实现，如：neworder、banlanceChange等
-reactor模式
 负责协调各个bucket，将ring发送到区块链，
-该处负责接受neworder, updateorder等事件，并把事件广播给所有的bucket，同时调用client将已形成的环路发送至区块链，发送时需要再次查询订单的最新状态，保证无错，一旦出错需要更改ring的各种数据，如交易量、费用分成等
+该处负责接受neworder, cancleorder等事件，并把事件广播给所有的bucket，同时调用client将已形成的环路发送至区块链，发送时需要再次查询订单的最新状态，保证无错，一旦出错需要更改ring的各种数据，如交易量、费用分成等
  */
+
+
+var loopring *chainclient.Loopring
 
 type BucketProxy struct {
  	ringChan chan *types.RingState
@@ -73,11 +70,9 @@ func (bp *BucketProxy) Start() {
 		case orderRing := <- bp.ringChan:
 			s := ""
 			for _,o := range orderRing.RawRing.Orders {
-				s = s + " -> " + " {outtoken:" + string(o.RawOrder.TokenS.Bytes()) + " amount:" + o.RateAmountS.String() + ", intoken:" + string(o.RawOrder.TokenB.Bytes()) + "}"
+				s = s + " -> " + " {outtoken:" + string(o.OrderState.RawOrder.TokenS.Bytes()) + " fillamountS:" + o.FillAmountS.RealValue().String() + ", intoken:" + string(o.OrderState.RawOrder.TokenB.Bytes()) + "}"
 			}
-			println("ringChan receive:" + string(orderRing.Hash.Bytes()) + " ring is :" + s +
-				" fee:" )
-			println(orderRing.LegalFee.String())
+			println("ringChan receive:" + string(orderRing.Hash.Bytes()) + " ring is :" + s)
 			for _, b := range bp.Buckets {
 				b.NewRing(orderRing)
 			}
@@ -93,8 +88,6 @@ func (bp *BucketProxy) Start() {
 		//	}
 		}
 	}
-
-
 
 }
 
@@ -156,8 +149,46 @@ func (bp *BucketProxy) AddFilter() {
 
 }
 
-//todo:ring提交失败的处理
+/**
+提交ring
+//todo:用户的金额等是否需要缓存
+1、首先检查订单的状态, 重新计算成交量
+2、再提交hash
+3、hash打到块之后，再提交ring
+ */
+func (bp *BucketProxy) submitRingFingerprint(ring *types.RingState) {
+	//根据最小容量，重新设置，重新计算费用
+	matchengine.ComputeRing(ring)
+	//todo:再次判断是否需要提交
+	if (!bp.canSubmit(ring)) {
+		bp.submitFailed(ring)
+	} else {
+		//todo:提交ring
+		//提交凭证，之后，等待凭证成功的event，然后提交ring，待提交的ring需要保存
+		fingerContractAddress := &types.Address{}
+		loopring.LoopringFingerprints[*fingerContractAddress].SubmitRingFingerprint.SendTransaction(fingerContractAddress.Hex())
+	}
+}
 
+//凭证提交后，提交ring
+func (bp *BucketProxy) submitRing(ringHash string) error {
+
+	return nil
+}
+
+
+
+
+func (bp *BucketProxy) canSubmit(ring *types.RingState) bool {
+	return true;
+}
+
+//todo:ring提交失败的处理：通知到每个bucket
+func (bp *BucketProxy) submitFailed(ring *types.RingState) {
+	for _,bucket := range bp.Buckets {
+		bucket.SubmitFailed(ring)
+	}
+}
 
 
 

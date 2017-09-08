@@ -45,7 +45,7 @@ func NewListener(whisper *types.Whispers, options config.EthClientOptions) *EthC
 func (l *EthClientListener) Start() {
 	l.stop = make(chan struct{})
 
-	Client.Subscribe(l.whisper.EngineOrderChan)
+	EthClient.Subscribe(l.whisper.EngineOrderChan)
 	go func() {
 		for {
 			select {

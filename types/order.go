@@ -41,19 +41,20 @@ type Order struct {
 
 //RateAmountS、RateAmountB、FeeSelection 需要提交到contract
 type FilledOrder struct {
-	RawOrder *Order
-	OrderHash Hash
-	FeeSelection int	//0 -> lrc
-	RateAmountS *big.Int	//提交需要
-	//RateAmountB *big.Int
+	OrderState       OrderState
+	FeeSelection     int	//0 -> lrc
+	RateAmountS      *big.Int	//提交需要
 	AvailableAmountS *big.Int	//需要，也是用于计算fee
-	FillAmountS *big.Int
-	FillAmountB *big.Int	//协议中并没有，但是为了不重复计算
-	LrcReward *big.Int
-	LrcFee *big.Int
-	FeeS *big.Int
-	LegalFee    *big.Int //法币计算的fee
-	//FeeSForNextOrder *big.Int
+	FillAmountS      *EnlargedInt
+	FillAmountB      *EnlargedInt	//协议中并没有，但是为了不重复计算
+	LrcReward        *big.Int
+	LrcFee           *EnlargedInt
+	FeeS             *EnlargedInt
+	FeeB             *big.Int
+	LegalFee         *EnlargedInt //法币计算的fee
+
+	EnlargedSPrice   *EnlargedInt
+	EnlargedBPrice   *EnlargedInt
 }
 
 type OrderState struct {
