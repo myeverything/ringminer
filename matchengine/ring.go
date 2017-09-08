@@ -1,3 +1,21 @@
+/*
+
+  Copyright 2017 Loopring Project Ltd (Loopring Foundation).
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+
+*/
+
 package matchengine
 
 import (
@@ -44,7 +62,7 @@ func AvailableAmountS(order *types.FilledOrder) error {
 //计算匹配比例
 //todo:折扣
 func ComputeRing(ring *types.RingState) {
-	DECIMALS := big.NewInt(1000000000) //todo:最好采用10的18次方，或者对应token的DECIMALS, 需要注意，计算价格时，需要转为float64，不要超出范围
+	DECIMALS := big.NewInt(1000000000) //todo:最好采用10的18次方，或者对应token的DECIMALS, 但是注意，计算价格时，目前使用math.pow, 需要转为float64，不要超出范围
 	PERCENT := big.NewInt(100)
 
 	ring.LegalFee = &types.EnlargedInt{Value:big.NewInt(1), Decimals:big.NewInt(1)}
@@ -73,13 +91,12 @@ func ComputeRing(ring *types.RingState) {
 	}
 
 	productPrice.Div(productEnlargedAmountS, productAmountB)
-
 	priceOfFloat,_ := strconv.ParseFloat(productPrice.Value.String(), 0)
 	rootOfRing := math.Pow(priceOfFloat, 1/float64(len(ring.RawRing.Orders)))
 
 	ring.ReducedRate = &types.EnlargedInt{Value:big.NewInt(int64((float64(DECIMALS.Int64()) / rootOfRing) * float64(PERCENT.Int64()))), Decimals:PERCENT}
 
-	shareRate := 0
+	shareRate := 100
 
 	//todo:计算fee，为了取出最大的环路
 	//LRC等比例下降，首先需要计算fillAmountS
@@ -228,19 +245,28 @@ func ComputeRing(ring *types.RingState) {
 		legalAmountOfLrc.Mul(GetLegalRate(CNY, *lrcAddress), order.LrcFee)
 
 
-		//todo：金额转换为法币
+		//todo：比例
 		if (legalAmountOfLrc.Cmp(legalAmountOfSaving) > 0) {
 			order.FeeSelection = 0
 			order.LegalFee = legalAmountOfLrc
 		} else {
 			order.FeeSelection = 1
+			//todo:根据分润比例计算收益
+			if (shareRate > order.OrderState.RawOrder.SavingSharePercentage) {
+				shareRate = order.OrderState.RawOrder.SavingSharePercentage
+			}
+			legalAmountOfSaving.Value.Mul(legalAmountOfSaving.Value, big.NewInt(shareRate))
+			legalAmountOfSaving.DivBigInt(legalAmountOfSaving, PERCENT)
 			order.LegalFee = legalAmountOfSaving
+			lrcReward := &types.EnlargedInt{Value:legalAmountOfSaving.Value, Decimals:legalAmountOfSaving.Decimals}
+			lrcReward
+			lrcReward.Div(legalAmountOfSaving, GetLegalRate(CNY, *lrcAddress))
+
+			order.LrcReward = lrcReward
+
+
 		}
 
-		//todo:根据分润比例计算收益
-		if (shareRate > order.OrderState.RawOrder.SavingSharePercentage) {
-			shareRate = order.OrderState.RawOrder.SavingSharePercentage
-		}
 
 		ring.LegalFee.Add(ring.LegalFee, order.LegalFee)
 	}

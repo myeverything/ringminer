@@ -39,18 +39,18 @@ type Order struct {
 	S                     Sign
 }
 
-//RateAmountS、RateAmountB、FeeSelection 需要提交到contract
+//RateAmountS、FeeSelection 需要提交到contract
 type FilledOrder struct {
 	OrderState       OrderState
 	FeeSelection     int	//0 -> lrc
 	RateAmountS      *big.Int	//提交需要
 	AvailableAmountS *big.Int	//需要，也是用于计算fee
 	FillAmountS      *EnlargedInt
-	FillAmountB      *EnlargedInt	//协议中并没有，但是为了不重复计算
-	LrcReward        *big.Int
+	FillAmountB      *EnlargedInt	//计算需要
+	LrcReward        *EnlargedInt
 	LrcFee           *EnlargedInt
 	FeeS             *EnlargedInt
-	FeeB             *big.Int
+	//FeeB             *EnlargedInt
 	LegalFee         *EnlargedInt //法币计算的fee
 
 	EnlargedSPrice   *EnlargedInt
