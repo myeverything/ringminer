@@ -123,13 +123,6 @@ func ComputeRing(ring *types.RingState) {
 			rate1 := &types.EnlargedInt{Decimals:big.NewInt(100), Value:big.NewInt(100)}
 			savingAmount.Mul(enlargedAmountS, rate1.Sub(rate1, ring.ReducedRate))
 
-			//fee 使用扩大后的savingAmount
-			//order.FeeS = &big.Int{}
-			//order.FeeS.Mul(savingAmount, big.NewInt(int64(order.OrderState.RawOrder.SavingSharePercentage)))
-			//order.FeeS.Div(order.FeeS, PERCENT)
-			//order.FeeS.Div(order.FeeS, DECIMALS)
-			//order.FeeS.Div(order.FeeS, PERCENT)
-
 			order.RateAmountS = &big.Int{}
 			order.RateAmountS.Sub(order.OrderState.RawOrder.AmountS, savingAmount.RealValue())
 
@@ -146,6 +139,7 @@ func ComputeRing(ring *types.RingState) {
 				order.AvailableAmountS = availableAmountS.RealValue()
 			}
 		} else {
+			//rateAmountB 应该是需要的，与孔亮确认
 			order.RateAmountS = order.OrderState.RawOrder.AmountS
 		}
 
@@ -200,7 +194,6 @@ func ComputeRing(ring *types.RingState) {
 
 	}
 
-
 	for i := minVolumeIdx + 1; i < len(ring.RawRing.Orders); i++ {
 		order := ring.RawRing.Orders[i]
 		var lastOrder *types.FilledOrder
@@ -210,12 +203,10 @@ func ComputeRing(ring *types.RingState) {
 		order.FillAmountB.Mul(order.FillAmountS, order.EnlargedBPrice)
 	}
 
-
 	//计算ring以及各个订单的费用，以及费用支付方式
 	for _, order := range ring.RawRing.Orders {
 		lrcAddress := &types.Address{}
 		lrcAddress.SetBytes([]byte(LRC_ADDRESS))
-
 		//todo:成本节约
 		legalAmountOfSaving := &types.EnlargedInt{Value:big.NewInt(1),Decimals:big.NewInt(1)}
 		if (order.OrderState.RawOrder.BuyNoMoreThanAmountB) {
@@ -265,13 +256,8 @@ func ComputeRing(ring *types.RingState) {
 			lrcReward.Div(lrcReward, GetLegalRate(CNY, *lrcAddress))
 			order.LrcReward = lrcReward
 		}
-
-
 		ring.LegalFee.Add(ring.LegalFee, order.LegalFee)
 	}
-
-	//loopringFingerContractAddress := &types.Address{}
-	//loopring.LoopringFingerprints[*loopringFingerContractAddress].GetRingHash.Call(&ring.Hash, "")
 
 }
 

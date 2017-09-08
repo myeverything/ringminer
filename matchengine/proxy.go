@@ -47,7 +47,6 @@ todo：仍需要工作：调试合约
 3、费用的整理
 4、
  */
-
 func init() {
 	//todo:change to inject
 	loopring = &chainclient.Loopring{}

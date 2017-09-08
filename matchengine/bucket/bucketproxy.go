@@ -26,13 +26,6 @@ import (
 )
 
 /**
-接受新订单并将新订单发送到各个bucket
-每个bucket会将匹配成环的订单发送到该proxy进行汇总以及发送到区块链，并会将环发送到各个bucket，
- */
-
-//todo:采用这种方式，需要计算出可能的所有的semiring的数量，对于增长数量，需要有理论支撑
-
-/**
 暂时不处理以下情况
 todo：此时环路的撮合驱动是由新订单的到来进行驱动，但是新订单并不是一直到达的，因此为了不浪费计算量以及增加匹配度，在没有新订单到达时，需要进行下一个长度的匹配
  bucket在解决限定长度的，新订单的快速匹配较好，但是在订单不频繁时，如何挖掘现有的订单进行处理？
@@ -43,13 +36,11 @@ todo：此时环路的撮合驱动是由新订单的到来进行驱动，但是�
  可能需要使用归约订单的结构
  */
 
-
 /**
 思路：设计符合要求的数据格式，
 负责协调各个bucket，将ring发送到区块链，
 该处负责接受neworder, cancleorder等事件，并把事件广播给所有的bucket，同时调用client将已形成的环路发送至区块链，发送时需要再次查询订单的最新状态，保证无错，一旦出错需要更改ring的各种数据，如交易量、费用分成等
  */
-
 
 var loopring *chainclient.Loopring
 
@@ -93,16 +84,6 @@ func (bp *BucketProxy) Start() {
 			for _, b := range bp.Buckets {
 				b.NewRing(orderRing)
 			}
-		//	newOrderRing(orderRing)
-		////发送给每个bucket
-		//	for _, bucket := range proxy.Buckets {
-		//		go bucket.NewOrderRing(orderRing)
-		//	}
-		//case order := <- proxy.OrderChan:
-		//	proxy.NewOrder(order)
-		//	for _, bucket := range proxy.Buckets {
-		//		go bucket.NewOrder(*order)
-		//	}
 		}
 	}
 
@@ -117,14 +98,9 @@ func (bp *BucketProxy) Stop() {
 }
 
 func (bp *BucketProxy) NewOrder(order *types.OrderState) {
-	//ring := &types.Ring{}
-	//h := &types.Hash{}
-	//h.SetBytes([]byte("1111"))
-	//ring.Id = *h
-	//bp.ringChan <- ring
-
 	bp.mtx.RLock()
 	defer bp.mtx.RUnlock()
+
 	//如果没有则，新建bucket, todo:需要将其他bucket中的导入到当前bucket
 	if _,ok := bp.Buckets[order.RawOrder.TokenS] ; !ok {
 		bucket := NewBucket(order.RawOrder.TokenS, bp.ringChan)
@@ -177,9 +153,7 @@ func (bp *BucketProxy) submitRing(ringHash string) error {
 	return nil
 }
 
-
-
-
+//todo:imp it
 func (bp *BucketProxy) canSubmit(ring *types.RingState) bool {
 	return true;
 }

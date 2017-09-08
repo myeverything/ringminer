@@ -22,7 +22,7 @@ import "github.com/Loopring/ringminer/types"
 
 //
 type Pool interface {
-	GetOrders() []*types.Order
+	GetOrders() []*types.OrderState
 	AddOrder() error
 	UpdateOrder() error
 }
