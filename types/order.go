@@ -70,12 +70,6 @@ type OrderMined struct {
 
 }
 
-type Whispers struct {
-	PeerOrderChan			chan *Order
-	ChainOrderChan			chan *OrderMined
-	EngineOrderChan			chan *OrderState
-}
-
 // convert order to ordersate
 func (ord *Order) Convert() *OrderState {
 	var s OrderState
