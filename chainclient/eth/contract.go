@@ -35,7 +35,7 @@ type Contract struct {
 }
 
 func (c *Contract) GetAbi() interface{} {
-	return c.Abi
+	return *c.Abi
 }
 
 func (c *Contract) GetAddress() string {
@@ -105,6 +105,7 @@ func NewErc20Token(address string) *chainclient.Erc20Token {
 
 	erc20Token.Contract = contract
 	applyAbiMethod(erc20Token)
+
 	return erc20Token
 }
 
