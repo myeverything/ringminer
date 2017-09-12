@@ -81,12 +81,13 @@ func (bp *BucketProxy) Start() {
 				s = s + " -> " + " {outtoken:" + string(o.OrderState.RawOrder.TokenS.Bytes()) + " fillamountS:" + o.FillAmountS.RealValue().String() + ", intoken:" + string(o.OrderState.RawOrder.TokenB.Bytes()) + "}"
 			}
 			println("ringChan receive:" + string(orderRing.Hash.Bytes()) + " ring is :" + s)
+
+			matchengine.NewRing(orderRing)
 			for _, b := range bp.Buckets {
 				b.NewRing(orderRing)
 			}
 		}
 	}
-
 }
 
 func (bp *BucketProxy) Stop() {

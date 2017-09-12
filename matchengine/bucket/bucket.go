@@ -200,8 +200,6 @@ func (b *Bucket) NewOrder(ord types.OrderState) {
 	b.newOrderWithoutLock(ord)
 }
 
-
-
 func (b *Bucket) UpdateOrder(ord types.OrderState) {
 	//order的更改，除了订单容量和是否取消等，其他的并不能修改
 	//修改订单的容量，主要涉及收益，其他的并不需修改
@@ -232,6 +230,7 @@ func (b *Bucket) NewRing(ring *types.RingState) {
 	defer b.mtx.Unlock()
 	b.newRingWithoutLock(ring)
 }
+
 func (b *Bucket) SubmitFailed(ring *types.RingState) {
 	b.mtx.Lock()
 	defer b.mtx.Unlock()

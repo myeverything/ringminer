@@ -18,6 +18,7 @@
 
 package types
 
+
 // 旷工在成本节约和fee上二选一，撮合者计算出:
 // 1.fee(lrc)的市场价(法币交易价格)
 // 2.成本节约(savingShare)的市场价(法币交易价格)
@@ -37,12 +38,23 @@ type Ring struct {
 }
 
 type RingState struct {
-	RawRing     *Ring
+	RawRing     *Ring	`json:"rawRing"`
 	Hash        Hash    `json:"hash"` // 订单链id
-	ReducedRate *EnlargedInt              //成环之后，折价比例
-	LegalFee    *EnlargedInt //法币计算的fee
-	FeeMode     int                   //收费方式，0 lrc 1 share
+	ReducedRate *EnlargedInt	`json:"reducedRate"`              //成环之后，折价比例
+	LegalFee    *EnlargedInt	`json:"legalFee"`//法币计算的fee
+	FeeMode     int	`json:"feeMode"`//收费方式，0 lrc 1 share
 }
+
+//func (ring *RingState) UnmarshalJSON(input []byte) error {
+//	println("UnmarshalJSONUnmarshalJSONUnmarshalJSON")
+//	return fmt.Errorf("Unable to parse number")
+//}
+//
+//// MarshalJSON serialize the hex number instance to a hex representation.
+//func (ring *RingState) MarshalJSON() ([]byte, error) {
+//	println("MarshalJSONMarshalJSONMarshalJSONMarshalJSONMarshalJSON")
+//	return []byte("\"testtest\""), nil
+//}
 
 // TODO(fukun): 添加状态判断是否成环
 //type OrderRing struct {

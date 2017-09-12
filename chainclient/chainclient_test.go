@@ -76,6 +76,9 @@ func TestSubscribeErc20Event(t *testing.T) {
 		t.Log(filterId)
 	}
 
+	defer func() {
+		eth.EthClient.UninstallFilter()
+	}()
 	logChan := make(chan []eth.Log)
 	if err := eth.EthClient.Subscribe(&logChan, filterId);nil != err {
 		t.Error(err.Error())
