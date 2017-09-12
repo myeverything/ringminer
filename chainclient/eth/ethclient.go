@@ -41,13 +41,13 @@ todo：未完成：
 4、应当给orderbook持有listener，然后在orderbook内部处理各种event，否则处理逻辑分散
  */
 
-var RPCClient *rpc.Client
+var rpcClient *rpc.Client
 
 var EthClient *chainclient.Client
 
 func newRpcMethod(name string) func(result interface{}, args ...interface{}) error {
 	return func(result interface{}, args ...interface{}) error  {
-		return RPCClient.Call(result, name, args...)
+		return rpcClient.Call(result, name, args...)
 	}
 }
 
@@ -189,6 +189,8 @@ func applyMethod(client *chainclient.Client) error {
 
 func init() {
 	//TODO：change to inject
+	client, _ := rpc.Dial("http://127.0.0.1:8545")
+	rpcClient = client
 	EthClient = NewClient()
 	PrivateMap = make(map[string]*ecdsa.PrivateKey)
 	privateKey,_ := crypto.HexToECDSA("4f5b916dc82fb59cc57dbdd2fee5b49b2bdfe6ea34534a5d40c4475e9740c66e")

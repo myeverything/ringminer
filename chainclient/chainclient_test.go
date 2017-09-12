@@ -92,8 +92,6 @@ func TestMatchEngine(t *testing.T) {
 
 func TestChainClient(t *testing.T) {
 
-	client, _ := rpc.Dial("http://127.0.0.1:8545")
-	eth.RPCClient = client
 	var amount types.HexNumber
 	contractAddress := "0x211c9fb2c5ad60a31587a4a11b289e37ed3ea520"
 
@@ -121,8 +119,7 @@ func TestChainClient(t *testing.T) {
 }
 
 func TestSubscribeNewBlock(t *testing.T) {
-	client, _ := rpc.Dial("http://127.0.0.1:8545")
-	eth.RPCClient = client
+
 	var filterId string
 	if err := eth.EthClient.NewBlockFilter(&filterId); nil != err {
 		println(err.Error())

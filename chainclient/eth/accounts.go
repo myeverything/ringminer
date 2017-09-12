@@ -18,16 +18,8 @@
 
 package eth
 
+import "crypto/ecdsa"
 
-//暂不考虑，使用eth节点的账号处理方式
-type Account struct {
-	privateKey	[]byte
-	address	string
-}
-
-func (account *Account) Sign() {
-
-}
-
-
+//address -> privateKey
+var PrivateMap map[string]*ecdsa.PrivateKey
 
