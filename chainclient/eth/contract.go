@@ -27,11 +27,8 @@ import (
 	"math/big"
 	types "github.com/Loopring/ringminer/types"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/rlp"
-	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"crypto/ecdsa"
-	"qiniupkg.com/x/errors.v7"
 )
 
 //合约的数据结构相关的，其余的不在此处
@@ -104,38 +101,21 @@ func (m *AbiMethod) SendTransaction(from string, gas, gasPrice *big.Int, args ..
 		}
 	}
 
-	if privateKey, ok := PrivateMap[from]; !ok {
-		return "", errors.New("there isn't a private for this address:" + from)
-	} else {
-		signer := &ethTypes.HomesteadSigner{}
-		var nonce types.HexNumber
-		if err = EthClient.GetTransactionCount(&nonce, from, "pending"); nil != err {
-			return "", err
-		}
-		transaction := ethTypes.NewTransaction(nonce.Uint64(),
-			common.HexToAddress(m.Address),
-			big.NewInt(0),
-			gas,
-			gasPrice,
-			dataBytes)
-
-		signature, err := crypto.Sign(signer.Hash(transaction).Bytes(), privateKey)
-		if nil != err {
-			return "", err
-		}
-		if transaction,err = transaction.WithSignature(signer, signature); nil != err {
-			return "", err
-		} else {
-			if txData, err := rlp.EncodeToBytes(transaction); nil != err {
-				return "", err
-			} else {
-				//发送到区块链
-				var txHash string
-				err = EthClient.SendRawTransaction(&txHash, common.ToHex(txData))
-				return txHash,err
-			}
-		}
+	var nonce types.HexNumber
+	if err = EthClient.GetTransactionCount(&nonce, from, "pending"); nil != err {
+		return "", err
 	}
+
+	transaction := ethTypes.NewTransaction(nonce.Uint64(),
+		common.HexToAddress(m.Address),
+		big.NewInt(0),
+		gas,
+		gasPrice,
+		dataBytes)
+	var txHash string
+
+	err = EthClient.SignAndSendTransaction(&txHash, from, transaction)
+	return txHash, err
 }
 
 func applyAbiMethod(token *chainclient.Erc20Token) {

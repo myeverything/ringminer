@@ -23,12 +23,12 @@ import (
 	"math/big"
 )
 
-//提供接口，如：订阅事件、获取区块、获取交易、获取合约等接口
-
 type RpcMethod func(result interface{}, args ...interface{}) error
 
 type Client struct {
+	//subscribe and signAndSendTransaction are customed
 	Subscribe	RpcMethod	`methodName:"subscribe"`
+	SignAndSendTransaction RpcMethod	`methodName:"signAndSendTransaction"`
 
 	ClientVersion   RpcMethod       `methodName:"clientVersion"`
 	Sha3    RpcMethod       `methodName:"sha3"`

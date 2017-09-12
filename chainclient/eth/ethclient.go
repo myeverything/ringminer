@@ -27,6 +27,11 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"crypto/ecdsa"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/ethereum/go-ethereum/rlp"
+	ethTypes "github.com/ethereum/go-ethereum/core/types"
+
+	"errors"
+	"github.com/ethereum/go-ethereum/common"
 )
 
 /**
@@ -64,7 +69,35 @@ func NewClient() *chainclient.Client {
 	applyMethod(client)
 	//Subscribe
 	client.Subscribe = subscribe
+
+	//SignAndSendTransaction
+	client.SignAndSendTransaction = signAndSendTransaction
 	return client
+}
+
+func signAndSendTransaction(result interface{}, args ...interface{}) error {
+	from := args[0].(string)
+	transaction := args[1].(*ethTypes.Transaction)
+	if privateKey, ok := PrivateMap[from]; !ok {
+		return errors.New("there isn't a private for this address:" + from)
+	} else {
+		signer := &ethTypes.HomesteadSigner{}
+
+		signature, err := crypto.Sign(signer.Hash(transaction).Bytes(), privateKey)
+		if nil != err {
+			return err
+		}
+		if transaction,err = transaction.WithSignature(signer, signature); nil != err {
+			return err
+		} else {
+			if txData, err := rlp.EncodeToBytes(transaction); nil != err {
+				return err
+			} else {
+				err = EthClient.SendRawTransaction(result, common.ToHex(txData))
+				return err
+			}
+		}
+	}
 }
 
 func dGetOrder(chanVal reflect.Value) {
@@ -159,7 +192,6 @@ func applyMethod(client *chainclient.Client) error {
 func init() {
 	//TODO：change to inject
 	EthClient = NewClient()
-
 	PrivateMap = make(map[string]*ecdsa.PrivateKey)
 	privateKey,_ := crypto.HexToECDSA("4f5b916dc82fb59cc57dbdd2fee5b49b2bdfe6ea34534a5d40c4475e9740c66e")
 	PrivateMap["0x4ec94e1007605d70a86279370ec5e4b755295eda"] = privateKey
