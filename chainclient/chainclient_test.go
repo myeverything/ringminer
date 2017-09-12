@@ -119,3 +119,44 @@ func TestChainClient(t *testing.T) {
 	//println(accounts[0])
 
 }
+
+func TestSubscribeNewBlock(t *testing.T) {
+	client, _ := rpc.Dial("http://127.0.0.1:8545")
+	eth.RPCClient = client
+	filterId := "0x1bc2ac269aa688a83e7e54d9cc83f7ee"
+	//blockHashes := []string{}
+	//var blockHashes interface{}
+	//if err := eth.EthClient.GetFilterChanges(&blockHashes, filterId);nil != err {
+	//	println(err.Error())
+	//} else {
+	//	for _, hashI := range blockHashes.([]interface{}) {
+	//		hash := hashI.(string)
+	//		println(hash)
+	//	}
+	//	//println(len(blockHashes.([]interface{})))
+	//}
+
+	hashChan := make(chan []string)
+
+	if err := eth.EthClient.Subscribe(&hashChan, filterId);nil != err {
+		println(err.Error())
+	} else {
+
+		for {
+			select {
+			case blockHashes := <- hashChan:
+				if len(blockHashes) > 0 {
+					println("len:", len(blockHashes), "first:",blockHashes[0])
+				} else {
+					println("len:", len(blockHashes))
+				}
+			}
+		}
+	}
+	//var filterId string
+	//if err := eth.EthClient.NewBlockFilter(&filterId); nil != err {
+	//	println(err.Error())
+	//} else {
+	//	println(filterId)
+	//}
+}

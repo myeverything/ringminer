@@ -22,8 +22,6 @@ import (
 	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/Loopring/ringminer/chainclient"
 	"reflect"
-	"github.com/Loopring/ringminer/types"
-	"time"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"crypto/ecdsa"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -32,6 +30,7 @@ import (
 
 	"errors"
 	"github.com/ethereum/go-ethereum/common"
+	"time"
 )
 
 /**
@@ -100,27 +99,26 @@ func signAndSendTransaction(result interface{}, args ...interface{}) error {
 	}
 }
 
-func dGetOrder(chanVal reflect.Value) {
-	//todo:test
-	i := 10
+func doSubscribe(chanVal reflect.Value, filterId string) {
 	for {
-		i = i + 1
 		select {
-		case <-time.Tick(1000000):
-			// Id:types.BytesToHash([]byte("idx:" + strconv.Itoa(i)))
-			ord := &types.OrderState{RawOrder:types.Order{}}
-			//(*r) <- ord
-			chanVal.Send(reflect.ValueOf(ord))
+		case <-time.Tick(1000000000):
+			v :=  chanVal.Type().Elem()
+			result := reflect.New(v)
+			if err := EthClient.GetFilterChanges(result.Interface(), filterId); nil != err {
+				println(err.Error())
+			} else {
+				chanVal.Send(result.Elem())
+			}
 		}
 	}
 }
 
 func subscribe(result interface{}, args ...interface{}) error {
-	//先获取filterId，然后定时更新filterChanges
-	//todo:类型不定，需要根据不同情况返回不同值
-	//r := result.(*chan *types.NewOrderEvent)
+	//the first arg must be filterId
+	filterId := args[0].(string)
 	chanVal := reflect.ValueOf(result).Elem()
-	go dGetOrder(chanVal)
+	go doSubscribe(chanVal, filterId)
 	return nil
 }
 
