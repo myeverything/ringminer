@@ -4,9 +4,9 @@ import (
 	"testing"
 	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/Loopring/ringminer/chainclient/eth"
-	"github.com/ethereum/go-ethereum/common/hexutil"
-	"math/big"
+	"github.com/Loopring/ringminer/types"
 	"github.com/ethereum/go-ethereum/common"
+	"math/big"
 )
 
 type RpcMethod string
@@ -94,14 +94,28 @@ func TestChainClient(t *testing.T) {
 
 	client, _ := rpc.Dial("http://127.0.0.1:8545")
 	eth.RPCClient = client
-	var amount hexutil.Big
-	//eth.EthClient.GetBalance(&amount, "0xd86ee51b02c5ac295e59711f4335fed9805c0148", "pending")
-	erc20 := eth.NewErc20Token("0x211c9fb2c5ad60a31587a4a11b289e37ed3ea520")
-	erc20.BalanceOf.Call(amount, "pending", common.HexToAddress("0xd86ee51b02c5ac295e59711f4335fed9805c0148"))
-	println((*big.Int)(&amount).String())
-	var accounts []string
-	eth.EthClient.Accounts(&accounts)
-	println(accounts[0])
+	var amount types.HexNumber
+	contractAddress := "0x211c9fb2c5ad60a31587a4a11b289e37ed3ea520"
 
-	println(erc20.BalanceOf)
+	//eth.EthClient.GetBalance(&amount, "0xd86ee51b02c5ac295e59711f4335fed9805c0148", "pending")
+	erc20 := eth.NewErc20Token(contractAddress)
+	err := erc20.BalanceOf.Call(&amount, "pending", common.HexToAddress("0xd86ee51b02c5ac295e59711f4335fed9805c0148"))
+	if err != nil {
+		println(err.Error())
+	}
+	//println(amount.BigInt().String())
+
+	if txHash, err := erc20.Transfer.SendTransaction("0x4ec94e1007605d70a86279370ec5e4b755295eda",
+		nil,
+		nil,
+		common.HexToAddress("0xd86ee51b02c5ac295e59711f4335fed9805c0148"),
+		big.NewInt(10));err != nil {
+		println(err.Error())
+	} else {
+		println("txHash:", txHash)
+	}
+	//var accounts []string
+	//eth.EthClient.Accounts(&accounts)
+	//println(accounts[0])
+
 }

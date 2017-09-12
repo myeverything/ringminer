@@ -18,7 +18,10 @@
 
 package chainclient
 
-import "github.com/Loopring/ringminer/types"
+import (
+	"github.com/Loopring/ringminer/types"
+	"math/big"
+)
 
 //提供接口，如：订阅事件、获取区块、获取交易、获取合约等接口
 
@@ -87,7 +90,7 @@ type Client struct {
 
 type AbiMethod interface {
 	Call(result interface{}, blockParameter string, args ...interface{}) error
-	SendTransaction(contractAddress string, args ...interface{}) error
+	SendTransaction(from string,gas, gasPrice *big.Int, args ...interface{}) (string, error)
 }
 
 //兼容不同区块链
@@ -135,6 +138,10 @@ type LoopringFingerprintRegistry struct {
 	FingerprintFound AbiMethod
 	IsExpired AbiMethod
 	GetRingHash AbiMethod
+}
+
+type FingerprintEvent struct {
+	RingHash *types.Hash
 }
 
 type TokenRegistry struct {
