@@ -20,6 +20,8 @@ package eth
 
 import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/Loopring/ringminer/types"
 )
 
 //通用数据结构
@@ -68,11 +70,21 @@ type Transaction struct {
 }
 
 type Log struct {
-	LogIndex hexutil.Big
-	BlockNumber hexutil.Big
-	BlockHash	string
-	TransactionHash	string
-	Address	string
+	LogIndex types.HexNumber	`json:"logIndex"`
+	BlockNumber types.HexNumber	`json:"blockNumber"`
+	BlockHash	string	`json:"blockHash"`
+	TransactionHash	string	`json:"transactionHash"`
+	TransactionIndex types.HexNumber `json:"transactionIndex"`
+	Address	string	`json:"address"`
+	Data	string	`json:"data"`
+	Topics	[]string	`json:"topics"`
+}
+
+type FilterQuery struct {
+	FromBlock string	`json:"fromBlock"`
+	ToBlock   string	`json:"toBlock"`
+	Address []common.Address	`json:"addresse"`
+	Topics [][]common.Hash	`json:"topics"`
 }
 
 type LogParameter struct {
