@@ -57,6 +57,7 @@ func NewNode(logger *zap.Logger) *Node {
 
 	n.registerP2PListener()
 	n.registerOrderBook()
+	n.registerMatchengine()
 
 	return n
 }
@@ -109,7 +110,7 @@ func (n *Node) registerEthClient() {
 	n.ethListener = eth.NewListener(n.options.EthClient, whisper)
 }
 
-func (n *Node) registerProxy() {
+func (n *Node) registerMatchengine() {
 	whisper := &bucket.Whisper{n.engineOrderChan}
 	n.matchengine = bucket.NewBucketProxy(n.options.BucketProxy, whisper)
 }
