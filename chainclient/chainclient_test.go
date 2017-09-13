@@ -70,7 +70,7 @@ func TestErc20Transfer(t *testing.T) {
 	contractAddress := "0x211c9fb2c5ad60a31587a4a11b289e37ed3ea520"
 	erc20 := eth.NewErc20Token(contractAddress)
 
-	if txHash, err := erc20.Transfer.SendTransaction("0x4ec94e1007605d70a86279370ec5e4b755295eda",
+	if txHash, err := erc20.Transfer.SendTransactionWithSpecificGas("0x4ec94e1007605d70a86279370ec5e4b755295eda",
 		nil,
 		nil,
 		common.HexToAddress("0xd86ee51b02c5ac295e59711f4335fed9805c0148"),

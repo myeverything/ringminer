@@ -90,7 +90,8 @@ type Client struct {
 
 type AbiMethod interface {
 	Call(result interface{}, blockParameter string, args ...interface{}) error
-	SendTransaction(from string,gas, gasPrice *big.Int, args ...interface{}) (string, error)
+	SendTransactionWithSpecificGas(from string, gas, gasPrice *big.Int, args ...interface{}) (string, error)
+	SendTransaction(from string, args ...interface{}) (string, error)
 }
 
 //兼容不同区块链

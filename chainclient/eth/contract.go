@@ -28,6 +28,7 @@ import (
 	types "github.com/Loopring/ringminer/types"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	"qiniupkg.com/x/errors.v7"
 )
 
 //合约的数据结构相关的，其余的不在此处
@@ -67,7 +68,33 @@ func (m *AbiMethod) Call(result interface{}, blockParameter string, args ...inte
 }
 
 //contract transaction
-func (m *AbiMethod) SendTransaction(from string, gas, gasPrice *big.Int, args ...interface{}) (string,error) {
+func (m *AbiMethod) SendTransaction(from string, args ...interface{}) (string,error) {
+	var gas, gasPrice *types.HexNumber
+	dataBytes, err := m.Abi.Pack(m.Name, args...)
+
+	if (nil != err) {
+		return "", err
+	}
+
+	if err = EthClient.GasPrice(&gasPrice); nil != err {
+		return "", err
+	}
+
+	dataHex := common.ToHex(dataBytes)
+	callArg := &CallArg{}
+	callArg.From = from
+	callArg.To = m.Address
+	callArg.Data = dataHex
+	callArg.GasPrice = hexutil.Big(*gasPrice)
+	if err = EthClient.EstimateGas(&gas, callArg); nil != err {
+		return "", err
+	}
+
+	//todo: m.Abi.Pack is double used
+	return m.SendTransactionWithSpecificGas(from, gas.BigInt(), gasPrice.BigInt(), args...)
+}
+
+func (m *AbiMethod) SendTransactionWithSpecificGas(from string, gas, gasPrice *big.Int, args ...interface{}) (string,error) {
 	dataBytes, err := m.Abi.Pack(m.Name, args...)
 
 	if (nil != err) {
@@ -75,27 +102,11 @@ func (m *AbiMethod) SendTransaction(from string, gas, gasPrice *big.Int, args ..
 	}
 
 	if nil == gasPrice || gasPrice.Cmp(big.NewInt(0)) <= 0 {
-		var gasPriceRes types.HexNumber
-		if err = EthClient.GasPrice(&gasPriceRes); nil != err {
-			return "", err
-		} else {
-			gasPrice = gasPriceRes.BigInt()
-		}
+		return "", errors.New("gasPrice must be setted.")
 	}
 
 	if nil == gas || gas.Cmp(big.NewInt(0)) <= 0 {
-		var gasRes types.HexNumber
-		dataHex := common.ToHex(dataBytes)
-		callArg := &CallArg{}
-		callArg.From = from
-		callArg.To = m.Address
-		callArg.Data = dataHex
-		callArg.GasPrice = hexutil.Big(*gasPrice)
-		if err = EthClient.EstimateGas(&gasRes, callArg); nil != err {
-			return "", err
-		} else {
-			gas = gasRes.BigInt()
-		}
+		return "", errors.New("gas must be setted.")
 	}
 
 	var nonce types.HexNumber
