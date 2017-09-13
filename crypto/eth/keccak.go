@@ -22,33 +22,46 @@ import (
 	"github.com/Loopring/ringminer/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"strconv"
+	//"github.com/pkg/errors"
 )
 
-/*
-address(this),
-            order.tokenS,
-            order.tokenB,
-            order.amountS,
-            order.amountB,
-            order.expiration,
-            order.rand,
-            order.lrcFee,
-            order.buyNoMoreThanAmountB,
-            order.savingSharePercentage
-*/
-
-// TODO(fukun):
-func GenHash(ord types.Order) {
-	crypto.Keccak256(
+// TODO(fukun): 使用go-eth/crypto/keccak256生成hash，需要跟智能合约比对
+func GenOrderHash(ord types.Order) []byte {
+	return crypto.Keccak256(
 		ord.Protocol.Bytes(),
 		ord.TokenS.Bytes(),
 		ord.TokenB.Bytes(),
 		ord.AmountS.Bytes(),
 		ord.AmountB.Bytes(),
-		[]byte(ord.Expiration),
+		[]byte(strconv.FormatUint(ord.Expiration, 10)),
 		ord.Rand.Bytes(),
 		ord.LrcFee.Bytes(),
 		[]byte(strconv.FormatBool(ord.BuyNoMoreThanAmountB)),
 		[]byte(strconv.Itoa(ord.SavingSharePercentage)),
 	)
 }
+
+// TODO(fukun): 使用自实现方式生成address
+func GenOrderAddress(hash []byte, ord types.Order) ([]byte, error) {
+
+	//if len(hash) != 32 {
+	//	return nil, errors.New("GenOrderAddress error,hash length is incorrect")
+	//}
+	//
+	//data, err := crypto.Ecrecover(
+	//	crypto.Keccak256([]byte("\x19Ethereum Signed Message:\n32"), hash),
+	//	[]byte(strconv.FormatUint(uint64(ord.V), 10)),
+	//	ord.R.Bytes(),
+	//	ord.S.Bytes(),
+	//)
+	//if err != nil {
+	//	return nil, err
+	//}
+	//
+	//return data, nil
+
+	return nil, nil
+}
+
+// TODO(fukun): 调用合约方式生成hash
+// TODO(fukun): 调用合约方式生成address
