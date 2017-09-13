@@ -28,3 +28,5 @@ type server struct{}
 
 
 func NewServer() {}
+
+// TODO(fukun): http服务&jsonrpc服务以及内部查询

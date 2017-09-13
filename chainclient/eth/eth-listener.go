@@ -34,15 +34,18 @@ type EthClientConfig struct {
 	Port int
 }
 
+type Whisper struct {
+	chainOrderChan chan *types.OrderMined
+}
 
 //监听内容有：环路订单，地址的token余额变动如transfer等
 // TODO(fukun):不同的channel，应当交给orderbook统一进行后续处理，可以将channel作为函数返回值、全局变量、参数等方式
 type EthClientListener struct {
-	config EthClientConfig
-	toml config.EthClientOptions
-	whisper *types.Whispers
-	stop chan struct{}
-	lock sync.RWMutex
+	config 		EthClientConfig
+	options 	config.EthClientOptions
+	whisper 	*Whisper
+	stop 		chan struct{}
+	lock 		sync.RWMutex
 }
 
 // TODO(fukun): load default config from toml and cli
@@ -50,9 +53,9 @@ func (l *EthClientListener) loadConfig() {
 
 }
 
-func NewListener(whisper *types.Whispers, options config.EthClientOptions) *EthClientListener {
+func NewListener(options config.EthClientOptions, whisper *Whisper) *EthClientListener {
 	var l EthClientListener
-	l.toml = options
+	l.options = options
 	l.loadConfig()
 
 	l.whisper = whisper
@@ -63,15 +66,24 @@ func NewListener(whisper *types.Whispers, options config.EthClientOptions) *EthC
 func (l *EthClientListener) Start() {
 	l.stop = make(chan struct{})
 
-	EthClient.Subscribe(l.whisper.EngineOrderChan)
-	go func() {
-		for {
-			select {
-			case ord := <- l.whisper.EngineOrderChan:
-				println(ord.RawOrder.SavingSharePercentage)
-			}
+	// TODO(fukun): add filterId
+	filterId := ""
+
+	ethlog := make(chan []Log)
+	err := EthClient.Subscribe(&ethlog, filterId)
+	if err != nil {
+		panic(err)
+	}
+
+	// TODO(fukun): 解析log->ORDERMINED
+	for {
+		select {
+		case l.whisper.chainOrderChan <- &types.OrderMined{}:
+			println("----")
 		}
-	}()
+	}
+
+	defer EthClient.UninstallFilter(filterId)
 }
 
 func (l *EthClientListener) Stop() {

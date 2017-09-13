@@ -23,6 +23,7 @@ import (
 	"github.com/Loopring/ringminer/types"
 	"github.com/Loopring/ringminer/matchengine"
 	"github.com/Loopring/ringminer/chainclient"
+	"github.com/Loopring/ringminer/config"
 )
 
 /**
@@ -44,22 +45,44 @@ todo：此时环路的撮合驱动是由新订单的到来进行驱动，但是�
 
 var loopring *chainclient.Loopring
 
+// TODO(fukun): modify config
+type BucketProxyConfig struct {
+	Num int
+}
+
+type Whisper struct {
+	engineOrderChan chan *types.OrderState
+}
+
 type BucketProxy struct {
+	config   *BucketProxyConfig
+	opts     config.BucketProxyOptions
  	ringChan chan *types.RingState
 	OrderChan chan *types.Order
+	whisper  *Whisper
 	Buckets  map[types.Address]Bucket
 	mtx  *sync.RWMutex
 }
 
-func NewBucketProxy() matchengine.Proxy {
+// TODO(fukun): add configs options
+func (bp *BucketProxy) loadConfig() {
+
+}
+
+func NewBucketProxy(opts config.BucketProxyOptions, whisper *Whisper) matchengine.Proxy {
 	var proxy matchengine.Proxy
 	bp := &BucketProxy{}
+
+	bp.opts = opts
+	bp.loadConfig()
 
 	ringChan := make(chan *types.RingState, 1000)
 	bp.ringChan = ringChan
 
-	orderChan := make(chan *types.Order)
-	bp.OrderChan = orderChan
+	//orderChan := make(chan *types.Order)
+	//bp.OrderChan = orderChan
+
+	bp.whisper = whisper
 
 	bp.mtx = &sync.RWMutex{}
 	bp.Buckets = make(map[types.Address]Bucket)
@@ -86,6 +109,10 @@ func (bp *BucketProxy) Start() {
 			for _, b := range bp.Buckets {
 				b.NewRing(orderRing)
 			}
+
+			// TODO(fukun): add something
+		case orderState := <- bp.whisper.engineOrderChan:
+			println(orderState.RemainedAmountB)
 		}
 	}
 }
