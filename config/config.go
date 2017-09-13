@@ -46,9 +46,10 @@ type GlobalConfig struct {
 	Owner struct {
 		Name string
 	}
-	Database DbOptions
-	Ipfs IpfsOptions
-	EthClient EthClientOptions
+	Database 	DbOptions
+	Ipfs 		IpfsOptions
+	EthClient 	EthClientOptions
+	BucketProxy BucketProxyOptions
 }
 
 type IpfsOptions struct {
@@ -68,6 +69,10 @@ type DbOptions struct {
 type EthClientOptions struct {
 	Server string
 	Port int
+}
+
+type BucketProxyOptions struct {
+	Server string
 }
 
 func defaultConfig() {

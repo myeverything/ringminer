@@ -20,6 +20,7 @@ package types
 
 import (
 	"math/big"
+	"github.com/ethereum/go-ethereum/crypto"
 )
 
 type OrderStatus uint8
@@ -104,8 +105,46 @@ func (ord *Order) Convert() *OrderState {
 	return &s
 }
 
+/*
+ function calculateOrderHash(Order order)
+        internal
+        constant
+        returns (bytes32) {
+
+        return keccak256(
+            address(this),
+            order.tokenS,
+            order.tokenB,
+            order.amountS,
+            order.amountB,
+            order.expiration,
+            order.rand,
+            order.lrcFee,
+            order.buyNoMoreThanAmountB,
+            order.savingSharePercentage);
+    }
+
+    /// @return The signer's address.
+    function calculateSignerAddress(
+        bytes32 hash,
+        uint8 v,
+        bytes32 r,
+        bytes32 s)
+        public
+        constant
+        returns (address) {
+
+        return ecrecover(
+            keccak256("\x19Ethereum Signed Message:\n32", hash),
+            v,
+            r,
+            s);
+    }
+*/
+
 // TODO(fukun):
 func (ord *Order) GenHash() Hash {
+	crypto.Keccak256()
 	return StringToHash("")
 }
 

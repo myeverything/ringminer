@@ -18,3 +18,6 @@ topic = "topic"
 [eth_client]
 server = "localhost"
 port = 9092
+
+[bucket_proxy]
+server = "localhost"

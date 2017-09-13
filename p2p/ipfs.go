@@ -29,21 +29,26 @@ type IpfsConfig struct {
 	topic string
 }
 
+type Whisper struct {
+	PeerOrderChan			chan *types.Order
+}
+
 type IPFSListener struct {
-	conf IpfsConfig
-	toml config.IpfsOptions
-	sh *shell.Shell
-	sub *shell.PubSubSubscription
-	stop chan struct{}
-	whisper *types.Whispers
-	lock sync.RWMutex
+	conf 					IpfsConfig
+	toml 					config.IpfsOptions
+	sh 						*shell.Shell
+	sub 					*shell.PubSubSubscription
+	whisper                 *Whisper
+	stop 					chan struct{}
+	lock 					sync.RWMutex
 }
 
 func (l *IPFSListener) loadConfig() {
 	l.conf.topic = l.toml.Topic
 }
 
-func NewListener(whisper *types.Whispers, options config.IpfsOptions) *IPFSListener {
+//
+func NewListener(options config.IpfsOptions, whisper *Whisper) *IPFSListener {
 	l := &IPFSListener{}
 
 	l.toml = options

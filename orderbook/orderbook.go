@@ -40,13 +40,19 @@ type OrderBookConfig struct {
 	bufferCapacity  int
 }
 
+type Whisper struct {
+	PeerOrderChan chan *types.Order
+	EngineOrderChan chan *types.OrderState
+	ChainOrderChan chan *types.OrderMined
+}
+
 type OrderBook struct {
 	conf         OrderBookConfig
 	toml         config.DbOptions
 	db           lrcdb.Database
 	finishTable  lrcdb.Database
 	partialTable lrcdb.Database
-	whisper      *types.Whispers
+	whisper      *Whisper
 	lock         sync.RWMutex
 }
 
@@ -62,7 +68,7 @@ func (ob *OrderBook) loadConfig() {
 	ob.conf = OrderBookConfig{file, cache, buffer}
 }
 
-func NewOrderBook(whisper *types.Whispers, options config.DbOptions) *OrderBook {
+func NewOrderBook(options config.DbOptions, whisper *Whisper) *OrderBook {
 	s := &OrderBook{}
 
 	s.toml = options
@@ -127,8 +133,9 @@ func (ob *OrderBook) peerOrderHook(ord *types.Order) error {
 	}
 
 	// TODO(fk): send orderState to matchengine
-	//state := ord.Convert()
-	//ob.whisper.EngineOrderChan <- state
+	state := ord.Convert()
+	ob.whisper.EngineOrderChan <- state
+
 	return nil
 }
 

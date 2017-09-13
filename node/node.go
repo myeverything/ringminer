@@ -27,36 +27,37 @@ import (
 	"github.com/Loopring/ringminer/types"
 	"github.com/Loopring/ringminer/config"
 	"github.com/Loopring/ringminer/chainclient/eth"
+	"github.com/Loopring/ringminer/matchengine/bucket"
 )
 
 // TODO(fk): add services
 type Node struct {
-	options *config.GlobalConfig
-	server *matchengine.Proxy
-	p2pListener p2p.Listener
-	ethListener eth.Listener
-	orderbook *orderbook.OrderBook
-	whisper *types.Whispers
-	stop chan struct{}
-	lock sync.RWMutex
-	logger *zap.Logger
+	options 				*config.GlobalConfig
+	p2pListener 			p2p.Listener
+	ethListener 			eth.Listener
+	orderbook 				*orderbook.OrderBook
+	matchengine             matchengine.Proxy
+	peerOrderChan			chan *types.Order
+	chainOrderChan			chan *types.OrderMined
+	engineOrderChan			chan *types.OrderState
+	stop 					chan struct{}
+	lock 					sync.RWMutex
+	logger 					*zap.Logger
 }
 
 // TODO(fk): inject whisper and logger
 func NewNode(logger *zap.Logger) *Node {
 	n := &Node{}
 
-	whisper := &types.Whispers{}
-	whisper.PeerOrderChan = make(chan *types.Order)
-	whisper.ChainOrderChan = make(chan *types.OrderMined)
-	whisper.EngineOrderChan = make(chan *types.OrderState)
-
-	n.whisper = whisper
+	n.peerOrderChan = make(chan *types.Order)
+	n.chainOrderChan = make(chan *types.OrderMined)
+	n.engineOrderChan = make(chan *types.OrderState)
 	n.logger = logger
 	n.options = config.LoadConfig()
 
 	n.registerP2PListener()
 	n.registerOrderBook()
+	n.registerMatchengine()
 
 	return n
 }
@@ -64,6 +65,7 @@ func NewNode(logger *zap.Logger) *Node {
 func (n *Node) Start() {
 	n.p2pListener.Start()
 	n.orderbook.Start()
+	n.matchengine.Start()
 
 	// TODO(fk): start eth client
 	//n.ethListener.Start()
@@ -85,19 +87,30 @@ func (n *Node) Stop() {
 
 	n.p2pListener.Stop()
 	n.ethListener.Stop()
+	n.orderbook.Stop()
+	n.matchengine.Stop()
+
 	close(n.stop)
 
 	n.lock.RUnlock()
 }
 
 func (n *Node) registerP2PListener() {
-	n.p2pListener = p2p.NewListener(n.whisper, n.options.Ipfs)
+	whisper := &p2p.Whisper{n.peerOrderChan}
+	n.p2pListener = p2p.NewListener(n.options.Ipfs, whisper)
 }
 
 func (n *Node) registerOrderBook() {
-	n.orderbook = orderbook.NewOrderBook(n.whisper, n.options.Database)
+	whisper := &orderbook.Whisper{n.peerOrderChan, n.engineOrderChan, n.chainOrderChan}
+	n.orderbook = orderbook.NewOrderBook(n.options.Database, whisper)
 }
 
 func (n *Node) registerEthClient() {
-	n.ethListener = eth.NewListener(n.whisper, n.options.EthClient)
+	whisper := &eth.Whisper{n.chainOrderChan}
+	n.ethListener = eth.NewListener(n.options.EthClient, whisper)
+}
+
+func (n *Node) registerMatchengine() {
+	whisper := &bucket.Whisper{n.engineOrderChan}
+	n.matchengine = bucket.NewBucketProxy(n.options.BucketProxy, whisper)
 }

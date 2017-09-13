@@ -100,12 +100,13 @@ func (db *LDBDatabase) NewIterator() iterator.Iterator {
 }
 
 // TODO(fk): scan db with iterator means nothing
-func (db *LDBDatabase) Scan() {
+func (db *LDBDatabase) Scan()  (map[string]string, error) {
+	var data map[string]string
 	iter := db.db.NewIterator(nil, nil)
 	for iter.Next() {
-		iter.Key()
-		iter.Value()
+		data[string(iter.Key())] = string(iter.Value())
 	}
+	return data, nil
 }
 
 // Range create prefix
