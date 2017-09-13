@@ -31,7 +31,9 @@ func TestRingClient(t *testing.T) {
 	hash.SetBytes([]byte("testtesthash"))
 	ring.Hash = *hash
 	ring.FeeMode = 1
+	ringClient := matchengine.NewRingClient()
+	ringClient.Start()
 
-	matchengine.NewRing(ring)
+	ringClient.NewRing(ring)
 }
 

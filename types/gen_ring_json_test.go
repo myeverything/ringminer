@@ -16,11 +16,10 @@
 
 */
 
-package types
+package types_test
 
-type EngineOrderChan chan *OrderState
-type Whispers struct {
-	PeerOrderChan			chan *Order
-	ChainOrderChan			chan *OrderMined
-	EngineOrderChan			chan *OrderState
+import "testing"
+
+func TestRingJson(t *testing.T) {
+
 }

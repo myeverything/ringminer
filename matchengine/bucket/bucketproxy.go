@@ -45,34 +45,30 @@ todo：此时环路的撮合驱动是由新订单的到来进行驱动，但是�
 var loopring *chainclient.Loopring
 
 type BucketProxy struct {
- 	ringChan chan *types.RingState
-	OrderChan chan *types.Order
-	Buckets  map[types.Address]Bucket
-	mtx  *sync.RWMutex
+	ringChan       chan *types.RingState
+	//orderStateChan chan *types.Order
+	Buckets        map[types.Address]Bucket
+	ringClient	*matchengine.RingClient
+	mtx            *sync.RWMutex
 }
 
-func NewBucketProxy() matchengine.Proxy {
+func NewBucketProxy(ringClient *matchengine.RingClient) matchengine.Proxy {
 	var proxy matchengine.Proxy
 	bp := &BucketProxy{}
 
 	ringChan := make(chan *types.RingState, 1000)
 	bp.ringChan = ringChan
 
-	orderChan := make(chan *types.Order)
-	bp.OrderChan = orderChan
-
 	bp.mtx = &sync.RWMutex{}
 	bp.Buckets = make(map[types.Address]Bucket)
-
+	bp.ringClient = ringClient
 	proxy = bp
 	return proxy
 }
 
 func (bp *BucketProxy) Start() {
-	//proxy := bp
-	bp.mtx.RLock()
-	defer bp.mtx.RUnlock()
-
+	//orderstatechan and ringchan
+	go bp.listenOrderState()
 	for {
 		select {
 		case orderRing := <- bp.ringChan:
@@ -82,7 +78,7 @@ func (bp *BucketProxy) Start() {
 			}
 			println("ringChan receive:" + string(orderRing.Hash.Bytes()) + " ring is :" + s)
 
-			matchengine.NewRing(orderRing)
+			bp.ringClient.NewRing(orderRing)
 			for _, b := range bp.Buckets {
 				b.NewRing(orderRing)
 			}
@@ -92,16 +88,28 @@ func (bp *BucketProxy) Start() {
 
 func (bp *BucketProxy) Stop() {
 	close(bp.ringChan)
-	close(bp.OrderChan)
+	close(matchengine.OrderStateChan)
 	for _,bucket := range bp.Buckets {
 		bucket.Stop()
 	}
 }
 
-func (bp *BucketProxy) NewOrder(order *types.OrderState) {
+func (bp *BucketProxy) listenOrderState() {
+	for {
+		select {
+		case order := <- matchengine.OrderStateChan:
+			if (types.ORDER_NEW == order.Status) {
+				bp.newOrder(order)
+			} else if (types.ORDER_CANCEL == order.Status || types.ORDER_FINISHED == order.Status) {
+				bp.deleteOrder(order)
+			}
+		}
+	}
+}
+
+func (bp *BucketProxy) newOrder(order *types.OrderState) {
 	bp.mtx.RLock()
 	defer bp.mtx.RUnlock()
-
 	//如果没有则，新建bucket, todo:需要将其他bucket中的导入到当前bucket
 	if _,ok := bp.Buckets[order.RawOrder.TokenS] ; !ok {
 		bucket := NewBucket(order.RawOrder.TokenS, bp.ringChan)
@@ -113,13 +121,13 @@ func (bp *BucketProxy) NewOrder(order *types.OrderState) {
 	}
 
 	for _, b := range bp.Buckets {
-		b.NewOrder(*order)
+		b.newOrder(*order)
 	}
 }
 
-func (bp *BucketProxy) UpdateOrder(order *types.OrderState) {
+func (bp *BucketProxy) deleteOrder(order *types.OrderState) {
 	for _, bucket := range bp.Buckets {
-		bucket.UpdateOrder(*order)
+		bucket.deleteOrder(*order)
 	}
 } //订单的更新
 
@@ -127,39 +135,50 @@ func (bp *BucketProxy) AddFilter() {
 
 }
 
-/**
-提交ring
-//todo:用户的金额等是否需要缓存
-1、首先检查订单的状态, 重新计算成交量
-2、再提交hash
-3、hash打到块之后，再提交ring
- */
-func (bp *BucketProxy) submitRingFingerprint(ring *types.RingState) {
-	//根据最小容量，重新设置，重新计算费用
-	matchengine.ComputeRing(ring)
-	//todo:再次判断是否需要提交
-	if (!bp.canSubmit(ring)) {
-		bp.submitFailed(ring)
-	} else {
-		//todo:提交ring
-		//提交凭证，之后，等待凭证成功的event，然后提交ring，待提交的ring需要保存
-		fingerContractAddress := &types.Address{}
-		loopring.LoopringFingerprints[*fingerContractAddress].SubmitRingFingerprint.SendTransaction(fingerContractAddress.Hex())
+
+//todo:提交ring的具体工作放在ringclient中
+///**
+//提交ring
+////todo:用户的金额等是否需要缓存
+//1、首先检查订单的状态, 重新计算成交量
+//2、再提交hash
+//3、hash打到块之后，再提交ring
+// */
+//func (bp *BucketProxy) submitRingFingerprint(ring *types.RingState) {
+//	//根据最小容量，重新设置，重新计算费用
+//	matchengine.ComputeRing(ring)
+//	//todo:再次判断是否需要提交
+//	if (!bp.canSubmit(ring)) {
+//		bp.submitFailed(ring)
+//	} else {
+//		//todo:提交ring
+//		//提交凭证，之后，等待凭证成功的event，然后提交ring，待提交的ring需要保存
+//		//fingerContractAddress := &types.Address{}
+//		//loopring.LoopringFingerprints[*fingerContractAddress].SubmitRingFingerprint.SendTransaction(fingerContractAddress.Hex())
+//	}
+//}
+//
+////凭证提交后，提交ring
+//func (bp *BucketProxy) submitRing(ringHash string) error {
+//
+//	return nil
+//}
+//
+////todo:imp it
+//func (bp *BucketProxy) canSubmit(ring *types.RingState) bool {
+//	return true;
+//}
+
+func (bp *BucketProxy) listenRingSubmit() {
+	for {
+		select {
+		case ring := <-matchengine.RingSubmitFailedChan:
+			bp.submitFailed(ring)
+		}
 	}
 }
 
-//凭证提交后，提交ring
-func (bp *BucketProxy) submitRing(ringHash string) error {
-
-	return nil
-}
-
-//todo:imp it
-func (bp *BucketProxy) canSubmit(ring *types.RingState) bool {
-	return true;
-}
-
-//todo:ring提交失败的处理：通知到每个bucket
+//todo:需要ringclient在提交失败后通知到该proxy，估计使用chan
 func (bp *BucketProxy) submitFailed(ring *types.RingState) {
 	for _,bucket := range bp.Buckets {
 		bucket.SubmitFailed(ring)

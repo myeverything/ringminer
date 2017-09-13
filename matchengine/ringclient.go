@@ -27,26 +27,45 @@ import (
 	"path/filepath"
 	"github.com/Loopring/ringminer/chainclient/eth"
 	"github.com/ethereum/go-ethereum/common"
+	"sync"
 )
 
 //保存ring，并将ring发送到区块链，同样需要分为待完成和已完成
-var store lrcdb.Database
+type RingClient struct {
+	store lrcdb.Database
 
-var submitedRingsStore lrcdb.Database
+	submitedRingsStore lrcdb.Database
 
-var unSubmitedRingsStore lrcdb.Database
+	unSubmitedRingsStore lrcdb.Database
 
-var fingerprintChan chan *chainclient.FingerprintEvent
+	fingerprintChan chan *chainclient.FingerprintEvent
+
+	stopChan chan bool
+
+	mtx	*sync.RWMutex
+}
+
+func NewRingClient() *RingClient {
+	ringClient := &RingClient{}
+	ringClient.store = getdb()
+	ringClient.unSubmitedRingsStore = lrcdb.NewTable(ringClient.store, "unsubmited")
+	ringClient.submitedRingsStore = lrcdb.NewTable(ringClient.store, "submited")
+	ringClient.mtx = &sync.RWMutex{}
+	return ringClient
+}
 
 //save in db
-func NewRing(ring *types.RingState) {
+func (ringClient *RingClient) NewRing(ring *types.RingState) {
+	ringClient.mtx.Lock()
+	defer ringClient.mtx.Unlock()
+
 	if (canSubmit(ring)) {
 		//todo:save
 		if ringBytes,err := json.Marshal(ring); err == nil {
-			println("ddddd")
-			unSubmitedRingsStore.Put(ring.Hash.Bytes(), ringBytes)
+			ringClient.unSubmitedRingsStore.Put(ring.Hash.Bytes(), ringBytes)
+			println("ringHash:", ring.Hash.Hex())
 			//todo:async send to block chain
-			sendRingFingerprint(ring)
+			ringClient.sendRingFingerprint(ring)
 		} else {
 			println(err.Error())
 		}
@@ -58,16 +77,16 @@ func canSubmit(ring *types.RingState) bool {
 }
 
 //send Fingerprint to block chain
-func sendRingFingerprint(ring *types.RingState) {
-	contractAddress := ring.RawRing.Orders[0].OrderState.RawOrder.Protocol
-	_, err := loopring.LoopringFingerprints[contractAddress].SubmitRingFingerprint.SendTransaction("",nil,nil,"")
-	if err != nil {
-		println(err.Error())
-	}
+func (ringClient *RingClient) sendRingFingerprint(ring *types.RingState) {
+	//contractAddress := ring.RawRing.Orders[0].OrderState.RawOrder.Protocol
+	//_, err := loopring.LoopringFingerprints[contractAddress].SubmitRingFingerprint.SendTransaction("",nil,nil,"")
+	//if err != nil {
+	//	println(err.Error())
+	//}
 }
 
-//send Ring to block chain
-func sendRing() {
+//listen fingerprint  accept by chain and then send Ring to block chain
+func (ringClient *RingClient) listenFingerprintSucessAndSendRing() {
 	var filterId string
 	addresses := []common.Address{common.HexToAddress("0x211c9fb2c5ad60a31587a4a11b289e37ed3ea520")}
 	filterReq := &eth.FilterQuery{}
@@ -79,10 +98,11 @@ func sendRing() {
 	} else {
 		println(filterId)
 	}
-	//todo：取消该filterId的订阅
-	//defer func() {
-	//	eth.EthClient.UninstallFilter()
-	//}()
+	//todo：Uninstall this filterId when stop
+	defer func() {
+		var a string
+		eth.EthClient.UninstallFilter(&a, filterId)
+	}()
 
 	logChan := make(chan []eth.Log)
 	if err := eth.EthClient.Subscribe(&logChan, filterId);nil != err {
@@ -93,21 +113,25 @@ func sendRing() {
 			case logs := <-logChan:
 				for _, log := range logs {
 					ringHash := []byte(log.TransactionHash)
-					if _, err := store.Get(ringHash); err == nil {
+					if _, err := ringClient.store.Get(ringHash); err == nil {
 						ring := &types.RingState{}
 						contractAddress := ring.RawRing.Orders[0].OrderState.RawOrder.Protocol
 						//todo:发送到区块链
-						_, err1 := loopring.LoopringImpls[contractAddress].SubmitRing.SendTransaction("", nil, nil, "")
+						_, err1 := loopring.LoopringImpls[contractAddress].SubmitRing.SendTransactionWithSpecificGas("", nil, nil, "")
 						if err1 != nil {
 							println(err1.Error())
 						} else {
 							//标记为已删除,迁移到已完成的列表中
-							unSubmitedRingsStore.Delete(ringHash)
-							//submitedRingsStore.Put(ringHash, ring)
+							ringClient.unSubmitedRingsStore.Delete(ringHash)
+							//submitedRingsStore.Put(ringHash, ring.MarshalJSON())
 						}
 					} else {
 						println(err.Error())
 					}
+				}
+			case stop := <-ringClient.stopChan:
+				if stop {
+					break
 				}
 			}
 		}
@@ -115,7 +139,7 @@ func sendRing() {
 }
 
 //recover after restart
-func recover() {
+func (ringClient *RingClient) recover() {
 
 	//iterator := unSubmitedRingsStore.NewIterator()
 	//if (iterator.Next()) {
@@ -158,14 +182,11 @@ func recover() {
 	//}
 }
 
-//确定同一个包里init会执行几次
-func init() {
-	store = getdb()
-	unSubmitedRingsStore = lrcdb.NewTable(store, "unsubmited")
-	submitedRingsStore = lrcdb.NewTable(store, "submited")
+func (ringClient *RingClient) Start() {
 
 	recover()
-	go sendRing();
+	//go listenFingerprintSucessAndSendRing();
+
 }
 
 func file() string {

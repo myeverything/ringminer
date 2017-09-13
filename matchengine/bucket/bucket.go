@@ -193,18 +193,15 @@ func (b *Bucket) appendToSemiRing( order *types.OrderState) {
 	}
 }
 
-func (b *Bucket) NewOrder(ord types.OrderState) {
+func (b *Bucket) newOrder(ord types.OrderState) {
 	b.mtx.Lock()
 	defer b.mtx.Unlock()
 
 	b.newOrderWithoutLock(ord)
 }
 
-func (b *Bucket) UpdateOrder(ord types.OrderState) {
-	//order的更改，除了订单容量和是否取消等，其他的并不能修改
-	//修改订单的容量，主要涉及收益，其他的并不需修改
-	//订单的新状态
-	//todo：修改时，如果已经提交了ring，如何处理，
+func (b *Bucket) deleteOrder(ord types.OrderState) {
+	//删除订单
 	b.mtx.RLock()
 	defer b.mtx.RUnlock()
 
