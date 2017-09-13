@@ -26,6 +26,7 @@ import (
 	"github.com/Loopring/ringminer/matchengine/bucket"
 	"time"
 	"github.com/Loopring/ringminer/matchengine"
+	"github.com/Loopring/ringminer/config"
 )
 
 func newOrder(outToken string, inToken string, outAmount, inAmount int64, buyFirstEnough bool, idx int) *types.OrderState {
@@ -53,20 +54,22 @@ func newOrder(outToken string, inToken string, outAmount, inAmount int64, buyFir
 }
 
 func TestBucketProxy(t *testing.T) {
+
 	ringClient := matchengine.NewRingClient()
 	ringClient.Start()
-	proxy := bucket.NewBucketProxy(ringClient)
+	c := &config.BucketProxyOptions{}
+	proxy := bucket.NewBucketProxy(*c, ringClient)
 	go proxy.Start()
 
 	order1 := newOrder("token1", "token2", 20000, 10000, true, 1)
 
-	matchengine.OrderStateChan <- order1
+	proxy.GetOrderStateChan() <- order1
 
 	order2 := newOrder("token2", "token3", 30000, 30000, true,  2)
-	matchengine.OrderStateChan <- order2
+	proxy.GetOrderStateChan() <- order2
 
 	order3 := newOrder("token3", "token1", 40000, 20000, true,  3)
-	matchengine.OrderStateChan <- order3
+	proxy.GetOrderStateChan() <- order3
 
 	time.Sleep(100000000)
 }

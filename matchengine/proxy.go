@@ -21,11 +21,7 @@ package matchengine
 import (
 	"github.com/Loopring/ringminer/types"
 	"github.com/Loopring/ringminer/chainclient"
-	"github.com/Loopring/ringminer/chainclient/eth"
 )
-
-var loopring *chainclient.Loopring
-
 
 //代理，控制整个match流程，其中会提供几种实现，如bucket、realtime，etc。
 
@@ -36,14 +32,14 @@ orderbook 实现:
  */
 //var orderMinAmount big.Int	//todo：订单的最小金额，可能需要用map，记录每种货币的最小金额，应该定义filter，过滤环的验证规则
 
-var OrderStateChan types.EngineOrderChan
+type RingSubmitFailedChan chan *types.RingState
 
-//ring 的失败包括：提交失败，ring的合约执行时失败，执行时包括：gas不足，以及其他失败
-var RingSubmitFailedChan chan *types.RingState
+var Loopring *chainclient.Loopring
 
 type Proxy interface {
 	Start()  //启动
 	Stop() //停止
+	GetOrderStateChan() chan *types.OrderState
 	AddFilter()
 }
 
@@ -54,15 +50,7 @@ todo：仍需要工作：调试合约
 3、费用的整理
 4、
  */
-func init() {
-	//todo:change to inject
-	loopring = &chainclient.Loopring{}
-	loopring.LoopringImpls = make(map[types.Address]*chainclient.LoopringProtocolImpl)
-	loopring.LoopringFingerprints = make(map[types.Address]*chainclient.LoopringFingerprintRegistry)
-	loopring.Tokens = make(map[types.Address]*chainclient.Erc20Token)
-	loopring.Client = eth.EthClient
-	orderChan := make(chan *types.OrderState)
-	OrderStateChan = types.EngineOrderChan(orderChan)
 
-	RingSubmitFailedChan = make(chan *types.RingState)
+func init() {
+	//RingSubmitFailedChan = make(chan *types.RingState)
 }

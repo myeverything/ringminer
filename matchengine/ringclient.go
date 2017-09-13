@@ -40,6 +40,9 @@ type RingClient struct {
 
 	fingerprintChan chan *chainclient.FingerprintEvent
 
+	//ring 的失败包括：提交失败，ring的合约执行时失败，执行时包括：gas不足，以及其他失败
+	ringSubmitFailedChans []RingSubmitFailedChan
+
 	stopChan chan bool
 
 	mtx	*sync.RWMutex
@@ -51,10 +54,30 @@ func NewRingClient() *RingClient {
 	ringClient.unSubmitedRingsStore = lrcdb.NewTable(ringClient.store, "unsubmited")
 	ringClient.submitedRingsStore = lrcdb.NewTable(ringClient.store, "submited")
 	ringClient.mtx = &sync.RWMutex{}
+	ringClient.ringSubmitFailedChans = make([]RingSubmitFailedChan,0)
 	return ringClient
 }
 
-//save in db
+func (ringClient *RingClient) AddRingSubmitFailedChan(c RingSubmitFailedChan) {
+	ringClient.mtx.Lock()
+	defer ringClient.mtx.Unlock()
+	ringClient.ringSubmitFailedChans = append(ringClient.ringSubmitFailedChans, c)
+}
+
+func (ringClient *RingClient) DeleteRingSubmitFailedChan(c RingSubmitFailedChan) {
+	ringClient.mtx.Lock()
+	defer ringClient.mtx.Unlock()
+
+	chans := make([]RingSubmitFailedChan, 0)
+	for _, v := range ringClient.ringSubmitFailedChans {
+		if v != c {
+
+			chans = append(chans, v)
+		}
+	}
+	ringClient.ringSubmitFailedChans = chans
+}
+
 func (ringClient *RingClient) NewRing(ring *types.RingState) {
 	ringClient.mtx.Lock()
 	defer ringClient.mtx.Unlock()
@@ -117,7 +140,7 @@ func (ringClient *RingClient) listenFingerprintSucessAndSendRing() {
 						ring := &types.RingState{}
 						contractAddress := ring.RawRing.Orders[0].OrderState.RawOrder.Protocol
 						//todo:发送到区块链
-						_, err1 := loopring.LoopringImpls[contractAddress].SubmitRing.SendTransactionWithSpecificGas("", nil, nil, "")
+						_, err1 := Loopring.LoopringImpls[contractAddress].SubmitRing.SendTransactionWithSpecificGas("", nil, nil, "")
 						if err1 != nil {
 							println(err1.Error())
 						} else {

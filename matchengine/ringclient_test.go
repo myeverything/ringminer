@@ -22,6 +22,8 @@ import (
 	"testing"
 	"github.com/Loopring/ringminer/types"
 	"github.com/Loopring/ringminer/matchengine"
+	"github.com/Loopring/ringminer/chainclient"
+	"github.com/Loopring/ringminer/chainclient/eth"
 )
 
 func TestRingClient(t *testing.T) {
@@ -31,7 +33,13 @@ func TestRingClient(t *testing.T) {
 	hash.SetBytes([]byte("testtesthash"))
 	ring.Hash = *hash
 	ring.FeeMode = 1
-	ringClient := matchengine.NewRingClient()
+	loopring := &chainclient.Loopring{}
+	loopring.LoopringImpls = make(map[types.Address]*chainclient.LoopringProtocolImpl)
+	loopring.LoopringFingerprints = make(map[types.Address]*chainclient.LoopringFingerprintRegistry)
+	loopring.Tokens = make(map[types.Address]*chainclient.Erc20Token)
+	loopring.Client = eth.EthClient
+
+	ringClient := matchengine.NewRingClient(loopring)
 	ringClient.Start()
 
 	ringClient.NewRing(ring)

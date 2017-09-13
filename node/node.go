@@ -51,7 +51,7 @@ func NewNode(logger *zap.Logger) *Node {
 
 	n.peerOrderChan = make(chan *types.Order)
 	n.chainOrderChan = make(chan *types.OrderMined)
-	n.engineOrderChan = make(chan *types.OrderState)
+	//n.engineOrderChan = make(chan *types.OrderState)
 	n.logger = logger
 	n.options = config.LoadConfig()
 
@@ -111,6 +111,7 @@ func (n *Node) registerEthClient() {
 }
 
 func (n *Node) registerMatchengine() {
-	whisper := &bucket.Whisper{n.engineOrderChan}
-	n.matchengine = bucket.NewBucketProxy(n.options.BucketProxy, whisper)
+	//whisper := bucket.Whisper(n.engineOrderChan)
+	n.matchengine = bucket.NewBucketProxy(n.options.BucketProxy, nil)
+	n.engineOrderChan = n.matchengine.GetOrderStateChan()
 }
