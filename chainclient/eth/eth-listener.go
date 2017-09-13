@@ -35,7 +35,7 @@ type EthClientConfig struct {
 }
 
 type Whisper struct {
-	chainOrderChan chan *types.OrderMined
+	ChainOrderChan chan *types.OrderMined
 }
 
 //监听内容有：环路订单，地址的token余额变动如transfer等
@@ -78,7 +78,7 @@ func (l *EthClientListener) Start() {
 	// TODO(fukun): 解析log->ORDERMINED
 	for {
 		select {
-		case l.whisper.chainOrderChan <- &types.OrderMined{}:
+		case l.whisper.ChainOrderChan <- &types.OrderMined{}:
 			println("----")
 		}
 	}

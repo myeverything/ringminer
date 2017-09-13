@@ -41,9 +41,9 @@ type OrderBookConfig struct {
 }
 
 type Whisper struct {
-	peerOrderChan chan *types.Order
-	engineOrderChan chan *types.OrderState
-	chainOrderChan chan *types.OrderMined
+	PeerOrderChan chan *types.Order
+	EngineOrderChan chan *types.OrderState
+	ChainOrderChan chan *types.OrderMined
 }
 
 type OrderBook struct {
@@ -87,9 +87,9 @@ func (s *OrderBook) Start() {
 	go func() {
 		for {
 			select {
-			case ord := <- s.whisper.peerOrderChan:
+			case ord := <- s.whisper.PeerOrderChan:
 				s.peerOrderHook(ord)
-			case ord := <- s.whisper.chainOrderChan:
+			case ord := <- s.whisper.ChainOrderChan:
 				s.chainOrderHook(ord)
 			}
 		}
@@ -134,7 +134,7 @@ func (ob *OrderBook) peerOrderHook(ord *types.Order) error {
 
 	// TODO(fk): send orderState to matchengine
 	state := ord.Convert()
-	ob.whisper.engineOrderChan <- state
+	ob.whisper.EngineOrderChan <- state
 
 	return nil
 }

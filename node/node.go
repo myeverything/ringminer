@@ -30,11 +30,6 @@ import (
 	"github.com/Loopring/ringminer/matchengine/bucket"
 )
 
-
-type whisper struct {
-
-}
-
 // TODO(fk): add services
 type Node struct {
 	options 				*config.GlobalConfig

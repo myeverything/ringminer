@@ -51,7 +51,7 @@ type BucketProxyConfig struct {
 }
 
 type Whisper struct {
-	engineOrderChan chan *types.OrderState
+	EngineOrderChan chan *types.OrderState
 }
 
 type BucketProxy struct {
@@ -111,7 +111,7 @@ func (bp *BucketProxy) Start() {
 			}
 
 			// TODO(fukun): add something
-		case orderState := <- bp.whisper.engineOrderChan:
+		case orderState := <- bp.whisper.EngineOrderChan:
 			println(orderState.RemainedAmountB)
 		}
 	}
@@ -170,8 +170,8 @@ func (bp *BucketProxy) submitRingFingerprint(ring *types.RingState) {
 	} else {
 		//todo:提交ring
 		//提交凭证，之后，等待凭证成功的event，然后提交ring，待提交的ring需要保存
-		fingerContractAddress := &types.Address{}
-		loopring.LoopringFingerprints[*fingerContractAddress].SubmitRingFingerprint.SendTransaction(fingerContractAddress.Hex())
+		//fingerContractAddress := &types.Address{}
+		//loopring.LoopringFingerprints[*fingerContractAddress].SubmitRingFingerprint.SendTransaction(fingerContractAddress.Hex())
 	}
 }
 

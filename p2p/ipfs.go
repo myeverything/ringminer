@@ -30,7 +30,7 @@ type IpfsConfig struct {
 }
 
 type Whisper struct {
-	peerOrderChan			chan *types.Order
+	PeerOrderChan			chan *types.Order
 }
 
 type IPFSListener struct {
@@ -72,7 +72,7 @@ func (l *IPFSListener) Start() {
 			record, _ := l.sub.Next()
 			data := record.Data()
 			ord := GenOrder(data)
-			l.whisper.peerOrderChan <- ord
+			l.whisper.PeerOrderChan <- ord
 		}
 	}()
 }
