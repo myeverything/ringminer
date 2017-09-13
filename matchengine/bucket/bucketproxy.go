@@ -112,7 +112,7 @@ func (bp *BucketProxy) Start() {
 
 			// TODO(fukun): add something
 		case orderState := <- bp.whisper.EngineOrderChan:
-			println(orderState.RemainedAmountB)
+			println("get from orderbook", orderState.RemainedAmountB)
 		}
 	}
 }
