@@ -62,7 +62,7 @@ func NewDB(file string, cache, handles int) *LDBDatabase {
 		WriteBuffer:            cache * opt.MiB, // Two of these are used internally
 	})
 	if err != nil {
-		log.Crit(log.ERROR_LDB_CREATE_FAILED, err.Error())
+		log.Fatal(log.ERROR_LDB_CREATE_FAILED, log.NewField("content", err.Error()))
 	}
 
 	l.db = db
@@ -121,9 +121,9 @@ func (db *LDBDatabase) Close() {
 
 	err := db.db.Close()
 	if err == nil {
-		log.Info("Database closed", err.Error())
+		log.Info("Database closed", log.NewField("content",err.Error()))
 	} else {
-		log.Error("Failed to close database", err.Error())
+		log.Error("Failed to close database", log.NewField("content",err.Error()))
 	}
 }
 

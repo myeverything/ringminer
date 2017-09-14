@@ -21,21 +21,26 @@ package log
 import (
 	"go.uber.org/zap"
 	"encoding/json"
+	"go.uber.org/zap/zapcore"
 )
 
 var logger *zap.Logger
+var sugaredLogger *zap.SugaredLogger
 
 const logConfig = `{
 	  "level": "debug",
-	  "development": false,
+	  "development": true,
+	  "disableStacktrace": false,
 	  "encoding": "json",
 	  "outputPaths": ["zap.log"],
 	  "errorOutputPaths": ["err.log"],
-	  "initialFields": {"foo": "bar"},
 	  "encoderConfig": {
-	    "messageKey": "message",
+	    "messageKey": "msg",
 	    "levelKey": "level",
-	    "levelEncoder": "lowercase"
+	    "stacktraceKey":"trace",
+	    "timeKey":"ts",
+	    "levelEncoder": "lowercase",
+	    "timeEncoder":"iso8601"
 	  }
 	}`
 
@@ -50,10 +55,17 @@ func NewLogger() *zap.Logger {
 		panic(err)
 	}
 
+	//cfg.EncoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
+	//"callerKey":"C"
+	//cfg.EncoderConfig.EncodeCaller = zapcore.ShortCallerEncoder
+	//cfg.EncoderConfig.LineEnding = zapcore.DefaultLineEnding
+	//opts := zap.AddStacktrace(zap.DebugLevel)
+
 	logger, err = cfg.Build()
 	if err != nil {
 		panic(err)
 	}
+	sugaredLogger = logger.Sugar()
 
 	return logger
 }

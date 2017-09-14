@@ -25,6 +25,7 @@ type Database interface {
 	Delete(key []byte) error
 	Close()
 	NewBatch() Batch
+
 }
 
 // interface for batch and table batch
