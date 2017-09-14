@@ -25,7 +25,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"encoding/json"
 	"github.com/Loopring/ringminer/chainclient"
-	"reflect"
 )
 
 func TestChainClient(t *testing.T) {
