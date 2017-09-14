@@ -52,7 +52,7 @@ func newRpcMethod(name string) func(result interface{}, args ...interface{}) err
 	}
 }
 
-//todo:hexutil.Big是否应被更合理地替换
+//todo:hexutil.Big should be insteaded ?
 type CallArg struct {
 	From	string
 	To	string
@@ -67,6 +67,7 @@ func NewClient() *chainclient.Client {
 
 	//set rpcmethod
 	applyMethod(client)
+
 	//Subscribe
 	client.Subscribe = subscribe
 

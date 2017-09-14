@@ -38,7 +38,6 @@ type Whisper struct {
 	ChainOrderChan chan *types.OrderMined
 }
 
-//监听内容有：环路订单，地址的token余额变动如transfer等
 // TODO(fukun):不同的channel，应当交给orderbook统一进行后续处理，可以将channel作为函数返回值、全局变量、参数等方式
 type EthClientListener struct {
 	config 		EthClientConfig

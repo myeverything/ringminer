@@ -23,6 +23,7 @@ import (
 	"encoding/json"
 )
 
+//todo: I'm not sure whether zap support Rotating
 var logger *zap.Logger
 var sugaredLogger *zap.SugaredLogger
 

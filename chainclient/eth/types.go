@@ -24,7 +24,6 @@ import (
 	"github.com/Loopring/ringminer/types"
 )
 
-//通用数据结构
 type Block struct {
 	Number	hexutil.Big
 	Hash	string
