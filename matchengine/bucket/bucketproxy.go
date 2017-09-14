@@ -23,6 +23,7 @@ import (
 	"github.com/Loopring/ringminer/types"
 	"github.com/Loopring/ringminer/matchengine"
 	"github.com/Loopring/ringminer/config"
+	"github.com/Loopring/ringminer/log"
 )
 
 /**
@@ -102,7 +103,7 @@ func (bp *BucketProxy) Start() {
 			for _,o := range orderRing.RawRing.Orders {
 				s = s + " -> " + " {outtoken:" + string(o.OrderState.RawOrder.TokenS.Bytes()) + " fillamountS:" + o.FillAmountS.RealValue().String() + ", intoken:" + string(o.OrderState.RawOrder.TokenB.Bytes()) + "}"
 			}
-			println("ringChan receive:" + string(orderRing.Hash.Bytes()) + " ring is :" + s)
+			log.Infof("ringChan receive:%s ring is %s", string(orderRing.Hash.Bytes()), s)
 
 			bp.ringClient.NewRing(orderRing)
 			for _, b := range bp.buckets {

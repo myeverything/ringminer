@@ -21,7 +21,6 @@ package log
 import (
 	"go.uber.org/zap"
 	"encoding/json"
-	"go.uber.org/zap/zapcore"
 )
 
 var logger *zap.Logger

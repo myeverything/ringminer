@@ -19,13 +19,13 @@
 package log
 
 
-type Template string
+//type Template string
 
 const (
-	ERROR_P2P_LISTEN_START Template = "failed to start listener"
-	ERROR_P2P_LISTEN_ACCEPT Template = "failed to accept ipfs data"
-	ERROR_P2P_LISTEN_STOP Template = "p2p network stopped"
-	ERROR_LDB_CREATE_FAILED Template = "leveldb create failed"
-	LOG_P2P_ACCEPT Template = "accept p2p network order"
-	LOG_P2P_STOP Template = "stop p2p network success"
+	ERROR_P2P_LISTEN_START  = "failed to start listener"
+	ERROR_P2P_LISTEN_ACCEPT  = "failed to accept ipfs data"
+	ERROR_P2P_LISTEN_STOP  = "p2p network stopped"
+	ERROR_LDB_CREATE_FAILED  = "leveldb create failed"
+	LOG_P2P_ACCEPT  = "accept p2p network order"
+	LOG_P2P_STOP  = "stop p2p network success"
 )

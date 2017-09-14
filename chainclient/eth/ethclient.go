@@ -31,6 +31,7 @@ import (
 	"errors"
 	"github.com/ethereum/go-ethereum/common"
 	"time"
+	"github.com/Loopring/ringminer/log"
 )
 
 /**
@@ -106,7 +107,7 @@ func doSubscribe(chanVal reflect.Value, filterId string) {
 			v :=  chanVal.Type().Elem()
 			result := reflect.New(v)
 			if err := EthClient.GetFilterChanges(result.Interface(), filterId); nil != err {
-				println(err.Error())
+				log.Errorf("error:%s",err.Error())
 			} else {
 				chanVal.Send(result.Elem())
 			}

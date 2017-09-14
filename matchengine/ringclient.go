@@ -28,6 +28,7 @@ import (
 	"github.com/Loopring/ringminer/chainclient/eth"
 	"github.com/ethereum/go-ethereum/common"
 	"sync"
+	"github.com/Loopring/ringminer/log"
 )
 
 //保存ring，并将ring发送到区块链，同样需要分为待完成和已完成
@@ -86,11 +87,11 @@ func (ringClient *RingClient) NewRing(ring *types.RingState) {
 		//todo:save
 		if ringBytes,err := json.Marshal(ring); err == nil {
 			ringClient.unSubmitedRingsStore.Put(ring.Hash.Bytes(), ringBytes)
-			println("ringHash:", ring.Hash.Hex())
+			log.Infof("ringHash:%s", ring.Hash.Hex())
 			//todo:async send to block chain
 			ringClient.sendRingFingerprint(ring)
 		} else {
-			println(err.Error())
+			log.Errorf("error:%s",err.Error())
 		}
 	}
 }
@@ -117,9 +118,9 @@ func (ringClient *RingClient) listenFingerprintSucessAndSendRing() {
 	filterReq.FromBlock = "latest"
 	filterReq.ToBlock = "latest"
 	if err := eth.EthClient.NewFilter(&filterId, filterReq); nil != err {
-		println(err.Error())
+		log.Errorf("error:%s",err.Error())
 	} else {
-		println(filterId)
+		log.Infof("filterId:%s",filterId)
 	}
 	//todo：Uninstall this filterId when stop
 	defer func() {
@@ -129,27 +130,27 @@ func (ringClient *RingClient) listenFingerprintSucessAndSendRing() {
 
 	logChan := make(chan []eth.Log)
 	if err := eth.EthClient.Subscribe(&logChan, filterId);nil != err {
-		println(err.Error())
+		log.Errorf("error:%s",err.Error())
 	} else {
 		for {
 			select {
 			case logs := <-logChan:
-				for _, log := range logs {
-					ringHash := []byte(log.TransactionHash)
+				for _, log1 := range logs {
+					ringHash := []byte(log1.TransactionHash)
 					if _, err := ringClient.store.Get(ringHash); err == nil {
 						ring := &types.RingState{}
 						contractAddress := ring.RawRing.Orders[0].OrderState.RawOrder.Protocol
 						//todo:发送到区块链
 						_, err1 := Loopring.LoopringImpls[contractAddress].SubmitRing.SendTransactionWithSpecificGas("", nil, nil, "")
 						if err1 != nil {
-							println(err1.Error())
+							log.Errorf("error:%s",err1.Error())
 						} else {
 							//标记为已删除,迁移到已完成的列表中
 							ringClient.unSubmitedRingsStore.Delete(ringHash)
 							//submitedRingsStore.Put(ringHash, ring.MarshalJSON())
 						}
 					} else {
-						println(err.Error())
+						log.Errorf("error:%s", err.Error())
 					}
 				}
 			case stop := <-ringClient.stopChan:
