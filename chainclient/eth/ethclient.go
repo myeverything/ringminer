@@ -125,7 +125,7 @@ func subscribe(result interface{}, args ...interface{}) error {
 }
 
 func applyMethod(client *chainclient.Client) error {
-	//is it should be in config ?
+	//todo:is it should be in config ?
 	methodNameMap := map[string]string{
 		"clientVersion":"web3_clientVersion",
 		"sha3":"web3_sha3",
