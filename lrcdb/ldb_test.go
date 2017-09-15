@@ -142,3 +142,22 @@ func TestTableBatch_Put(t *testing.T) {
 	tablebatch.Write()
 }
 
+
+
+func TestIterator(t *testing.T) {
+	ldb := getdb()
+	kt := lrcdb.NewTable(ldb, "ddd")
+	iterator := kt.NewIterator(nil,nil)
+	for iterator.Next() {
+		t.Log("key:", string(iterator.Key()), "value:", string(iterator.Value()))
+	}
+
+	//for i:=1;i<=10;i++ {
+	//	kt.Put([]byte(strconv.Itoa(i)), []byte("value_" + strconv.Itoa(i)))
+	//}
+	//if value, err := ldb.Get([]byte("key_2")); err != nil {
+	//	t.Log(err.Error())
+	//} else {
+	//	t.Log(string(value))
+	//}
+}

@@ -80,7 +80,7 @@ func signAndSendTransaction(result interface{}, args ...interface{}) error {
 	from := args[0].(string)
 	transaction := args[1].(*ethTypes.Transaction)
 	if privateKey, ok := PrivateMap[from]; !ok {
-		return errors.New("there isn't a private for this address:" + from)
+		return errors.New("there isn't a private key for this address:" + from)
 	} else {
 		signer := &ethTypes.HomesteadSigner{}
 
@@ -194,6 +194,7 @@ func init() {
 	client, _ := rpc.Dial("http://127.0.0.1:8545")
 	rpcClient = client
 	EthClient = NewClient()
+	//todo:the private key must be encrypted in config file.
 	PrivateMap = make(map[string]*ecdsa.PrivateKey)
 	privateKey,_ := crypto.HexToECDSA("4f5b916dc82fb59cc57dbdd2fee5b49b2bdfe6ea34534a5d40c4475e9740c66e")
 	PrivateMap["0x4ec94e1007605d70a86279370ec5e4b755295eda"] = privateKey

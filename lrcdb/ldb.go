@@ -23,21 +23,15 @@ import (
 	"sync"
 	"github.com/Loopring/ringminer/log"
 	"github.com/syndtr/goleveldb/leveldb/opt"
-	"github.com/syndtr/goleveldb/leveldb/iterator"
 	"github.com/syndtr/goleveldb/leveldb/util"
+	"math/big"
 )
-
-type LDB struct {
-	db *leveldb.DB
-	batch *leveldb.Batch
-	lock sync.RWMutex
-}
 
 var OpenFileLimit = 64
 
 type LDBDatabase struct {
+	*leveldb.DB       // LevelDB instance
 	fn string            // filename for reporting
-	db *leveldb.DB       // LevelDB instance
 	lock sync.Mutex      // Mutex protecting the quit channel access
 }
 
@@ -65,7 +59,7 @@ func NewDB(file string, cache, handles int) *LDBDatabase {
 		log.Fatal(log.ERROR_LDB_CREATE_FAILED, log.NewField("content", err.Error()))
 	}
 
-	l.db = db
+	l.DB = db
 	l.fn = file
 
 	// TODO(fk): implement recovery
@@ -80,11 +74,11 @@ func (db *LDBDatabase) Path() string {
 }
 
 func (db *LDBDatabase) Put(key []byte, value []byte) error {
-	return db.db.Put(key, value, nil)
+	return db.DB.Put(key, value, nil)
 }
 
 func (db *LDBDatabase) Get(key []byte) ([]byte, error) {
-	dat, err := db.db.Get(key, nil)
+	dat, err := db.DB.Get(key, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -92,34 +86,28 @@ func (db *LDBDatabase) Get(key []byte) ([]byte, error) {
 }
 
 func (db *LDBDatabase) Delete(key []byte) error {
-	return db.db.Delete(key, nil)
+	return db.DB.Delete(key, nil)
 }
 
-func (db *LDBDatabase) NewIterator() iterator.Iterator {
-	return db.db.NewIterator(nil, nil)
+func (db *LDBDatabase) NewIterator(start []byte, limit []byte) Iterator {
+	return db.DB.NewIterator(&util.Range{Start:start, Limit:limit}, nil)
 }
 
 // TODO(fk): scan db with iterator means nothing
-func (db *LDBDatabase) Scan()  (map[string]string, error) {
-	var data map[string]string
-	iter := db.db.NewIterator(nil, nil)
-	for iter.Next() {
-		data[string(iter.Key())] = string(iter.Value())
-	}
-	return data, nil
-}
-
-// Range create prefix
-func Range() {
-	prefix := []byte("")
-	util.BytesPrefix(prefix)
-}
+//func (db *LDBDatabase) Scan() (map[string]string, error) {
+//	var data map[string]string
+//	iter := db.DB.NewIterator(nil, nil)
+//	for iter.Next() {
+//		data[string(iter.Key())] = string(iter.Value())
+//	}
+//	return data, nil
+//}
 
 func (db *LDBDatabase) Close() {
 	db.lock.Lock()
 	defer db.lock.Unlock()
 
-	err := db.db.Close()
+	err := db.DB.Close()
 	if err == nil {
 		log.Info("Database closed", log.NewField("content",err.Error()))
 	} else {
@@ -128,75 +116,88 @@ func (db *LDBDatabase) Close() {
 }
 
 func (db *LDBDatabase) LDB() *leveldb.DB {
-	return db.db
+	return db.DB
 }
 
 func (db *LDBDatabase) NewBatch() Batch {
-	return &ldbBatch{db: db.db, b: new(leveldb.Batch)}
+	return &ldbBatch{db: db.DB, Batch: new(leveldb.Batch)}
 }
 
 type ldbBatch struct {
+	*leveldb.Batch
 	db *leveldb.DB
-	b  *leveldb.Batch
-}
-
-func (b *ldbBatch) Put(key, value []byte) error {
-	b.b.Put(key, value)
-	return nil
 }
 
 func (b *ldbBatch) Write() error {
-	return b.db.Write(b.b, nil)
+	return b.db.Write(b.Batch, nil)
 }
 
+const seprator = "_"
+
 type table struct {
-	db     Database
-	prefix string
+	Database
+	prefix []byte
+	prefixLargest []byte
 }
 
 // NewTable returns a Database object that prefixes all keys with a given
 // string.
 func NewTable(db Database, prefix string) Database {
+	pb := []byte(prefix + seprator)
+	bi := big.NewInt(0)
+	bi.SetBytes(pb)
+	bi.Add(bi, big.NewInt(1))
+
 	return &table{
-		db:     db,
-		prefix: prefix,
+		Database:     db,
+		prefix: pb,
+		prefixLargest:bi.Bytes(),
 	}
 }
 
 func (dt *table) Put(key []byte, value []byte) error {
-	return dt.db.Put(append([]byte(dt.prefix), key...), value)
+	return dt.Database.Put(append(dt.prefix, key...), value)
 }
 
 func (dt *table) Get(key []byte) ([]byte, error) {
-	return dt.db.Get(append([]byte(dt.prefix), key...))
+	return dt.Database.Get(append(dt.prefix, key...))
 }
 
 func (dt *table) Delete(key []byte) error {
-	return dt.db.Delete(append([]byte(dt.prefix), key...))
+	return dt.Database.Delete(append(dt.prefix, key...))
+}
+
+func (dt *table) NewIterator(start []byte, limit []byte) Iterator {
+	tableStart := append(dt.prefix, start...)
+	tableLimit := append(dt.prefixLargest, limit...)
+	return dt.Database.NewIterator(tableStart, tableLimit)
 }
 
 func (dt *table) Close() {
 	// Do nothing; don't close the underlying DB.
 }
 
+func (dt *table) NewBatch() Batch {
+	return &tableBatch{dt.NewBatch(), dt.prefix}
+}
+
 type tableBatch struct {
-	batch  Batch
-	prefix string
+	Batch
+	prefix []byte
 }
 
 // NewTableBatch returns a Batch object which prefixes all keys with a given string.
 func NewTableBatch(db Database, prefix string) Batch {
-	return &tableBatch{db.NewBatch(), prefix}
+	return &tableBatch{
+		Batch:db.NewBatch(),
+		prefix:[]byte(prefix + seprator),
+	}
 }
 
-func (dt *table) NewBatch() Batch {
-	return &tableBatch{dt.db.NewBatch(), dt.prefix}
+func (tb *tableBatch) Put(key, value []byte) {
+	tb.Batch.Put(append(tb.prefix, key...), value)
 }
 
-func (tb *tableBatch) Put(key, value []byte) error {
-	return tb.batch.Put(append([]byte(tb.prefix), key...), value)
-}
-
-func (tb *tableBatch) Write() error {
-	return tb.batch.Write()
+func (tb *tableBatch) Delete(key []byte) {
+	tb.Batch.Delete(append(tb.prefix, key...))
 }

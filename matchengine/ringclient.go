@@ -165,50 +165,46 @@ func (ringClient *RingClient) listenFingerprintSucessAndSendRing() {
 //recover after restart
 func (ringClient *RingClient) recover() {
 
-	//iterator := unSubmitedRingsStore.NewIterator()
-	//if (iterator.Next()) {
-	//	keyBytes := iterator.Key()
-	//	valueBytes := iterator.Value()
-	//	println("key:",string(keyBytes)," value:", string(valueBytes))
-	//}
-
 	//todo: Traversal the uncompelete rings
-
-	//hash := &types.Hash{}
-	//hash.SetBytes([]byte("testtesthash"))
-	//if ringBytes,err := unSubmitedRingsStore.Get(hash.Bytes());err == nil {
-	//	ring := &types.RingState{}
-	//	if err := json.Unmarshal(ringBytes, ring); err != nil {
-	//		println(err.Error())
-	//	} else {
-	//		contractAddress := ring.RawRing.Orders[0].OrderState.RawOrder.Protocol
-	//		var isSubmitFingerprint bool
-	//		var isSubmitRing bool
-	//		if err := loopring.LoopringFingerprints[contractAddress].FingerprintFound.Call(&isSubmitFingerprint, "", ""); err == nil {
-	//			if (isSubmitFingerprint) {
-	//				//todo:sendTransaction, check have ring been submited.
-	//				if err := loopring.LoopringImpls[contractAddress].SettleRing.Call(&isSubmitRing, "", ""); err == nil {
-	//					if (!isSubmitRing && canSubmit(ring)) {
-	//						//loopring.LoopringImpls[contractAddress].SubmitRing.SendTransaction(contractAddress, "", "")
-	//					}
-	//				} else {
-	//					println(err.Error())
-	//				}
-	//			} else {
-	//				NewRing(ring)
-	//			}
-	//		} else {
-	//			println(err.Error())
-	//		}
-	//	}
-	//} else {
-	//	println(err.Error())
-	//}
+	iterator := ringClient.unSubmitedRingsStore.NewIterator(nil, nil)
+	for iterator.Next() {
+		dataBytes := iterator.Value()
+		ring := &types.RingState{}
+		if err := json.Unmarshal(dataBytes, ring); nil != err {
+			log.Errorf("error:%s", err.Error())
+		} else {
+			contractAddress := ring.RawRing.Orders[0].OrderState.RawOrder.Protocol
+			var isSubmitFingerprint bool
+			var isSubmitRing bool
+			if canSubmit(ring) {
+				if err := Loopring.LoopringFingerprints[contractAddress].FingerprintFound.Call(&isSubmitFingerprint, "", ""); err == nil {
+					if (isSubmitFingerprint) {
+						//todo:sendTransaction, check have ring been submited.
+						if err := Loopring.LoopringImpls[contractAddress].SettleRing.Call(&isSubmitRing, "", ""); err == nil {
+							if (!isSubmitRing && canSubmit(ring)) {
+								//loopring.LoopringImpls[contractAddress].SubmitRing.SendTransaction(contractAddress, "", "")
+							}
+						} else {
+							log.Errorf("error:%s", err.Error())
+						}
+					} else {
+						ringClient.sendRingFingerprint(ring)
+					}
+				} else {
+					log.Errorf("error:%s", err.Error())
+				}
+			} else {
+				for _, c := range ringClient.ringSubmitFailedChans {
+					c <- ring
+				}
+			}
+		}
+	}
 }
 
 func (ringClient *RingClient) Start() {
 
-	recover()
+	ringClient.recover()
 	//go listenFingerprintSucessAndSendRing();
 
 }

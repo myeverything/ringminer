@@ -27,6 +27,8 @@ import (
 	"time"
 	"github.com/Loopring/ringminer/matchengine"
 	"github.com/Loopring/ringminer/config"
+	"math"
+	"github.com/Loopring/ringminer/log"
 )
 
 func newOrder(outToken string, inToken string, outAmount, inAmount int64, buyFirstEnough bool, idx int) *types.OrderState {
@@ -72,4 +74,37 @@ func TestBucketProxy(t *testing.T) {
 	proxy.GetOrderStateChan() <- order3
 
 	time.Sleep(100000000)
+}
+
+func TestBaoxian(t *testing.T) {
+	//baseAmount := 0.5
+	//rate := 0.05
+
+	log.NewLogger()
+	//log.Error("llll", "dddd")
+	//order1 := newOrder("token1", "token2", 20000, 10000, true, 1)
+	//
+	//log.Info("dddddddd%s",log.NewField("order", order1))
+	//
+	//println( time.Now().Unix())
+	//for i:=0;i<=10;i++ {
+	//	log.Fatal("dddddddd",log.NewField("order", "kkkk"))
+	//
+	//}
+
+	//incomeAmount := 0.0
+	//println(baseAmount*rate*2 + baseAmount*rate*rate)
+	//incomeAmount = income(baseAmount, rate, 20, 20, incomeAmount)
+	//println(int(incomeAmount*100))
+}
+
+func income(baseAmount,rate float64,number int,years int, incomeAmount float64) float64 {
+	if (number > 0) {
+		number--
+		//println("number:", number, " years:", years)
+		incomeAmount = incomeAmount + baseAmount * float64(years - number) *math.Pow(rate, float64(1+number))
+		return income(baseAmount, rate, number,years, incomeAmount)
+	} else {
+		return incomeAmount
+	}
 }

@@ -23,13 +23,29 @@ type Database interface {
 	Put(key []byte, value []byte) error
 	Get(key []byte) ([]byte, error)
 	Delete(key []byte) error
+	NewIterator(start []byte, limit []byte) Iterator
 	Close()
 	NewBatch() Batch
-
 }
 
 // interface for batch and table batch
 type Batch interface {
-	Put(key, value []byte) error
+	Put(key, value []byte)
 	Write() error
+	Delete(key []byte)
+	Dump() []byte
+	Len() int
+	Reset()
+
+}
+
+type Iterator interface {
+	First() bool
+	Last() bool
+	Seek(key []byte) bool
+	Next() bool
+	Prev() bool
+
+	Key() []byte
+	Value() []byte
 }

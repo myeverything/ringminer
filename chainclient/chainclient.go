@@ -23,6 +23,7 @@ import (
 	"math/big"
 )
 
+//similar to web3
 type RpcMethod func(result interface{}, args ...interface{}) error
 
 type Client struct {
@@ -89,7 +90,7 @@ type AbiMethod interface {
 	SendTransaction(from string, args ...interface{}) (string, error)
 }
 
-//兼容不同区块链
+//the base info of contract
 type Contract struct {
 	Abi interface{}
 	Address string
