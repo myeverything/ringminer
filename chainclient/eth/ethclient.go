@@ -119,6 +119,7 @@ func doSubscribe(chanVal reflect.Value, filterId string) {
 func subscribe(result interface{}, args ...interface{}) error {
 	//the first arg must be filterId
 	filterId := args[0].(string)
+	//todo:should check result is a chan
 	chanVal := reflect.ValueOf(result).Elem()
 	go doSubscribe(chanVal, filterId)
 	return nil
