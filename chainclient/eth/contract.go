@@ -49,6 +49,7 @@ func (m *AbiMethod) Call(result interface{}, blockParameter string, args ...inte
 	arg.From = m.Address
 	arg.To = m.Address	//when call a contract method this arg is unnecessary.
 	arg.Data = data
+	//todo:m.Abi.Unpack
 	return EthClient.Call(result, arg, blockParameter)
 }
 
