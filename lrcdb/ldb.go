@@ -137,11 +137,10 @@ const seprator = "_"
 type table struct {
 	Database
 	prefix []byte
-	prefixLargest []byte
+	prefixLargest []byte //todo: remove it ??
 }
 
-// NewTable returns a Database object that prefixes all keys with a given
-// string.
+// NewTable returns a Database object that prefixes all keys with a given string.
 func NewTable(db Database, prefix string) Database {
 	pb := []byte(prefix + seprator)
 	bi := big.NewInt(0)
