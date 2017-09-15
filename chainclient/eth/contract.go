@@ -134,8 +134,8 @@ func NewContract(contract interface{}, address, abiStr string  ) error {
 
 	e := reflect.ValueOf(contract).Elem()
 
-	reflect.ValueOf(contract).Elem().FieldByName("Abi").Set(reflect.ValueOf(cabi))
-	reflect.ValueOf(contract).Elem().FieldByName("Address").Set(reflect.ValueOf(address))
+	e.FieldByName("Abi").Set(reflect.ValueOf(cabi))
+	e.FieldByName("Address").Set(reflect.ValueOf(address))
 
 	applyAbiMethod(e, cabi, address)
 
