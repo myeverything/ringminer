@@ -36,7 +36,6 @@ type Batch interface {
 	Dump() []byte
 	Len() int
 	Reset()
-
 }
 
 type Iterator interface {

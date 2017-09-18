@@ -25,6 +25,7 @@ import (
 	"math/rand"
 	"github.com/Loopring/ringminer/types"
 	"math/big"
+	"qiniupkg.com/x/log.v7"
 )
 
 //负责生成ring，并计算ring相关的所有参数
@@ -91,6 +92,7 @@ func (b *Bucket) generateRing (order *types.OrderState) {
 
 		//是否与最后一个订单匹配，匹配则可成环
 		if (lastOrder.RawOrder.TokenB == order.RawOrder.TokenS) {
+
 			ringTmp := &types.RingState{}
 			ringTmp.RawRing = &types.Ring{}
 
@@ -102,7 +104,10 @@ func (b *Bucket) generateRing (order *types.OrderState) {
 			ringTmp.RawRing.Orders = append(ringTmp.RawRing.Orders, convertOrderStateToFilledOrder(order))
 			//兑换率是否匹配
 			if (matchengine.PriceValid(ringTmp)) {
+
+
 				matchengine.ComputeRing(ringTmp) //计算兑换的费用、折扣率等，便于计算收益，选择最大环
+				log.Debugf("bucket:%s, len:%d, fee:%d, order.idx:%s",b.token.Str(),len(b.orders), ringTmp.LegalFee.RealValue().Int64(), semiRing.orders[0].OrderHash.Str())
 				//选择收益最大的环
 				if (ring == nil || ringTmp.LegalFee.Cmp(ring.LegalFee) > 0) {
 					ringTmp.Hash = matchengine.Hash(ringTmp)

@@ -23,7 +23,6 @@ import (
 	"github.com/Loopring/ringminer/types"
 	"github.com/Loopring/ringminer/matchengine"
 	"github.com/Loopring/ringminer/config"
-	"github.com/Loopring/ringminer/log"
 )
 
 /**
@@ -93,17 +92,15 @@ func (bp *BucketProxy) GetOrderStateChan() chan *types.OrderState {
 	return bp.OrderStateChan
 }
 
-func (bp *BucketProxy) Start() {
+func (bp *BucketProxy) Start(debugRingChan chan *types.RingState) {
 	//orderstatechan and ringchan
 	go bp.listenOrderState()
+
 	for {
 		select {
 		case orderRing := <- bp.ringChan:
-			s := ""
-			for _,o := range orderRing.RawRing.Orders {
-				s = s + " -> " + " {outtoken:" + string(o.OrderState.RawOrder.TokenS.Bytes()) + " fillamountS:" + o.FillAmountS.RealValue().String() + ", intoken:" + string(o.OrderState.RawOrder.TokenB.Bytes()) + "}"
-			}
-			log.Infof("ringChan receive:%s ring is %s", string(orderRing.Hash.Bytes()), s)
+			//todo:must be in debug mode
+			debugRingChan <- orderRing
 
 			bp.ringClient.NewRing(orderRing)
 			for _, b := range bp.buckets {
@@ -143,6 +140,7 @@ func (bp *BucketProxy) newOrder(order *types.OrderState) {
 		bucket := NewBucket(order.RawOrder.TokenS, bp.ringChan)
 		bp.buckets[order.RawOrder.TokenS] = *bucket
 	}
+
 	if _,ok := bp.buckets[order.RawOrder.TokenB] ; !ok {
 		bucket := NewBucket(order.RawOrder.TokenB, bp.ringChan)
 		bp.buckets[order.RawOrder.TokenB] = *bucket

@@ -37,7 +37,7 @@ type RingSubmitFailedChan chan *types.RingState
 var Loopring *chainclient.Loopring
 
 type Proxy interface {
-	Start()  //启动
+	Start(debugRingChan chan *types.RingState)  //启动
 	Stop() //停止
 	GetOrderStateChan() chan *types.OrderState
 	AddFilter()

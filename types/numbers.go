@@ -50,7 +50,7 @@ func (ei *EnlargedInt) DivBigInt(x *EnlargedInt, y *big.Int) *EnlargedInt {
 		ei.Decimals = big.NewInt(1)
 	}
 	ei.Value.Div(x.Value, y)
-	ei.Decimals = ei.Decimals.Mul(ei.Decimals, x.Decimals)
+	ei.Decimals = x.Decimals
 	return ei
 }
 

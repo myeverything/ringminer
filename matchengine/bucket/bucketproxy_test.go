@@ -27,7 +27,6 @@ import (
 	"time"
 	"github.com/Loopring/ringminer/matchengine"
 	"github.com/Loopring/ringminer/config"
-	"math"
 	"github.com/Loopring/ringminer/log"
 )
 
@@ -45,7 +44,7 @@ func newOrder(outToken string, inToken string, outAmount, inAmount int64, buyFir
 	order.AmountS = big.NewInt(outAmount)
 	order.AmountB = big.NewInt(inAmount)
 	order.BuyNoMoreThanAmountB = buyFirstEnough
-	order.LrcFee = big.NewInt(1000)
+	order.LrcFee = big.NewInt(100)
 	order.SavingSharePercentage = 30
 	h := &types.Hash{}
 	h.SetBytes([]byte(strconv.Itoa(idx)))
@@ -55,56 +54,90 @@ func newOrder(outToken string, inToken string, outAmount, inAmount int64, buyFir
 	return orderState
 }
 
-func TestBucketProxy(t *testing.T) {
-
+func TestBucket_GenerateRing(t *testing.T) {
+	log.NewLogger()
 	ringClient := matchengine.NewRingClient()
-	ringClient.Start()
+	//ringClient.Start()
 	c := &config.BucketProxyOptions{}
 	proxy := bucket.NewBucketProxy(*c, ringClient)
-	go proxy.Start()
+	debugRingChan := make(chan *types.RingState)
+	go proxy.Start(debugRingChan)
+	go listentRingStored(debugRingChan)
 
-	order1 := newOrder("token1", "token2", 20000, 10000, true, 1)
+	//volumeTest(proxy, true)
 
-	proxy.GetOrderStateChan() <- order1
-
-	order2 := newOrder("token2", "token3", 30000, 30000, true,  2)
-	proxy.GetOrderStateChan() <- order2
-
-	order3 := newOrder("token3", "token1", 40000, 20000, true,  3)
-	proxy.GetOrderStateChan() <- order3
+	bestRing(proxy, false)
 
 	time.Sleep(100000000)
 }
 
-func TestBaoxian(t *testing.T) {
-	//baseAmount := 0.5
-	//rate := 0.05
+//volume
+func volumeTest(proxy matchengine.Proxy, nomorethanB bool)  {
+	//rate 0.37003947505256
+	//price 2 ratePrice 1.2599210498948731647
+	//volumeS: {false amountS:20000, savingAmountB:5874}   {true amountS:12599,savingAmountS:7401}
+	order1 := newOrder("token1", "token2", 20000, 10000, nomorethanB, 1)
+	proxy.GetOrderStateChan() <- order1
 
-	log.NewLogger()
-	//log.Error("llll", "dddd")
-	//order1 := newOrder("token1", "token2", 20000, 10000, true, 1)
-	//
-	//log.Info("dddddddd%s",log.NewField("order", order1))
-	//
-	//println( time.Now().Unix())
-	//for i:=0;i<=10;i++ {
-	//	log.Fatal("dddddddd",log.NewField("order", "kkkk"))
-	//
-	//}
+	//price 1 ratePrice 0.629960524947436
+	//volume: {false amountS:15874, savingAmountB:9324} {true amountS:10000,savingAmountS:5874}
+	order2 := newOrder("token2", "token3", 30000, 30000, nomorethanB,  2)
+	proxy.GetOrderStateChan() <- order2
 
-	//incomeAmount := 0.0
-	//println(baseAmount*rate*2 + baseAmount*rate*rate)
-	//incomeAmount = income(baseAmount, rate, 20, 20, incomeAmount)
-	//println(int(incomeAmount*100))
+	//price 2 ratePrice 1.2599210498948731647
+	//volume: {false amountS:25198, savingAmouontB:7401} {true amountS:15874,savingAmountS:9324}
+	order3 := newOrder("token3", "token1", 40000, 20000, nomorethanB,  3)
+	proxy.GetOrderStateChan() <- order3
 }
 
-func income(baseAmount,rate float64,number int,years int, incomeAmount float64) float64 {
-	if (number > 0) {
-		number--
-		//println("number:", number, " years:", years)
-		incomeAmount = incomeAmount + baseAmount * float64(years - number) *math.Pow(rate, float64(1+number))
-		return income(baseAmount, rate, number,years, incomeAmount)
-	} else {
-		return incomeAmount
+//choice the ring of max fee
+func bestRing(proxy matchengine.Proxy, nomorethanB bool)  {
+	//rate 0.37003947505256
+	//price 2 ratePrice 1.2599210498948731647
+	//volumeS: false:20000   true:12599
+	order1 := newOrder("token1", "token2", 20000, 10000, nomorethanB, 1)
+	proxy.GetOrderStateChan() <- order1
+
+	order4 := newOrder("token1", "token2", 20000, 20000, nomorethanB,  4)
+	proxy.GetOrderStateChan() <- order4
+
+	//price 1 ratePrice 0.629960524947436
+	//volume: false:15874 true:10000
+	order2 := newOrder("token2", "token3", 30000, 30000, nomorethanB,  2)
+	proxy.GetOrderStateChan() <- order2
+
+	//price 2 ratePrice 1.2599210498948731647
+	//volume: false:25198 true:15874
+	order3 := newOrder("token3", "token1", 40000, 20000, nomorethanB,  3)
+	proxy.GetOrderStateChan() <- order3
+
+
+
+}
+
+
+
+func listentRingStored(debugRingChan chan *types.RingState) {
+	for {
+	select {
+		case orderRing := <- debugRingChan:
+			s := ""
+			for _,o := range orderRing.RawRing.Orders {
+				s = s + " -> " + " {outtoken:" + string(o.OrderState.RawOrder.TokenS.Bytes()) +
+					", fillamountS:" + o.FillAmountS.RealValue().String() +
+					", intoken:" + string(o.OrderState.RawOrder.TokenB.Bytes()) +
+					", idx:" + o.OrderState.OrderHash.Str() +
+					"}"
+			}
+			log.Infof("ringChan receive:%s ring is %s", string(orderRing.Hash.Bytes()), s)
+		}
 	}
+}
+
+func TestNumbers(t *testing.T) {
+	A := &types.EnlargedInt{Value:big.NewInt(100), Decimals:big.NewInt(1)}
+	B := &types.EnlargedInt{Value:big.NewInt(1000), Decimals:big.NewInt(100)}
+	//C := &types.EnlargedInt{}
+	A.Add(A,B)
+	println(B.RealValue().String())
 }

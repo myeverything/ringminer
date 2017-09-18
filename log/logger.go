@@ -31,8 +31,8 @@ const logConfig = `{
 	  "level": "debug",
 	  "development": true,
 	  "disableStacktrace": false,
-	  "encoding": "json",
-	  "outputPaths": ["zap.log"],
+	  "encoding": "console",
+	  "outputPaths": ["zap.log","stderr"],
 	  "errorOutputPaths": ["err.log"],
 	  "encoderConfig": {
 	    "messageKey": "msg",
