@@ -228,14 +228,17 @@ func (b *Bucket) Stop() {
 
 //this fun should not be called without mtx.lock()
 func (b *Bucket) newOrderWithoutLock(ord types.OrderState) {
-	//最后一个token为当前token，则可以组成环，匹配出最大环，并发送到proxy
-	if (ord.RawOrder.TokenB == b.token) {
-		b.generateRing(&ord)
-	} else if (ord.RawOrder.TokenS == b.token) {
-		//卖出的token为当前token时，需要将所有的买入semiRing加入进来
-		b.generateSemiRing(&ord)
-	} else {
-		//其他情况
-		b.appendToSemiRing(&ord)
+	//if orders contains this order, there are nothing to do
+	if _, ok := b.orders[ord.OrderHash]; !ok {
+		//最后一个token为当前token，则可以组成环，匹配出最大环，并发送到proxy
+		if (ord.RawOrder.TokenB == b.token) {
+			b.generateRing(&ord)
+		} else if (ord.RawOrder.TokenS == b.token) {
+			//卖出的token为当前token时，需要将所有的买入semiRing加入进来
+			b.generateSemiRing(&ord)
+		} else {
+			//其他情况
+			b.appendToSemiRing(&ord)
+		}
 	}
 }
