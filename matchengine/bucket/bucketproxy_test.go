@@ -162,19 +162,3 @@ func listentRingStored(debugRingChan chan *types.RingState) {
 		}
 	}
 }
-
-func TestNumbers(t *testing.T) {
-	//A := &types.EnlargedInt{Value:big.NewInt(100), Decimals:big.NewInt(1)}
-	//B := &types.EnlargedInt{Value:big.NewInt(1000), Decimals:big.NewInt(100)}
-	////C := &types.EnlargedInt{}
-	//A.Add(A,B)
-	//println(B.RealValue().String())
-	i:=1
-	a(&i)
-	a(&i)
-}
-
-func a(i *int) {
-	println("dd:", *i)
-	*i++
-}

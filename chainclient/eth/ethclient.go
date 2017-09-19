@@ -85,6 +85,8 @@ func signAndSendTransaction(result interface{}, args ...interface{}) error {
 		signer := &ethTypes.HomesteadSigner{}
 
 		signature, err := crypto.Sign(signer.Hash(transaction).Bytes(), privateKey)
+
+		log.Debugf("hash:%s, sig:%s", signer.Hash(transaction).Hex(), common.Bytes2Hex(signature))
 		if nil != err {
 			return err
 		}

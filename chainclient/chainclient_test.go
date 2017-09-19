@@ -25,6 +25,8 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"encoding/json"
 	"github.com/Loopring/ringminer/chainclient"
+	"math/big"
+	"github.com/Loopring/ringminer/log"
 )
 
 func TestChainClient(t *testing.T) {
@@ -67,18 +69,19 @@ func TestSubscribeNewBlock(t *testing.T) {
 }
 
 func TestErc20Transfer(t *testing.T) {
-	//contractAddress := "0x211c9fb2c5ad60a31587a4a11b289e37ed3ea520"
-	//erc20 := eth.NewErc20Token(contractAddress)
-	//
-	//if txHash, err := erc20.Transfer.SendTransactionWithSpecificGas("0x4ec94e1007605d70a86279370ec5e4b755295eda",
-	//	nil,
-	//	nil,
-	//	common.HexToAddress("0xd86ee51b02c5ac295e59711f4335fed9805c0148"),
-	//	big.NewInt(10));err != nil {
-	//	t.Error(err.Error())
-	//} else {
-	//	t.Log("txHash:", txHash)
-	//}
+	log.NewLogger()
+	contractAddress := "0x211c9fb2c5ad60a31587a4a11b289e37ed3ea520"
+	erc20 := &chainclient.Erc20Token{}
+
+	erc20TokenAbiStr := `[{"constant":false,"inputs":[{"name":"_spender","type":"address"},{"name":"_value","type":"uint256"}],"name":"approve","outputs":[{"name":"success","type":"bool"}],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"totalSupply","outputs":[{"name":"totalSupply","type":"uint256"}],"payable":false,"type":"function"},{"constant":false,"inputs":[{"name":"_from","type":"address"},{"name":"_to","type":"address"},{"name":"_value","type":"uint256"}],"name":"transferFrom","outputs":[{"name":"success","type":"bool"}],"payable":false,"type":"function"},{"constant":true,"inputs":[{"name":"_owner","type":"address"}],"name":"balanceOf","outputs":[{"name":"balance","type":"uint256"}],"payable":false,"type":"function"},{"constant":false,"inputs":[{"name":"_to","type":"address"},{"name":"_value","type":"uint256"}],"name":"transfer","outputs":[{"name":"success","type":"bool"}],"payable":false,"type":"function"},{"constant":true,"inputs":[{"name":"_owner","type":"address"},{"name":"_spender","type":"address"}],"name":"allowance","outputs":[{"name":"remaining","type":"uint256"}],"payable":false,"type":"function"},{"anonymous":false,"inputs":[{"indexed":true,"name":"_from","type":"address"},{"indexed":true,"name":"_to","type":"address"},{"indexed":false,"name":"_value","type":"uint256"}],"name":"Transfer","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"_owner","type":"address"},{"indexed":true,"name":"_spender","type":"address"},{"indexed":false,"name":"_value","type":"uint256"}],"name":"Approval","type":"event"}]`
+	eth.NewContract(erc20, contractAddress, erc20TokenAbiStr)
+	if txHash, err := erc20.Transfer.SendTransaction("0x4ec94e1007605d70a86279370ec5e4b755295eda",
+		common.HexToAddress("0xd86ee51b02c5ac295e59711f4335fed9805c0148"),
+		big.NewInt(10));err != nil {
+		t.Error(err.Error())
+	} else {
+		t.Log("txHash:", txHash)
+	}
 }
 
 func TestSubscribeErc20Event(t *testing.T) {

@@ -16,19 +16,21 @@
 
 */
 
-package eth
+package crypto
 
-import (
-	"crypto/ecdsa"
-	"github.com/ethereum/go-ethereum/common"
-)
+import "math/big"
 
-//address -> privateKey
-var PrivateMap map[string]*ecdsa.PrivateKey
-
-type Account struct {
-	PrivKey *ecdsa.PrivateKey
-	PubKey *ecdsa.PublicKey
-	Address common.Address
+type Crypto interface {
+	//生成账号
+	GenerateAccount(result interface{})
+	//签名验证
+	ValidateSignatureValues(v byte, r, s *big.Int) bool
+	//生成hash
+	GenerateHash(data ...[]byte) []byte
+	//签名回复到地址
+	SigToAddress(hash, sig []byte) ([]byte,error)
+	//生成sig
+	GetSig(v, r, s *big.Int) []byte
 }
+
 

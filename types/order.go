@@ -20,7 +20,8 @@ package types
 
 import (
 	"math/big"
-	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/Loopring/ringminer/crypto"
+	"github.com/Loopring/ringminer/log"
 )
 
 type OrderStatus uint8
@@ -53,9 +54,59 @@ type Order struct {
 	LrcFee                *big.Int // 交易总费用,部分成交的费用按该次撮合实际卖出代币额与比例计算
 	BuyNoMoreThanAmountB  bool
 	SavingSharePercentage int      // 不为0时支付给交易所的分润比例，否则视为100%
-	V                     uint8
-	R                     Sign
-	S                     Sign
+	V                     *big.Int
+	R                     *big.Int
+	S                     *big.Int
+}
+
+/**
+address(this),
+            order.tokenS,
+            order.tokenB,
+            order.amountS,
+            order.amountB,
+            order.expiration,
+            order.rand,
+            order.lrcFee,
+            order.buyNoMoreThanAmountB,
+            order.savingSharePercentage
+ */
+var crpto crypto.Crypto
+
+func (o *OrderState) Hash() Hash {
+	h := &Hash{}
+	hashBytes := crpto.GenerateHash(
+		o.Owner.Bytes(),
+		o.RawOrder.TokenS.Bytes(),
+		o.RawOrder.TokenB.Bytes(),
+		o.RawOrder.AmountS.Bytes(),
+		o.RawOrder.AmountB.Bytes(),
+		[]byte{byte(o.RawOrder.Expiration)},
+		o.RawOrder.Rand.Bytes(),
+		o.RawOrder.LrcFee.Bytes(),
+		[]byte{byte(0)},
+		[]byte{byte(o.RawOrder.SavingSharePercentage)},
+	)
+	h.SetBytes(hashBytes)
+
+	return *h
+}
+
+func (o *OrderState) ValidateSignatureValues() bool {
+	return crpto.ValidateSignatureValues(o.RawOrder.V.Bytes()[0], o.RawOrder.R, o.RawOrder.S)
+}
+
+func (o *OrderState) SignerAddress() (Address,error) {
+	hash := o.Hash()
+	sig := crpto.GetSig(o.RawOrder.V, o.RawOrder.R, o.RawOrder.S)
+	address := &Address{}
+	if addressBytes,err := crpto.SigToAddress(hash.Bytes(), sig);nil != err {
+		log.Errorf("error:%s", err.Error())
+		return *address, err
+	} else {
+		address.SetBytes(addressBytes)
+		return *address, nil
+	}
 }
 
 //RateAmountS、FeeSelection 需要提交到contract
@@ -144,14 +195,3 @@ func (ord *Order) Convert() *OrderState {
             s);
     }
 */
-
-// TODO(fukun):
-func (ord *Order) GenHash() Hash {
-	crypto.Keccak256()
-	return StringToHash("")
-}
-
-// TODO(fukun)
-func (ord *Order) VerifyHash() error {
-	return nil
-}
