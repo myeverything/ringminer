@@ -64,6 +64,7 @@ type FilledOrder struct {
 	FeeSelection     int	//0 -> lrc
 	RateAmountS      *big.Int	//提交需要
 	AvailableAmountS *big.Int	//需要，也是用于计算fee
+	//AvailableAmountB *big.Int	//需要，也是用于计算fee
 	FillAmountS      *EnlargedInt
 	FillAmountB      *EnlargedInt	//计算需要
 	LrcReward        *EnlargedInt
@@ -74,6 +75,8 @@ type FilledOrder struct {
 
 	EnlargedSPrice   *EnlargedInt
 	EnlargedBPrice   *EnlargedInt
+
+	//FullFilled	bool	//this order is fullfilled
 }
 
 type OrderState struct {

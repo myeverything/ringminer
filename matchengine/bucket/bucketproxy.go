@@ -23,6 +23,7 @@ import (
 	"github.com/Loopring/ringminer/types"
 	"github.com/Loopring/ringminer/matchengine"
 	"github.com/Loopring/ringminer/config"
+	"github.com/Loopring/ringminer/log"
 )
 
 /**
@@ -104,7 +105,15 @@ func (bp *BucketProxy) Start(debugRingChan chan *types.RingState) {
 
 			bp.ringClient.NewRing(orderRing)
 			for _, b := range bp.buckets {
-				b.NewRing(orderRing)
+				//todo:this should call deleteOrder if the order was fullfilled, and do nothing else.
+				for _, order := range orderRing.RawRing.Orders {
+					//todo:查询orderbook获取最新值,是否已被匹配过
+					b.DeleteOrder(order.OrderState)
+					//if (order.FullFilled) {
+					//	b.DeleteOrder(order.OrderState)
+					//}
+				}
+				log.Debugf("tokenS:%s, order len:%d, semiRing len:%d", b.token.Str(), len(b.orders), len(b.semiRings))
 			}
 		}
 	}
@@ -135,65 +144,32 @@ func (bp *BucketProxy) listenOrderState() {
 func (bp *BucketProxy) newOrder(order *types.OrderState) {
 	bp.mtx.RLock()
 	defer bp.mtx.RUnlock()
-	//如果没有则，新建bucket, todo:需要将其他bucket中的导入到当前bucket
+	//if bp.buckets doesn't contains the bucket named by tokenS, create it.
 	if _,ok := bp.buckets[order.RawOrder.TokenS] ; !ok {
 		bucket := NewBucket(order.RawOrder.TokenS, bp.ringChan)
 		bp.buckets[order.RawOrder.TokenS] = *bucket
 	}
 
+	//it is unnecessary actually
 	if _,ok := bp.buckets[order.RawOrder.TokenB] ; !ok {
 		bucket := NewBucket(order.RawOrder.TokenB, bp.ringChan)
 		bp.buckets[order.RawOrder.TokenB] = *bucket
 	}
 
 	for _, b := range bp.buckets {
-		b.newOrder(*order)
+		b.NewOrder(*order)
 	}
 }
 
 func (bp *BucketProxy) deleteOrder(order *types.OrderState) {
 	for _, bucket := range bp.buckets {
-		bucket.deleteOrder(*order)
+		bucket.DeleteOrder(*order)
 	}
 } //订单的更新
 
 func (bp *BucketProxy) AddFilter() {
 
 }
-
-
-//todo:提交ring的具体工作放在ringclient中
-///**
-//提交ring
-////todo:用户的金额等是否需要缓存
-//1、首先检查订单的状态, 重新计算成交量
-//2、再提交hash
-//3、hash打到块之后，再提交ring
-// */
-//func (bp *BucketProxy) submitRingFingerprint(ring *types.RingState) {
-//	//根据最小容量，重新设置，重新计算费用
-//	matchengine.ComputeRing(ring)
-//	//todo:再次判断是否需要提交
-//	if (!bp.canSubmit(ring)) {
-//		bp.submitFailed(ring)
-//	} else {
-//		//todo:提交ring
-//		//提交凭证，之后，等待凭证成功的event，然后提交ring，待提交的ring需要保存
-//		//fingerContractAddress := &types.Address{}
-//		//loopring.LoopringFingerprints[*fingerContractAddress].SubmitRingFingerprint.SendTransaction(fingerContractAddress.Hex())
-//	}
-//}
-//
-////凭证提交后，提交ring
-//func (bp *BucketProxy) submitRing(ringHash string) error {
-//
-//	return nil
-//}
-//
-////todo:imp it
-//func (bp *BucketProxy) canSubmit(ring *types.RingState) bool {
-//	return true;
-//}
 
 func (bp *BucketProxy) listenRingSubmit() {
 	for {
@@ -207,7 +183,13 @@ func (bp *BucketProxy) listenRingSubmit() {
 //todo:需要ringclient在提交失败后通知到该proxy，估计使用chan
 func (bp *BucketProxy) submitFailed(ring *types.RingState) {
 	for _,bucket := range bp.buckets {
-		bucket.SubmitFailed(ring)
+		for _,order := range ring.RawRing.Orders {
+			//todo:查询orderbook获取最新值,是否已被匹配过
+			bucket.NewOrder(order.OrderState)
+			//if (order.FullFilled) {
+			//	bucket.NewOrder(order.OrderState)
+			//}
+		}
 	}
 }
 

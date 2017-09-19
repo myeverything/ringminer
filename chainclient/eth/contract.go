@@ -32,9 +32,9 @@ import (
 )
 
 type AbiMethod struct {
+	abi.Method
 	Abi *abi.ABI
 	Address string
-	abi.Method
 }
 
 func (m *AbiMethod) Call(result interface{}, blockParameter string, args ...interface{}) error {

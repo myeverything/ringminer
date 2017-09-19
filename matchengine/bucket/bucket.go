@@ -24,8 +24,7 @@ import (
 	"strconv"
 	"math/rand"
 	"github.com/Loopring/ringminer/types"
-	"math/big"
-	"qiniupkg.com/x/log.v7"
+	"github.com/Loopring/ringminer/log"
 )
 
 //负责生成ring，并计算ring相关的所有参数
@@ -104,12 +103,12 @@ func (b *Bucket) generateRing (order *types.OrderState) {
 			ringTmp.RawRing.Orders = append(ringTmp.RawRing.Orders, convertOrderStateToFilledOrder(order))
 			//兑换率是否匹配
 			if (matchengine.PriceValid(ringTmp)) {
-
-
 				matchengine.ComputeRing(ringTmp) //计算兑换的费用、折扣率等，便于计算收益，选择最大环
 				log.Debugf("bucket:%s, len:%d, fee:%d, order.idx:%s",b.token.Str(),len(b.orders), ringTmp.LegalFee.RealValue().Int64(), semiRing.orders[0].OrderHash.Str())
 				//选择收益最大的环
-				if (ring == nil || ringTmp.LegalFee.Cmp(ring.LegalFee) > 0) {
+				if (ring == nil ||
+					ringTmp.LegalFee.Cmp(ring.LegalFee) > 0 ||
+					(ringTmp.LegalFee.Cmp(ring.LegalFee) == 0 && len(ringTmp.RawRing.Orders) < len(ring.RawRing.Orders))) {
 					ringTmp.Hash = matchengine.Hash(ringTmp)
 					ring = ringTmp
 				}
@@ -120,7 +119,7 @@ func (b *Bucket) generateRing (order *types.OrderState) {
 	//todo：生成新环后，需要proxy将新环对应的各个订单的状态发送给每个bucket，便于修改，, 还有一些过滤条件
 	//删除对应的semiRing，转到等待proxy通知，但是会暂时标记该半环
 	if (ring != nil) {
-		b.newRingWithoutLock(ring)
+		//b.newRingWithoutLock(ring)
 		b.ringChan <- ring
 	}
 
@@ -198,25 +197,25 @@ func (b *Bucket) appendToSemiRing( order *types.OrderState) {
 	}
 }
 
-func (b *Bucket) newOrder(ord types.OrderState) {
+func (b *Bucket) NewOrder(ord types.OrderState) {
 	b.mtx.Lock()
 	defer b.mtx.Unlock()
 
 	b.newOrderWithoutLock(ord)
 }
 
-func (b *Bucket) deleteOrder(ord types.OrderState) {
-	//删除订单
+func (b *Bucket) DeleteOrder(ord types.OrderState) {
+	//delete the order
 	b.mtx.RLock()
 	defer b.mtx.RUnlock()
 
-	o := &OrderWithPos{}
-	o.RawOrder = ord.RawOrder
-	b.orders[ord.OrderHash] = o
-	//todo：如果环路已经计算了交易量等信息，需要修改对应的环路
-	//for _,ring := range b.orders[order.Id].ReachPath {
-	//	for
-	//}
+	if o,ok := b.orders[ord.OrderHash]; ok {
+		for _,pos := range o.postions {
+			delete(b.semiRings, pos.semiRingKey)
+		}
+		delete(b.orders, ord.OrderHash)
+	}
+
 }
 
 func (b *Bucket) Start() {
@@ -227,48 +226,7 @@ func (b *Bucket) Stop() {
 
 }
 
-func (b *Bucket) NewRing(ring *types.RingState) {
-	b.mtx.Lock()
-	defer b.mtx.Unlock()
-	b.newRingWithoutLock(ring)
-}
-
-func (b *Bucket) SubmitFailed(ring *types.RingState) {
-	b.mtx.Lock()
-	defer b.mtx.Unlock()
-	for _,order := range ring.RawRing.Orders {
-		_, ok := b.orders[order.OrderState.OrderHash]
-		if !ok {
-			//todo:查询orderbook获取最新值
-			b.newOrderWithoutLock(order.OrderState)
-		} else {
-			//更改交易量
-			remainedAmountB := big.NewInt(0)
-			remainedAmountS := big.NewInt(0)
-
-			remainedAmountB.Add(b.orders[order.OrderState.OrderHash].RemainedAmountB, order.FillAmountB.RealValue())
-			remainedAmountS.Add(b.orders[order.OrderState.OrderHash].RemainedAmountS, order.FillAmountS.RealValue())
-			//todo：查询orderbook中的最新值，取最小值
-			b.orders[order.OrderState.OrderHash].RemainedAmountB = remainedAmountB
-			b.orders[order.OrderState.OrderHash].RemainedAmountS = remainedAmountS
-		}
-	}
-}
-
 //this fun should not be called without mtx.lock()
-func (b *Bucket) newRingWithoutLock(ring *types.RingState) {
-	//新环生成后，需要将对应的订单、环路信息修改
-	for _,ord := range ring.RawRing.Orders {
-		//todo：需要根据成交的金额等信息进行修改, 现在简单删除
-		if o,ok := b.orders[ord.OrderState.OrderHash]; ok {
-			for _,pos := range o.postions {
-				delete(b.semiRings, pos.semiRingKey)
-				delete(b.orders, ord.OrderState.OrderHash)
-			}
-		}
-	}
-}
-
 func (b *Bucket) newOrderWithoutLock(ord types.OrderState) {
 	//最后一个token为当前token，则可以组成环，匹配出最大环，并发送到proxy
 	if (ord.RawOrder.TokenB == b.token) {

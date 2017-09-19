@@ -56,6 +56,7 @@ func AvailableAmountS(order *types.FilledOrder) error {
 
 	order.AvailableAmountS = big.NewInt(10000)
 	order.AvailableAmountS = order.OrderState.RawOrder.AmountS
+	//order.AvailableAmountB = order.OrderState.RawOrder.AmountB
 	return nil
 }
 
@@ -186,14 +187,12 @@ func ComputeRing(ring *types.RingState) {
 
 
 	for i := minVolumeIdx-1; i >= 0; i-- {
-
 		//按照前面的，同步减少交易量
 		order := ring.RawRing.Orders[i]
 		var nextOrder *types.FilledOrder
 		nextOrder = ring.RawRing.Orders[i + 1]
 		order.FillAmountB = nextOrder.FillAmountS
 		order.FillAmountS.Mul(order.FillAmountB, order.EnlargedSPrice)
-
 	}
 
 	for i := minVolumeIdx + 1; i < len(ring.RawRing.Orders); i++ {
@@ -213,6 +212,26 @@ func ComputeRing(ring *types.RingState) {
 		if (shareRate.Value.Int64() > percentage) {
 			shareRate.Value = big.NewInt(percentage)
 		}
+
+		//if this order is fullfilled.
+		//if (order.OrderState.RawOrder.BuyNoMoreThanAmountB) {
+		//	remainAmount := big.NewInt(0)
+		//	remainAmount.Sub(order.AvailableAmountB, order.FillAmountB.RealValue())
+		//	if (remainAmount.Abs(remainAmount).Cmp(big.NewInt(1)) > 0) {
+		//		order.FullFilled = false
+		//	} else {
+		//		order.FullFilled = true
+		//	}
+		//} else {
+		//	remainAmount := big.NewInt(0)
+		//	remainAmount.Sub(order.AvailableAmountS, order.FillAmountS.RealValue())
+		//	//todo:this method should in orderbook
+		//	if (remainAmount.Abs(remainAmount).Cmp(big.NewInt(1)) > 0) {
+		//		order.FullFilled = false
+		//	} else {
+		//		order.FullFilled = true
+		//	}
+		//}
 	}
 
 	//计算ring以及各个订单的费用，以及费用支付方式
