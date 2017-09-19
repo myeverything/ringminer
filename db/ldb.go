@@ -16,7 +16,7 @@
 
 */
 
-package lrcdb
+package db
 
 import (
 	"github.com/syndtr/goleveldb/leveldb"

@@ -19,7 +19,7 @@
 package matchengine
 
 import (
-	"github.com/Loopring/ringminer/lrcdb"
+	"github.com/Loopring/ringminer/db"
 	"github.com/Loopring/ringminer/types"
 	"github.com/Loopring/ringminer/chainclient"
 	"encoding/json"
@@ -33,27 +33,27 @@ import (
 
 //保存ring，并将ring发送到区块链，同样需要分为待完成和已完成
 type RingClient struct {
-	store lrcdb.Database
+	store                 db.Database
 
-	submitedRingsStore lrcdb.Database
+	submitedRingsStore    db.Database
 
-	unSubmitedRingsStore lrcdb.Database
+	unSubmitedRingsStore  db.Database
 
-	fingerprintChan chan *chainclient.FingerprintEvent
+	fingerprintChan       chan *chainclient.FingerprintEvent
 
 	//ring 的失败包括：提交失败，ring的合约执行时失败，执行时包括：gas不足，以及其他失败
 	ringSubmitFailedChans []RingSubmitFailedChan
 
-	stopChan chan bool
+	stopChan              chan bool
 
-	mtx	*sync.RWMutex
+	mtx                   *sync.RWMutex
 }
 
 func NewRingClient() *RingClient {
 	ringClient := &RingClient{}
 	ringClient.store = getdb()
-	ringClient.unSubmitedRingsStore = lrcdb.NewTable(ringClient.store, "unsubmited")
-	ringClient.submitedRingsStore = lrcdb.NewTable(ringClient.store, "submited")
+	ringClient.unSubmitedRingsStore = db.NewTable(ringClient.store, "unsubmited")
+	ringClient.submitedRingsStore = db.NewTable(ringClient.store, "submited")
 	ringClient.mtx = &sync.RWMutex{}
 	ringClient.ringSubmitFailedChans = make([]RingSubmitFailedChan,0)
 	return ringClient
@@ -215,6 +215,6 @@ func file() string {
 	return gopath + string(filepath.Separator) + "src" + string(filepath.Separator) + proj + string(filepath.Separator) + "ldb"
 }
 
-func getdb() lrcdb.Database {
-	return lrcdb.NewDB(file(), 12,12)
+func getdb() db.Database {
+	return db.NewDB(file(), 12,12)
 }

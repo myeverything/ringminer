@@ -65,7 +65,7 @@ func NewNode(logger *zap.Logger) *Node {
 func (n *Node) Start() {
 	n.p2pListener.Start()
 	n.orderbook.Start()
-	n.matchengine.Start()
+	n.matchengine.Start(nil)
 
 	// TODO(fk): start eth client
 	//n.ethListener.Start()

@@ -16,7 +16,7 @@
 
 */
 
-package lrcdb
+package db
 
 // interface for ldb and table
 type Database interface {

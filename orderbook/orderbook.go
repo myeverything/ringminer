@@ -21,8 +21,7 @@ package orderbook
 import (
 	"sync"
 	"github.com/Loopring/ringminer/types"
-	"github.com/Loopring/ringminer/lrcdb"
-	"log"
+	"github.com/Loopring/ringminer/db"
 	"os"
 	"github.com/Loopring/ringminer/config"
 )
@@ -49,9 +48,9 @@ type Whisper struct {
 type OrderBook struct {
 	conf         OrderBookConfig
 	toml         config.DbOptions
-	db           lrcdb.Database
-	finishTable  lrcdb.Database
-	partialTable lrcdb.Database
+	db           db.Database
+	finishTable  db.Database
+	partialTable db.Database
 	whisper      *Whisper
 	lock         sync.RWMutex
 }
@@ -74,9 +73,9 @@ func NewOrderBook(options config.DbOptions, whisper *Whisper) *OrderBook {
 	s.toml = options
 	s.loadConfig()
 
-	s.db = lrcdb.NewDB(s.conf.name, s.conf.cacheCapacity, s.conf.bufferCapacity)
-	s.finishTable = lrcdb.NewTable(s.db, FINISH_TABLE_NAME)
-	s.partialTable = lrcdb.NewTable(s.db, PARTIAL_TABLE_NAME)
+	s.db = db.NewDB(s.conf.name, s.conf.cacheCapacity, s.conf.bufferCapacity)
+	s.finishTable = db.NewTable(s.db, FINISH_TABLE_NAME)
+	s.partialTable = db.NewTable(s.db, PARTIAL_TABLE_NAME)
 	s.whisper = whisper
 
 	return s
@@ -112,29 +111,30 @@ func (ob *OrderBook) peerOrderHook(ord *types.Order) error {
 	ob.lock.Lock()
 	defer ob.lock.Unlock()
 
-	key := ord.GenHash().Bytes()
-	value,err := ord.MarshalJson()
-	if err != nil {
-		return err
-	}
-
-	ob.partialTable.Put(key, value)
-
-	// TODO(fk): delete after test
-	if input, err := ob.partialTable.Get(key); err != nil {
-		panic(err)
-	} else {
-		var ord types.Order
-		ord.UnMarshalJson(input)
-		log.Println(ord.TokenS.Str())
-		log.Println(ord.TokenB.Str())
-		log.Println(ord.AmountS.Uint64())
-		log.Println(ord.AmountB.Uint64())
-	}
-
-	// TODO(fk): send orderState to matchengine
-	state := ord.Convert()
-	ob.whisper.EngineOrderChan <- state
+	//todo:apologize for it
+	//key := ord.GenHash().Bytes()
+	//value,err := ord.MarshalJson()
+	//if err != nil {
+	//	return err
+	//}
+	//
+	//ob.partialTable.Put(key, value)
+	//
+	//// TODO(fk): delete after test
+	//if input, err := ob.partialTable.Get(key); err != nil {
+	//	panic(err)
+	//} else {
+	//	var ord types.Order
+	//	ord.UnMarshalJson(input)
+	//	log.Println(ord.TokenS.Str())
+	//	log.Println(ord.TokenB.Str())
+	//	log.Println(ord.AmountS.Uint64())
+	//	log.Println(ord.AmountB.Uint64())
+	//}
+	//
+	//// TODO(fk): send orderState to matchengine
+	//state := ord.Convert()
+	//ob.whisper.EngineOrderChan <- state
 
 	return nil
 }
