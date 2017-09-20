@@ -16,13 +16,14 @@
 
 */
 
-package p2p
+package ipfs
 
 import (
 	"github.com/ipfs/go-ipfs-api"
 	"sync"
 	"github.com/Loopring/ringminer/types"
 	"github.com/Loopring/ringminer/config"
+	"github.com/Loopring/ringminer/log"
 )
 
 type IpfsConfig struct {
@@ -71,7 +72,13 @@ func (l *IPFSListener) Start() {
 		for {
 			record, _ := l.sub.Next()
 			data := record.Data()
-			ord := GenOrder(data)
+			var ord *types.Order
+			err := ord.UnMarshalJson(data)
+			if err != nil {
+				log.Errorf(log.ERROR_P2P_LISTEN_ACCEPT,  err.Error())
+			} else {
+				log.Infof(log.LOG_P2P_ACCEPT, string(data))
+			}
 			l.whisper.PeerOrderChan <- ord
 		}
 	}()
