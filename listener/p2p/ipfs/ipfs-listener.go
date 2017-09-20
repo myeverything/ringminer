@@ -48,7 +48,6 @@ func (l *IPFSListener) loadConfig() {
 	l.conf.topic = l.toml.Topic
 }
 
-//
 func NewListener(options config.IpfsOptions, whisper *Whisper) *IPFSListener {
 	l := &IPFSListener{}
 

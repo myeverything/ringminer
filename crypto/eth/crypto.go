@@ -24,9 +24,7 @@ import (
 	"math/big"
 )
 
-type EthCrypto struct {
-
-}
+type EthCrypto struct {}
 
 //生成账号
 func (c *EthCrypto) GenerateAccount(result interface{}) {
