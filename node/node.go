@@ -23,18 +23,19 @@ import (
 	"github.com/Loopring/ringminer/matchengine"
 	"go.uber.org/zap"
 	"github.com/Loopring/ringminer/orderbook"
-	"github.com/Loopring/ringminer/p2p"
 	"github.com/Loopring/ringminer/types"
 	"github.com/Loopring/ringminer/config"
-	"github.com/Loopring/ringminer/chainclient/eth"
 	"github.com/Loopring/ringminer/matchengine/bucket"
+	"github.com/Loopring/ringminer/listener"
+	ipfsListener "github.com/Loopring/ringminer/listener/p2p/ipfs"
+	ethListener "github.com/Loopring/ringminer/listener/chain/eth"
 )
 
 // TODO(fk): add services
 type Node struct {
 	options 				*config.GlobalConfig
-	p2pListener 			p2p.Listener
-	ethListener 			eth.Listener
+	p2pListener 			listener.Listener
+	ethListener 			listener.Listener
 	orderbook 				*orderbook.OrderBook
 	matchengine             matchengine.Proxy
 	peerOrderChan			chan *types.Order
@@ -96,8 +97,8 @@ func (n *Node) Stop() {
 }
 
 func (n *Node) registerP2PListener() {
-	whisper := &p2p.Whisper{n.peerOrderChan}
-	n.p2pListener = p2p.NewListener(n.options.Ipfs, whisper)
+	whisper := &ipfsListener.Whisper{n.peerOrderChan}
+	n.p2pListener = ipfsListener.NewListener(n.options.Ipfs, whisper)
 }
 
 func (n *Node) registerOrderBook() {
@@ -106,8 +107,8 @@ func (n *Node) registerOrderBook() {
 }
 
 func (n *Node) registerEthClient() {
-	whisper := &eth.Whisper{n.chainOrderChan}
-	n.ethListener = eth.NewListener(n.options.EthClient, whisper)
+	whisper := &ethListener.Whisper{n.chainOrderChan}
+	n.ethListener = ethListener.NewListener(n.options.EthClient, whisper)
 }
 
 func (n *Node) registerMatchengine() {

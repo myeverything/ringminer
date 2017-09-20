@@ -16,11 +16,10 @@
 
 */
 
-package p2p
+package listener
 
 type Listener interface {
 	Start()
 	Stop()
 	Name() string
 }
-

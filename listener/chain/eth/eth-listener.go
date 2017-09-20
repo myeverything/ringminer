@@ -22,6 +22,7 @@ import (
 	"github.com/Loopring/ringminer/types"
 	"github.com/Loopring/ringminer/config"
 	"sync"
+	"github.com/Loopring/ringminer/chainclient/eth"
 )
 
 /**
@@ -68,8 +69,8 @@ func (l *EthClientListener) Start() {
 	// TODO(fukun): add filterId
 	filterId := ""
 
-	ethlog := make(chan []Log)
-	err := EthClient.Subscribe(&ethlog, filterId)
+	ethlog := make(chan []eth.Log)
+	err := eth.EthClient.Subscribe(&ethlog, filterId)
 	if err != nil {
 		panic(err)
 	}
@@ -82,7 +83,7 @@ func (l *EthClientListener) Start() {
 		}
 	}
 
-	defer EthClient.UninstallFilter(filterId)
+	defer eth.EthClient.UninstallFilter(filterId)
 }
 
 func (l *EthClientListener) Stop() {
@@ -90,4 +91,8 @@ func (l *EthClientListener) Stop() {
 	defer l.lock.Unlock()
 
 	close(l.stop)
+}
+
+func (l *EthClientListener) Name() string {
+	return "eth-listener"
 }

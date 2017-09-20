@@ -18,11 +18,6 @@
 
 package chainclient
 
-import (
-	"github.com/Loopring/ringminer/types"
-	"math/big"
-)
-
 //similar to web3
 type RpcMethod func(result interface{}, args ...interface{}) error
 
@@ -84,75 +79,5 @@ type Client struct {
 	UnlockAccount	RpcMethod	`methodName:"unlockAccount"`
 }
 
-type AbiMethod interface {
-	Call(result interface{}, blockParameter string, args ...interface{}) error
-	SendTransactionWithSpecificGas(from string, gas, gasPrice *big.Int, args ...interface{}) (string, error)
-	SendTransaction(from string, args ...interface{}) (string, error)
-}
-
-//the base info of contract
-type Contract struct {
-	Abi interface{}
-	Address string
-}
-
-type Erc20Token struct {
-	Contract
-	Name string
-	TotalSupply AbiMethod
-	BalanceOf AbiMethod
-	Transfer AbiMethod
-	TransferFrom AbiMethod
-	Approve AbiMethod
-	Allowance AbiMethod
-}
-
-type LoopringProtocolImpl struct {
-	Contract
-
-	RemainAmount AbiMethod //todo:
-
-	SubmitRing AbiMethod
-	SubmitRingFingerPrint AbiMethod
-	CancelOrder AbiMethod
-	VerifyTokensRegistered AbiMethod
-	CalculateSignerAddress AbiMethod
-	CalculateOrderHash AbiMethod
-	ValidateOrder AbiMethod
-	AssembleOrders AbiMethod
-	CalculateOrderFillAmount AbiMethod
-	CalculateRingFillAmount AbiMethod
-	CalculateRingFees AbiMethod
-	VerifyMinerSuppliedFillRates AbiMethod
-	SettleRing AbiMethod
-	VerifyRingHasNoSubRing AbiMethod
-}
-
-type LoopringFingerprintRegistry struct {
-	Contract
-	SubmitRingFingerprint AbiMethod
-	CanSubmit AbiMethod
-	FingerprintFound AbiMethod
-	IsExpired AbiMethod
-	GetRingHash AbiMethod
-}
-
-type FingerprintEvent struct {
-	RingHash *types.Hash
-}
-
-type TokenRegistry struct {
-	Contract
-	RegisterToken AbiMethod
-	UnregisterToken AbiMethod
-	IsTokenRegistered AbiMethod
-}
-
-type Loopring struct {
-	Client *Client
-	Tokens map[types.Address]*Erc20Token
-	LoopringImpls map[types.Address]*LoopringProtocolImpl
-	LoopringFingerprints map[types.Address]*LoopringFingerprintRegistry
-}
 
 

@@ -8,9 +8,6 @@ import (
 	ethClient "github.com/Loopring/ringminer/chainclient/eth"
 	"strconv"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
-	//"github.com/ethereum/go-ethereum/common"
-	//"fmt"
-	//"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/Loopring/ringminer/chainclient"
 )

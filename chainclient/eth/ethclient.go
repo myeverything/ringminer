@@ -34,14 +34,6 @@ import (
 	"github.com/Loopring/ringminer/log"
 )
 
-/**
-todo：未完成：
-1、返回的struct定义
-2、新订单、余额变动等事件定义
-3、余额等变动的处理
-4、应当给orderbook持有listener，然后在orderbook内部处理各种event，否则处理逻辑分散
- */
-
 var rpcClient *rpc.Client
 
 var EthClient *chainclient.Client
