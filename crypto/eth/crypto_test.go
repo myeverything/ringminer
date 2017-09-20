@@ -12,6 +12,7 @@ import (
 	//"fmt"
 	//"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/Loopring/ringminer/chainclient"
 )
 
 func TestGenOrderHash(t *testing.T) {
@@ -100,4 +101,38 @@ func TestEthCrypto_SigToAddress(t *testing.T) {
 	//}
 	//println(address)
 
+}
+
+
+
+func TestWithContract(t *testing.T) {
+	type SigTest struct {
+		chainclient.Contract
+		CalculateHash chainclient.AbiMethod
+		CalculateSignerAddress chainclient.AbiMethod
+	}
+	contractAddress := "0xc184dd351f215f689f481c329916bb33d8df8ced"
+	abiStr := `[{"constant":true,"inputs":[{"name":"hash","type":"bytes32"},{"name":"v","type":"uint8"},{"name":"r","type":"bytes32"},{"name":"s","type":"bytes32"}],"name":"calculateSignerAddress","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"s","type":"bytes32[]"}],"name":"calculateHash","outputs":[{"name":"","type":"bytes32"}],"payable":false,"stateMutability":"view","type":"function"}]`
+	sigTest := &SigTest{}
+
+	if err := ethClient.NewContract(sigTest, contractAddress, abiStr); err !=nil {
+		t.Error(err.Error())
+	}
+
+	bs := common.FromHex("0x093e56de3901764da17fef7e89f016cfdd1a88b98b1f8e3d2ebda4aff2343380")
+	bytes1 := [][]byte{bs}//[][]byte([]byte("a"))
+	res := ""
+	if err := sigTest.CalculateHash.Call(&res, "pending", bytes1);err !=nil {
+		t.Error(err.Error())
+	} else {
+		t.Log(res)
+	}
+}
+
+func TestEthCrypto_GenerateHash(t *testing.T) {
+	ethCrypto := &eth.EthCrypto{}
+	bs := common.FromHex("0x093e56de3901764da17fef7e89f016cfdd1a88b98b1f8e3d2ebda4aff2343380")
+	bytes1 := [][]byte{bs}
+	res := ethCrypto.GenerateHash(bytes1...)
+	t.Log(common.Bytes2Hex(res))
 }
