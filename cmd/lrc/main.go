@@ -84,14 +84,20 @@ func minerNode(c *cli.Context) error {
 	//todo：设置flag到config中
 	n := node.NewNode(logger, globalConfig)
 	n.Start()
+
+	log.Info("started")
+	//captiure stop signal
 	signalChan := make(chan os.Signal, 1)
 	signal.Notify(signalChan, os.Interrupt)
 	signal.Notify(signalChan, os.Kill)
 	go func() {
-		for sig := range signalChan {
-			log.Infof("captured %s, exiting...\n", sig.String())
-			n.Stop()
-			os.Exit(1)
+		for {
+			select {
+			case sig := <- signalChan:
+				log.Infof("captured %s, exiting...\n", sig.String())
+				n.Stop()
+				os.Exit(1)
+			}
 		}
 	}()
 	n.Wait()

@@ -22,6 +22,7 @@ import (
 	"encoding/json"
 	"errors"
 	"reflect"
+	"math/big"
 )
 
 func (ord Order) MarshalJson() ([]byte,error) {
@@ -73,7 +74,7 @@ func (ord *Order) UnMarshalJson(input []byte) error {
 		Rand                  uint64	`json:"rand"`
 		Expiration            uint64	`json:"expiration"`
 		LrcFee                uint64	`json:"lrcFee"`
-		SavingSharePercentage int		`json:"savingShareRate"`
+		SavingSharePercentage int		`json:"savingSharePercentage"`
 		buyNoMoreThanAmountB  bool		`json:"buyNoMoreThanAmountB"`
 		V                     uint8		`json:"v"`
 		R                     string	`json:"r"`
@@ -139,17 +140,22 @@ func (ord *Order) UnMarshalJson(input []byte) error {
 	if !reflect.ValueOf(dec.V).IsValid() {
 		return errors.New("missing required field 'ECDSA.V' for order")
 	}
-	//ord.V = dec.V
+	ord.V = dec.V
 
 	if !reflect.ValueOf(dec.S).IsValid() {
 		return errors.New("missing required field 'ECDSA.S' for order")
 	}
-	//ord.S = StringToSign(dec.S)
+	s := big.NewInt(1)
+	println("ssssssss:",dec.S)
+	s.SetBytes(Hex2Bytes(dec.S))
+	ord.S = s
 
 	if  !reflect.ValueOf(dec.R).IsValid() {
 		return errors.New("missing required field 'ECSA.R' for order")
 	}
-	//ord.R = StringToSign(dec.R)
+	r := big.NewInt(0)
+	r.SetBytes(Hex2Bytes(dec.R))
+	ord.R = r
 
 	return nil
 }

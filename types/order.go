@@ -35,6 +35,8 @@ const (
 	ORDER_REJECT
 )
 
+var Crypto crypto.Crypto
+
 //订单原始信息
 /**
 1、是否整体成交
@@ -54,7 +56,7 @@ type Order struct {
 	LrcFee                *big.Int // 交易总费用,部分成交的费用按该次撮合实际卖出代币额与比例计算
 	BuyNoMoreThanAmountB  bool
 	SavingSharePercentage int      // 不为0时支付给交易所的分润比例，否则视为100%
-	V                     *big.Int
+	V                     uint8
 	R                     *big.Int
 	S                     *big.Int
 }
@@ -71,12 +73,12 @@ address(this),
             order.buyNoMoreThanAmountB,
             order.savingSharePercentage
  */
-var crpto crypto.Crypto
 
-func (o *OrderState) Hash() Hash {
+
+func (o *OrderState) GenHash() Hash {
 	h := &Hash{}
-	hashBytes := crpto.GenerateHash(
-		o.Owner.Bytes(),
+	hashBytes := Crypto.GenerateHash(
+		o.RawOrder.Protocol.Bytes(),
 		o.RawOrder.TokenS.Bytes(),
 		o.RawOrder.TokenB.Bytes(),
 		o.RawOrder.AmountS.Bytes(),
@@ -89,24 +91,34 @@ func (o *OrderState) Hash() Hash {
 	)
 	h.SetBytes(hashBytes)
 
+	o.OrderHash = *h
+
 	return *h
 }
 
 func (o *OrderState) ValidateSignatureValues() bool {
-	return crpto.ValidateSignatureValues(o.RawOrder.V.Bytes()[0], o.RawOrder.R, o.RawOrder.S)
+	return Crypto.ValidateSignatureValues(byte(o.RawOrder.V), o.RawOrder.R, o.RawOrder.S)
 }
 
 func (o *OrderState) SignerAddress() (Address,error) {
-	hash := o.Hash()
-	sig := crpto.GetSig(o.RawOrder.V, o.RawOrder.R, o.RawOrder.S)
+	//todo:
+	hash := o.GenHash()
+	sig := Crypto.VRSToSig(o.RawOrder.V, o.RawOrder.R, o.RawOrder.S)
+	println("hash:", hash.Hex())
 	address := &Address{}
-	if addressBytes,err := crpto.SigToAddress(hash.Bytes(), sig);nil != err {
+	if addressBytes,err := Crypto.SigToAddress(hash.Bytes(), sig);nil != err {
 		log.Errorf("error:%s", err.Error())
 		return *address, err
 	} else {
 		address.SetBytes(addressBytes)
+		o.Owner = *address
 		return *address, nil
 	}
+	//address := &Address{}
+	//address.SetBytes(common.HexToAddress("0x1b9f8da77f2288eb4ce1096b1cfdc30cc4d0a961").Bytes())
+
+	//o.Owner = *address
+	//return *address,nil
 }
 
 //RateAmountS、FeeSelection 需要提交到contract
@@ -150,48 +162,11 @@ func (ord *Order) Convert() *OrderState {
 	s.RawOrder = *ord
 
 	// TODO(fukun): 计算owner，hash等
-	s.Owner = StringToAddress("")
-	s.OrderHash = StringToHash("")
+	//s.Owner = StringToAddress("")
+	//s.OrderHash = StringToHash("")
 	s.RemainedAmountS = s.RawOrder.AmountS
 	s.RemainedAmountB = s.RawOrder.AmountB
 	s.Status = ORDER_NEW
 
 	return &s
 }
-
-/*
- function calculateOrderHash(Order order)
-        internal
-        constant
-        returns (bytes32) {
-
-        return keccak256(
-            address(this),
-            order.tokenS,
-            order.tokenB,
-            order.amountS,
-            order.amountB,
-            order.expiration,
-            order.rand,
-            order.lrcFee,
-            order.buyNoMoreThanAmountB,
-            order.savingSharePercentage);
-    }
-
-    /// @return The signer's address.
-    function calculateSignerAddress(
-        bytes32 hash,
-        uint8 v,
-        bytes32 r,
-        bytes32 s)
-        public
-        constant
-        returns (address) {
-
-        return ecrecover(
-            keccak256("\x19Ethereum Signed Message:\n32", hash),
-            v,
-            r,
-            s);
-    }
-*/

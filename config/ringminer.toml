@@ -13,8 +13,8 @@ buffer_capacity = 4
 
 [ipfs]
 server = "localhost"
-port = 9001
-topic = "topic"
+port = 8080
+topic = "test_topic"
 
 [chain_client]
 raw_url = "http://127.0.0.1:8545"

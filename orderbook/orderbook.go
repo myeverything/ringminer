@@ -22,8 +22,8 @@ import (
 	"sync"
 	"github.com/Loopring/ringminer/types"
 	"github.com/Loopring/ringminer/db"
-	"os"
 	"github.com/Loopring/ringminer/config"
+	"github.com/Loopring/ringminer/log"
 )
 
 type ORDER_STATUS int
@@ -33,12 +33,6 @@ const (
 	PARTIAL_TABLE_NAME = "partial"
 )
 
-type OrderBookConfig struct {
-	name           string
-	cacheCapacity   int
-	bufferCapacity  int
-}
-
 type Whisper struct {
 	PeerOrderChan chan *types.Order
 	EngineOrderChan chan *types.OrderState
@@ -46,7 +40,6 @@ type Whisper struct {
 }
 
 type OrderBook struct {
-	conf         OrderBookConfig
 	toml         config.DbOptions
 	db           db.Database
 	finishTable  db.Database
@@ -55,21 +48,8 @@ type OrderBook struct {
 	lock         sync.RWMutex
 }
 
-func (ob *OrderBook) loadConfig() {
-	// TODO(fk): set path as global variable
-	dir := os.Getenv("GOPATH") + "/github.com/Loopring/ringminer/"
-	file := dir + ob.toml.Name
-	cache := ob.toml.CacheCapacity
-	buffer := ob.toml.BufferCapacity
-
-	// TODO(fk): load config from cli or genesis
-
-	ob.conf = OrderBookConfig{file, cache, buffer}
-}
-
 func NewOrderBook(database db.Database, whisper *Whisper) *OrderBook {
 	s := &OrderBook{}
-
 
 	s.finishTable = db.NewTable(database, FINISH_TABLE_NAME)
 	s.partialTable = db.NewTable(database, PARTIAL_TABLE_NAME)
@@ -84,6 +64,7 @@ func (s *OrderBook) Start() {
 		for {
 			select {
 			case ord := <- s.whisper.PeerOrderChan:
+				log.Debugf("accept data from peer:%s", ord.Protocol.Hex())
 				s.peerOrderHook(ord)
 			case ord := <- s.whisper.ChainOrderChan:
 				s.chainOrderHook(ord)
@@ -130,8 +111,17 @@ func (ob *OrderBook) peerOrderHook(ord *types.Order) error {
 	//}
 	//
 	//// TODO(fk): send orderState to matchengine
-	//state := ord.Convert()
-	//ob.whisper.EngineOrderChan <- state
+
+	state := ord.Convert()
+	state.GenHash()
+
+	if addr,err := state.SignerAddress();err != nil {
+		log.Errorf("err:%s", err.Error())
+	} else {
+		log.Debugf("addrreeseresrs:%s", addr.Hex())
+	}
+	log.Debugf("state hash:%s", state.OrderHash.Hex())
+	ob.whisper.EngineOrderChan <- state
 
 	return nil
 }

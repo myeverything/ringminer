@@ -61,14 +61,14 @@ func (l *IPFSListener) Start() {
 		for {
 			record, _ := l.sub.Next()
 			data := record.Data()
-			var ord *types.Order
+			ord := &types.Order{}
 			err := ord.UnMarshalJson(data)
 			if err != nil {
 				log.Errorf(log.ERROR_P2P_LISTEN_ACCEPT,  err.Error())
 			} else {
-				log.Infof(log.LOG_P2P_ACCEPT, string(data))
+				log.Debugf(log.LOG_P2P_ACCEPT, string(data))
+				l.whisper.PeerOrderChan <- ord
 			}
-			l.whisper.PeerOrderChan <- ord
 		}
 	}()
 }

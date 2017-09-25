@@ -71,7 +71,7 @@ func TestEthCrypto_SigToAddress(t *testing.T) {
 		//chainId := tx.ChainId()
 		vbint := int64(0)
 		println(vbint, "#", r.BitLen(), "#", s.BitLen())
-		valid := ethCrypto.ValidateSignatureValues(byte(0), r, s, false)
+		valid := ethCrypto.ValidateSignatureValues(byte(0), r, s)
 		println(valid)
 		sig := make([]byte, 65)
 		copy(sig[32-len(r.Bytes()):32], r.Bytes())

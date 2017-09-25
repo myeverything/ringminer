@@ -200,7 +200,6 @@ func (b *Bucket) appendToSemiRing( order *types.OrderState) {
 func (b *Bucket) NewOrder(ord types.OrderState) {
 	b.mtx.Lock()
 	defer b.mtx.Unlock()
-
 	b.newOrderWithoutLock(ord)
 }
 
@@ -232,6 +231,8 @@ func (b *Bucket) newOrderWithoutLock(ord types.OrderState) {
 	if _, ok := b.orders[ord.OrderHash]; !ok {
 		//最后一个token为当前token，则可以组成环，匹配出最大环，并发送到proxy
 		if (ord.RawOrder.TokenB == b.token) {
+			log.Debugf("bucket receive order:%s", ord.OrderHash.Hex())
+
 			b.generateRing(&ord)
 		} else if (ord.RawOrder.TokenS == b.token) {
 			//卖出的token为当前token时，需要将所有的买入semiRing加入进来
