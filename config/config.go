@@ -21,11 +21,15 @@ package config
 import (
 	"github.com/naoina/toml"
 	"os"
+	"reflect"
+	"go.uber.org/zap"
 )
 
-func LoadConfig() *GlobalConfig {
-	dir, _ := os.Getwd()
-	file := dir + "/config/prod.toml"
+func LoadConfig(file string) (*GlobalConfig, error) {
+	if ("" == file) {
+		dir, _ := os.Getwd()
+		file = dir + "/config/ringminer.toml"
+	}
 
 	io, err := os.Open(file)
 	if err != nil {
@@ -33,23 +37,56 @@ func LoadConfig() *GlobalConfig {
 	}
 	defer io.Close()
 
-	var c GlobalConfig
-	if err := toml.NewDecoder(io).Decode(&c); err != nil {
+	c := &GlobalConfig{}
+	c.defaultConfig()
+	if err := toml.NewDecoder(io).Decode(c); err != nil {
 		panic(err)
 	}
 
-	return &c
+	if _,err := validator(c);nil != err {
+		return nil,err
+	}
+	return c, nil
 }
 
 type GlobalConfig struct {
-	Title string
-	Owner struct {
+	Title       string `required:"true"`
+	Owner       struct {
 		Name string
 	}
-	Database 	DbOptions
-	Ipfs 		IpfsOptions
-	EthClient 	EthClientOptions
-	BucketProxy BucketProxyOptions
+	Database    DbOptions
+	Ipfs        IpfsOptions
+	ChainClient ChainClientOptions
+	Miner       MinerOptions
+	LogOptions  zap.Config
+}
+
+//todo:optimize it
+func  validator(c *GlobalConfig) (bool,error) {
+	//cv := reflect.ValueOf(c).Elem()
+	//for i:=0;i<cv.NumField();i++ {
+	//	println("field:",cv.Field(i).String(), " tag:",cv.Type().Field(i).Tag.Get("required"), " f:", isNil(cv.Field(i)))
+	//}
+	//if "true" == cv.Type().Field(0).Tag.Get("required") {
+	//	if cv.Field(0).IsNil() {
+	//		return false
+	//	}
+	//}
+	return true,nil
+}
+
+func isNil(v reflect.Value) bool {
+	switch v.Type().Kind() {
+	case reflect.Invalid:
+		return false
+	case reflect.String:
+		return v.String() != ""
+	}
+	return false;
+}
+
+func (c *GlobalConfig) defaultConfig() {
+
 }
 
 type IpfsOptions struct {
@@ -59,22 +96,31 @@ type IpfsOptions struct {
 }
 
 type DbOptions struct {
-	Server string
-	Port int
-	Name string
+	Server string `required:"true"`
+	Port int `required:"true"`
+	Name string `required:"true"`
+	DataDir string
 	CacheCapacity int
 	BufferCapacity int
 }
 
-type EthClientOptions struct {
-	Server string
-	Port int
+type ChainClientOptions struct {
+	RawUrl string	`required:"true"`
+	Eth    struct{
+		    GasPrice int
+		    GasLimit int
+		    PrivateKeys map[string]string `required:"true"` //地址 -> 加密后的私钥，如果密码不对，地址与私钥则不会匹配
+		    Password string	//密码，用于加密私钥，最好不出现在配置文件中
+	    }
 }
 
-type BucketProxyOptions struct {
-	Server string
+type MinerOptions struct {
+	LoopringImps []ContractOpts `required:"true"`
+	LoopringFingerprints []ContractOpts `required:"true"`
+	RingMaxLength	int
 }
 
-func defaultConfig() {
-
+type ContractOpts struct {
+	Abi	string `required:"true"`
+	Address	string `required:"true"`
 }

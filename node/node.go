@@ -20,56 +20,62 @@ package node
 
 import (
 	"sync"
-	"github.com/Loopring/ringminer/matchengine"
 	"go.uber.org/zap"
 	"github.com/Loopring/ringminer/orderbook"
 	"github.com/Loopring/ringminer/types"
 	"github.com/Loopring/ringminer/config"
-	"github.com/Loopring/ringminer/matchengine/bucket"
+	"github.com/Loopring/ringminer/miner/bucket"
+	"github.com/Loopring/ringminer/miner"
 	"github.com/Loopring/ringminer/listener"
 	ipfsListener "github.com/Loopring/ringminer/listener/p2p/ipfs"
 	ethListener "github.com/Loopring/ringminer/listener/chain/eth"
+	ethClient "github.com/Loopring/ringminer/chainclient/eth"
+	"github.com/Loopring/ringminer/db"
 )
 
 // TODO(fk): add services
 type Node struct {
-	options 				*config.GlobalConfig
-	p2pListener 			listener.Listener
-	ethListener 			listener.Listener
-	orderbook 				*orderbook.OrderBook
-	matchengine             matchengine.Proxy
-	peerOrderChan			chan *types.Order
-	chainOrderChan			chan *types.OrderMined
-	engineOrderChan			chan *types.OrderState
-	stop 					chan struct{}
-	lock 					sync.RWMutex
-	logger 					*zap.Logger
+	globalConfig  *config.GlobalConfig
+	p2pListener   listener.Listener
+	chainListener listener.Listener
+	orderbook     *orderbook.OrderBook
+	miner         miner.Proxy
+	stop          chan struct{}
+	lock          sync.RWMutex
+	logger        *zap.Logger
 }
 
-// TODO(fk): inject whisper and logger
-func NewNode(logger *zap.Logger) *Node {
+// TODO(fk): inject whisper
+func NewNode(logger *zap.Logger, globalConfig *config.GlobalConfig) *Node {
 	n := &Node{}
-
-	n.peerOrderChan = make(chan *types.Order)
-	n.chainOrderChan = make(chan *types.OrderMined)
-	//n.engineOrderChan = make(chan *types.OrderState)
 	n.logger = logger
-	n.options = config.LoadConfig()
+	n.globalConfig = globalConfig
+	ethClient.Initialize(n.globalConfig.ChainClient)
 
-	n.registerP2PListener()
-	n.registerOrderBook()
-	n.registerMatchengine()
+	//database := db.NewDB(globalConfig.Database)
+	//ringClient := miner.NewRingClient(database, ethClient.EthClient)
+	//
+	//miner.Initialize(n.globalConfig.Matchengine, ringClient.Chainclient)
+	//
+	//peerOrderChan := make(chan *types.Order)
+	//chainOrderChan := make(chan *types.OrderMined)
+	//engineOrderChan := make(chan *types.OrderState)
+	//
+	//n.registerP2PListener(peerOrderChan)
+	//n.registerEthListener(chainOrderChan)
+	//
+	//n.registerOrderBook(database, peerOrderChan, chainOrderChan, engineOrderChan)
+	//n.registerMiner(ringClient, engineOrderChan)
 
 	return n
 }
 
 func (n *Node) Start() {
-	n.p2pListener.Start()
-	n.orderbook.Start()
-	n.matchengine.Start(nil)
-
-	// TODO(fk): start eth client
-	//n.ethListener.Start()
+	//n.chainListener.Start()
+	//n.p2pListener.Start()
+	//
+	//n.orderbook.Start()
+	//n.miner.Start()
 }
 
 func (n *Node) Wait() {
@@ -86,33 +92,33 @@ func (n *Node) Wait() {
 func (n *Node) Stop() {
 	n.lock.RLock()
 
-	n.p2pListener.Stop()
-	n.ethListener.Stop()
-	n.orderbook.Stop()
-	n.matchengine.Stop()
+	//
+	//n.p2pListener.Stop()
+	//n.chainListener.Stop()
+	//n.orderbook.Stop()
+	//n.miner.Stop()
 
 	close(n.stop)
 
 	n.lock.RUnlock()
 }
 
-func (n *Node) registerP2PListener() {
-	whisper := &ipfsListener.Whisper{n.peerOrderChan}
-	n.p2pListener = ipfsListener.NewListener(n.options.Ipfs, whisper)
+func (n *Node) registerEthListener(chainOrderChan chan *types.OrderMined) {
+	whisper := &ethListener.Whisper{chainOrderChan}
+	n.chainListener = ethListener.NewListener(n.globalConfig.ChainClient, whisper)
 }
 
-func (n *Node) registerOrderBook() {
-	whisper := &orderbook.Whisper{n.peerOrderChan, n.engineOrderChan, n.chainOrderChan}
-	n.orderbook = orderbook.NewOrderBook(n.options.Database, whisper)
+func (n *Node) registerP2PListener(peerOrderChan chan *types.Order) {
+	whisper := &ipfsListener.Whisper{peerOrderChan}
+	n.p2pListener = ipfsListener.NewListener(n.globalConfig.Ipfs, whisper)
 }
 
-func (n *Node) registerEthClient() {
-	whisper := &ethListener.Whisper{n.chainOrderChan}
-	n.ethListener = ethListener.NewListener(n.options.EthClient, whisper)
+func (n *Node) registerOrderBook(database db.Database, peerOrderChan chan *types.Order, chainOrderChan chan *types.OrderMined, engineOrderChan chan *types.OrderState) {
+	whisper := &orderbook.Whisper{peerOrderChan, engineOrderChan, chainOrderChan}
+	n.orderbook = orderbook.NewOrderBook(database, whisper)
 }
 
-func (n *Node) registerMatchengine() {
-	//whisper := bucket.Whisper(n.engineOrderChan)
-	n.matchengine = bucket.NewBucketProxy(n.options.BucketProxy, nil)
-	n.engineOrderChan = n.matchengine.GetOrderStateChan()
+func (n *Node) registerMiner(ringClient *miner.RingClient,orderStateChan chan *types.OrderState) {
+	whisper := bucket.Whisper{orderStateChan}
+	n.miner = bucket.NewBucketProxy(ringClient, whisper)
 }

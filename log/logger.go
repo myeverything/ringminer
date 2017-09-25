@@ -44,13 +44,11 @@ const logConfig = `{
 	  }
 	}`
 
-func NewLogger() *zap.Logger {
+func Initialize(cfg zap.Config) *zap.Logger {
 	rawJSON := []byte(logConfig)
 
-	var (
-		cfg zap.Config
-		err error
-	)
+	var err error
+
 	if err = json.Unmarshal(rawJSON, &cfg); err != nil {
 		panic(err)
 	}

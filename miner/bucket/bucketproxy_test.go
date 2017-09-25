@@ -23,9 +23,9 @@ import (
 	"strconv"
 	"github.com/Loopring/ringminer/types"
 	"testing"
-	"github.com/Loopring/ringminer/matchengine/bucket"
+	"github.com/Loopring/ringminer/miner/bucket"
 	"time"
-	"github.com/Loopring/ringminer/matchengine"
+	"github.com/Loopring/ringminer/miner"
 	"github.com/Loopring/ringminer/config"
 	"github.com/Loopring/ringminer/log"
 )
@@ -58,10 +58,10 @@ func newOrder(outToken string, inToken string, outAmount, inAmount int64, buyFir
 }
 
 func TestBucket_GenerateRing(t *testing.T) {
-	log.NewLogger()
-	ringClient := matchengine.NewRingClient()
+	log.Initialize()
+	ringClient := miner.NewRingClient()
 	//ringClient.Start()
-	c := &config.BucketProxyOptions{}
+	c := &config.MinerOptions{}
 	proxy := bucket.NewBucketProxy(*c, ringClient)
 	debugRingChan := make(chan *types.RingState)
 	go proxy.Start(debugRingChan)
@@ -75,7 +75,7 @@ func TestBucket_GenerateRing(t *testing.T) {
 }
 
 //volume
-func volumeTest(proxy matchengine.Proxy, nomorethanB bool)  {
+func volumeTest(proxy miner.Proxy, nomorethanB bool)  {
 	i := 0
 
 	//rate 0.37003947505256
@@ -96,7 +96,7 @@ func volumeTest(proxy matchengine.Proxy, nomorethanB bool)  {
 }
 
 //choice the ring of max fee
-func bestRing(proxy matchengine.Proxy, nomorethanB bool)  {
+func bestRing(proxy miner.Proxy, nomorethanB bool)  {
 	i := 0
 	order1 := newOrder("token1", "token2", 20000, 10000, nomorethanB, &i)
 	proxy.GetOrderStateChan() <- order1
@@ -113,7 +113,7 @@ func bestRing(proxy matchengine.Proxy, nomorethanB bool)  {
 }
 
 //bucket must store all of the related orders and semirings
-func bucketOfAllOrders(proxy matchengine.Proxy, nomorethanB bool) {
+func bucketOfAllOrders(proxy miner.Proxy, nomorethanB bool) {
 	i := 0
 	order1 := newOrder("token1", "token2", 20000, 10000, nomorethanB, &i)
 	proxy.GetOrderStateChan() <- order1
@@ -129,7 +129,7 @@ func bucketOfAllOrders(proxy matchengine.Proxy, nomorethanB bool) {
 }
 
 //
-func bucketOfDeleteFilledOrders(proxy matchengine.Proxy, nomorethanB bool) {
+func bucketOfDeleteFilledOrders(proxy miner.Proxy, nomorethanB bool) {
 	i := 0
 	order1 := newOrder("token1", "token2", 20000, 10000, nomorethanB, &i)
 	proxy.GetOrderStateChan() <- order1

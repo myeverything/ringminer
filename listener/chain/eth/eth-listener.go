@@ -26,14 +26,8 @@ import (
 )
 
 /**
-区块链的listener, 得到order，
+区块链的listener, 得到order以及ring的事件，
  */
-
-// TODO(fukun): 添加相关配置
-type EthClientConfig struct {
-	Ip string
-	Port int
-}
 
 type Whisper struct {
 	ChainOrderChan chan *types.OrderMined
@@ -41,22 +35,15 @@ type Whisper struct {
 
 // TODO(fukun):不同的channel，应当交给orderbook统一进行后续处理，可以将channel作为函数返回值、全局变量、参数等方式
 type EthClientListener struct {
-	config 		EthClientConfig
-	options 	config.EthClientOptions
+	options 	config.ChainClientOptions
 	whisper 	*Whisper
 	stop 		chan struct{}
 	lock 		sync.RWMutex
 }
 
-// TODO(fukun): load default config from toml and cli
-func (l *EthClientListener) loadConfig() {
-
-}
-
-func NewListener(options config.EthClientOptions, whisper *Whisper) *EthClientListener {
+func NewListener(options config.ChainClientOptions, whisper *Whisper) *EthClientListener {
 	var l EthClientListener
 	l.options = options
-	l.loadConfig()
 
 	l.whisper = whisper
 	return &l

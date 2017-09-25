@@ -16,12 +16,12 @@
 
 */
 
-package matchengine_test
+package miner_test
 
 import (
 	"testing"
 	"github.com/Loopring/ringminer/types"
-	"github.com/Loopring/ringminer/matchengine"
+	"github.com/Loopring/ringminer/miner"
 	"github.com/Loopring/ringminer/chainclient"
 	"github.com/Loopring/ringminer/chainclient/eth"
 )
@@ -39,7 +39,7 @@ func TestRingClient(t *testing.T) {
 	loopring.Tokens = make(map[types.Address]*chainclient.Erc20Token)
 	loopring.Client = eth.EthClient
 
-	ringClient := matchengine.NewRingClient(loopring)
+	ringClient := miner.NewRingClient(loopring)
 	ringClient.Start()
 
 	ringClient.NewRing(ring)

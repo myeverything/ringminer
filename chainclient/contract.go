@@ -87,9 +87,14 @@ type TokenRegistry struct {
 	IsTokenRegistered AbiMethod
 }
 
+//todo:need perfect name
+type LoopringProtocolImplMap map[types.Address]*LoopringProtocolImpl
+
+type LoopringFingerprintRegistryMap map[types.Address]*LoopringFingerprintRegistry
+
 type Loopring struct {
 	Client *Client
 	Tokens map[types.Address]*Erc20Token
-	LoopringImpls map[types.Address]*LoopringProtocolImpl
-	LoopringFingerprints map[types.Address]*LoopringFingerprintRegistry
+	LoopringImpls LoopringProtocolImplMap
+	LoopringFingerprints LoopringFingerprintRegistryMap
 }

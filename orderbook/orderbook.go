@@ -67,15 +67,12 @@ func (ob *OrderBook) loadConfig() {
 	ob.conf = OrderBookConfig{file, cache, buffer}
 }
 
-func NewOrderBook(options config.DbOptions, whisper *Whisper) *OrderBook {
+func NewOrderBook(database db.Database, whisper *Whisper) *OrderBook {
 	s := &OrderBook{}
 
-	s.toml = options
-	s.loadConfig()
 
-	s.db = db.NewDB(s.conf.name, s.conf.cacheCapacity, s.conf.bufferCapacity)
-	s.finishTable = db.NewTable(s.db, FINISH_TABLE_NAME)
-	s.partialTable = db.NewTable(s.db, PARTIAL_TABLE_NAME)
+	s.finishTable = db.NewTable(database, FINISH_TABLE_NAME)
+	s.partialTable = db.NewTable(database, PARTIAL_TABLE_NAME)
 	s.whisper = whisper
 
 	return s

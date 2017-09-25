@@ -32,6 +32,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"time"
 	"github.com/Loopring/ringminer/log"
+	"github.com/Loopring/ringminer/config"
 )
 
 var rpcClient *rpc.Client
@@ -103,6 +104,7 @@ func doSubscribe(chanVal reflect.Value, filterId string) {
 			result := reflect.New(v)
 			if err := EthClient.GetFilterChanges(result.Interface(), filterId); nil != err {
 				log.Errorf("error:%s",err.Error())
+				break
 			} else {
 				chanVal.Send(result.Elem())
 			}
@@ -184,13 +186,15 @@ func applyMethod(client *chainclient.Client) error {
 	return nil
 }
 
-func init() {
-	//TODO：change to inject
-	client, _ := rpc.Dial("http://127.0.0.1:8545")
+func Initialize(clientConfig config.ChainClientOptions) {
+	client, _ := rpc.Dial(clientConfig.RawUrl)
 	rpcClient = client
 	EthClient = NewClient()
-	//todo:the private key must be encrypted in config file.
 	PrivateMap = make(map[string]*ecdsa.PrivateKey)
-	privateKey,_ := crypto.HexToECDSA("4f5b916dc82fb59cc57dbdd2fee5b49b2bdfe6ea34534a5d40c4475e9740c66e")
-	PrivateMap["0x4ec94e1007605d70a86279370ec5e4b755295eda"] = privateKey
+	//todo:the private key must be encrypted in config file.
+	for addr,p := range clientConfig.Eth.PrivateKeys {
+		privateKey,_ := crypto.HexToECDSA(p)
+		PrivateMap[addr] = privateKey
+	}
 }
+

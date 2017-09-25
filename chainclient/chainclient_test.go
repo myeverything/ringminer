@@ -69,7 +69,7 @@ func TestSubscribeNewBlock(t *testing.T) {
 }
 
 func TestErc20Transfer(t *testing.T) {
-	log.NewLogger()
+	log.Initialize()
 	contractAddress := "0x211c9fb2c5ad60a31587a4a11b289e37ed3ea520"
 	erc20 := &chainclient.Erc20Token{}
 

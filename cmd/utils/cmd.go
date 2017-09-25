@@ -32,6 +32,27 @@ func NewApp() *cli.App {
 	app.Usage = "the Loopring/ringminer command line interface"
 	app.Author = ""
 	app.Email = ""
-
 	return app
+}
+
+func matchengineCommands() cli.Command {
+	matchengineCommand := cli.Command{
+		Name:     "matchengine",
+		Usage:    "matchengine ",
+		Category: "Matchengine Commands",
+		Action:   nil,
+	}
+	return matchengineCommand
+}
+
+func chainclientCommands() cli.Command {
+	matchengineCommand := cli.Command{
+		Name:     "chainclient",
+		Usage:    "chainclient ",
+		Category: "Chainclient Commands",
+		Subcommands:  []cli.Command{
+			//秘钥以及地址，生成时的密码
+		},
+	}
+	return matchengineCommand
 }

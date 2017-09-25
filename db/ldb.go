@@ -25,6 +25,7 @@ import (
 	"github.com/syndtr/goleveldb/leveldb/opt"
 	"github.com/syndtr/goleveldb/leveldb/util"
 	"math/big"
+	"github.com/Loopring/ringminer/config"
 )
 
 var OpenFileLimit = 64
@@ -36,9 +37,11 @@ type LDBDatabase struct {
 }
 
 // TODO(fk): use config and log
-func NewDB(file string, cache, handles int) *LDBDatabase {
+func NewDB(dbOpts config.DbOptions) *LDBDatabase {
 	l := &LDBDatabase{}
 
+	cache := dbOpts.CacheCapacity
+	handles := dbOpts.BufferCapacity
 	// Ensure we have some minimal caching and file guarantees
 	if cache < 8 {
 		cache = 8
@@ -50,8 +53,8 @@ func NewDB(file string, cache, handles int) *LDBDatabase {
 	// log.Info("Allocated cache and file handles", cache)
 
 	// Open the db and recover any potential corruptions
-	db, err := leveldb.OpenFile(file, &opt.Options{
-		OpenFilesCacheCapacity: handles,
+	db, err := leveldb.OpenFile(dbOpts.DataDir, &opt.Options{
+		OpenFilesCacheCapacity: cache,
 		BlockCacheCapacity:     cache * opt.MiB,
 		WriteBuffer:            cache * opt.MiB, // Two of these are used internally
 	})
@@ -60,7 +63,7 @@ func NewDB(file string, cache, handles int) *LDBDatabase {
 	}
 
 	l.DB = db
-	l.fn = file
+	l.fn = dbOpts.DataDir
 
 	// TODO(fk): implement recovery
 

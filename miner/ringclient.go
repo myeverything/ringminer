@@ -16,15 +16,13 @@
 
 */
 
-package matchengine
+package miner
 
 import (
 	"github.com/Loopring/ringminer/db"
 	"github.com/Loopring/ringminer/types"
 	"github.com/Loopring/ringminer/chainclient"
 	"encoding/json"
-	"os"
-	"path/filepath"
 	"github.com/Loopring/ringminer/chainclient/eth"
 	"github.com/ethereum/go-ethereum/common"
 	"sync"
@@ -33,6 +31,7 @@ import (
 
 //保存ring，并将ring发送到区块链，同样需要分为待完成和已完成
 type RingClient struct {
+	Chainclient *chainclient.Client
 	store                 db.Database
 
 	submitedRingsStore    db.Database
@@ -49,9 +48,10 @@ type RingClient struct {
 	mtx                   *sync.RWMutex
 }
 
-func NewRingClient() *RingClient {
+func NewRingClient(database db.Database, client *chainclient.Client) *RingClient {
 	ringClient := &RingClient{}
-	ringClient.store = getdb()
+	ringClient.Chainclient = client
+	ringClient.store = database
 	ringClient.unSubmitedRingsStore = db.NewTable(ringClient.store, "unsubmited")
 	ringClient.submitedRingsStore = db.NewTable(ringClient.store, "submited")
 	ringClient.mtx = &sync.RWMutex{}
@@ -72,7 +72,6 @@ func (ringClient *RingClient) DeleteRingSubmitFailedChan(c RingSubmitFailedChan)
 	chans := make([]RingSubmitFailedChan, 0)
 	for _, v := range ringClient.ringSubmitFailedChans {
 		if v != c {
-
 			chans = append(chans, v)
 		}
 	}
@@ -97,6 +96,7 @@ func (ringClient *RingClient) NewRing(ring *types.RingState) {
 }
 
 func canSubmit(ring *types.RingState) bool {
+	//todo:args validator
 	return true;
 }
 
@@ -112,12 +112,17 @@ func (ringClient *RingClient) sendRingFingerprint(ring *types.RingState) {
 //listen fingerprint  accept by chain and then send Ring to block chain
 func (ringClient *RingClient) listenFingerprintSucessAndSendRing() {
 	var filterId string
-	addresses := []common.Address{common.HexToAddress("0x211c9fb2c5ad60a31587a4a11b289e37ed3ea520")}
+	addresses := []common.Address{}
+	for _,fingerprint := range Loopring.LoopringFingerprints {
+		addresses = append(addresses, common.HexToAddress(fingerprint.Address))
+	}
 	filterReq := &eth.FilterQuery{}
 	filterReq.Address = addresses
 	filterReq.FromBlock = "latest"
 	filterReq.ToBlock = "latest"
-	if err := eth.EthClient.NewFilter(&filterId, filterReq); nil != err {
+	//todo:topics, eventId
+	//filterReq.Topics =
+	if err := Loopring.Client.NewFilter(&filterId, filterReq); nil != err {
 		log.Errorf("error:%s",err.Error())
 	} else {
 		log.Infof("filterId:%s",filterId)
@@ -125,11 +130,11 @@ func (ringClient *RingClient) listenFingerprintSucessAndSendRing() {
 	//todo：Uninstall this filterId when stop
 	defer func() {
 		var a string
-		eth.EthClient.UninstallFilter(&a, filterId)
+		Loopring.Client.UninstallFilter(&a, filterId)
 	}()
 
 	logChan := make(chan []eth.Log)
-	if err := eth.EthClient.Subscribe(&logChan, filterId);nil != err {
+	if err := Loopring.Client.Subscribe(&logChan, filterId);nil != err {
 		log.Errorf("error:%s",err.Error())
 	} else {
 		for {
@@ -163,7 +168,7 @@ func (ringClient *RingClient) listenFingerprintSucessAndSendRing() {
 }
 
 //recover after restart
-func (ringClient *RingClient) recover() {
+func (ringClient *RingClient) recoverRing() {
 
 	//todo: Traversal the uncompelete rings
 	iterator := ringClient.unSubmitedRingsStore.NewIterator(nil, nil)
@@ -204,17 +209,7 @@ func (ringClient *RingClient) recover() {
 
 func (ringClient *RingClient) Start() {
 
-	ringClient.recover()
+	ringClient.recoverRing()
 	//go listenFingerprintSucessAndSendRing();
 
-}
-
-func file() string {
-	gopath := os.Getenv("GOPATH")
-	proj := "github.com/Loopring/ringminer"
-	return gopath + string(filepath.Separator) + "src" + string(filepath.Separator) + proj + string(filepath.Separator) + "ldb"
-}
-
-func getdb() db.Database {
-	return db.NewDB(file(), 12,12)
 }

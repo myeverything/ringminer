@@ -47,3 +47,10 @@ func defaultP2PNetWork() string {
 func defaultIpfsSubTopic() string {
 	return DEFAULT_IPFS_SUB_TOPIC
 }
+
+//matchengineCommand.Flags = []cli.Flag{
+//	cli.StringFlag{
+//		Name:  "node_laddr",
+//		Usage: "node listen address(0.0.0.0:0 means any interface any port)",
+//	},
+//}

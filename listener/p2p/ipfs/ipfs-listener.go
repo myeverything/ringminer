@@ -26,17 +26,12 @@ import (
 	"github.com/Loopring/ringminer/log"
 )
 
-type IpfsConfig struct {
-	topic string
-}
-
 type Whisper struct {
 	PeerOrderChan			chan *types.Order
 }
 
 type IPFSListener struct {
-	conf 					IpfsConfig
-	toml 					config.IpfsOptions
+	options 					config.IpfsOptions
 	sh 						*shell.Shell
 	sub 					*shell.PubSubSubscription
 	whisper                 *Whisper
@@ -44,18 +39,13 @@ type IPFSListener struct {
 	lock 					sync.RWMutex
 }
 
-func (l *IPFSListener) loadConfig() {
-	l.conf.topic = l.toml.Topic
-}
-
 func NewListener(options config.IpfsOptions, whisper *Whisper) *IPFSListener {
 	l := &IPFSListener{}
 
-	l.toml = options
-	l.loadConfig()
+	l.options = options
 
 	l.sh = shell.NewLocalShell()
-	sub, err := l.sh.PubSubSubscribe(l.conf.topic)
+	sub, err := l.sh.PubSubSubscribe(options.Topic)
 	if err != nil {
 		panic(err.Error())
 	}

@@ -16,7 +16,7 @@
 
 */
 
-package matchengine
+package miner
 
 import (
 	"github.com/Loopring/ringminer/types"

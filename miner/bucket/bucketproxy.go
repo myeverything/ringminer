@@ -21,7 +21,7 @@ package bucket
 import (
 	"sync"
 	"github.com/Loopring/ringminer/types"
-	"github.com/Loopring/ringminer/matchengine"
+	"github.com/Loopring/ringminer/miner"
 	"github.com/Loopring/ringminer/config"
 	"github.com/Loopring/ringminer/log"
 )
@@ -43,44 +43,40 @@ todo：此时环路的撮合驱动是由新订单的到来进行驱动，但是�
 该处负责接受neworder, cancleorder等事件，并把事件广播给所有的bucket，同时调用client将已形成的环路发送至区块链，发送时需要再次查询订单的最新状态，保证无错，一旦出错需要更改ring的各种数据，如交易量、费用分成等
  */
 
-// TODO(fukun): modify config
-type BucketProxyConfig struct {
-	Num int
-}
+//// TODO(fukun): modify config
+//type BucketProxyConfig struct {
+//	Num int
+//}
 
-//type Whisper chan *types.OrderState
+type Whisper struct {
+	OrderStateChan chan *types.OrderState
+}
 
 type BucketProxy struct {
 	ringChan             chan *types.RingState
-	OrderStateChan       chan *types.OrderState
+	OrderStateChan       Whisper
 	buckets              map[types.Address]Bucket
-	ringClient           *matchengine.RingClient
-	ringSubmitFailedChan matchengine.RingSubmitFailedChan
+	ringClient           *miner.RingClient
+	ringSubmitFailedChan miner.RingSubmitFailedChan
 	mtx                  *sync.RWMutex
-	config               *BucketProxyConfig
-	opts                 config.BucketProxyOptions
+	options              config.MinerOptions
 }
 
-// TODO(fukun): add configs options
-func (bp *BucketProxy) loadConfig() {
-
-}
-
-func NewBucketProxy(opts config.BucketProxyOptions, ringClient *matchengine.RingClient) matchengine.Proxy {
-	var proxy matchengine.Proxy
+func NewBucketProxy(ringClient *miner.RingClient,orderStateChan Whisper) miner.Proxy {
+	var proxy miner.Proxy
 	bp := &BucketProxy{}
 
-	bp.opts = opts
-	bp.loadConfig()
+	//bp.opts = opts
+	//bp.loadConfig()
 
 	ringChan := make(chan *types.RingState, 1000)
 	bp.ringChan = ringChan
 
-	ringSubmitFailedChan := make(matchengine.RingSubmitFailedChan)
+	ringSubmitFailedChan := make(miner.RingSubmitFailedChan)
 	bp.ringSubmitFailedChan = ringSubmitFailedChan
 	ringClient.AddRingSubmitFailedChan(bp.ringSubmitFailedChan)
 
-	bp.OrderStateChan = make(chan *types.OrderState)
+	bp.OrderStateChan = orderStateChan
 
 	bp.mtx = &sync.RWMutex{}
 	bp.buckets = make(map[types.Address]Bucket)
@@ -89,11 +85,7 @@ func NewBucketProxy(opts config.BucketProxyOptions, ringClient *matchengine.Ring
 	return proxy
 }
 
-func (bp *BucketProxy) GetOrderStateChan() chan *types.OrderState {
-	return bp.OrderStateChan
-}
-
-func (bp *BucketProxy) Start(debugRingChan chan *types.RingState) {
+func (bp *BucketProxy) Start() {
 	//orderstatechan and ringchan
 	go bp.listenOrderState()
 
@@ -101,7 +93,7 @@ func (bp *BucketProxy) Start(debugRingChan chan *types.RingState) {
 		select {
 		case orderRing := <- bp.ringChan:
 			//todo:must be in debug mode
-			debugRingChan <- orderRing
+			//debugRingChan <- orderRing
 
 			bp.ringClient.NewRing(orderRing)
 			for _, b := range bp.buckets {
@@ -121,7 +113,7 @@ func (bp *BucketProxy) Start(debugRingChan chan *types.RingState) {
 
 func (bp *BucketProxy) Stop() {
 	close(bp.ringChan)
-	close(bp.OrderStateChan)
+	close(bp.OrderStateChan.OrderStateChan)
 	bp.ringClient.DeleteRingSubmitFailedChan(bp.ringSubmitFailedChan)
 	for _,bucket := range bp.buckets {
 		bucket.Stop()
@@ -131,7 +123,7 @@ func (bp *BucketProxy) Stop() {
 func (bp *BucketProxy) listenOrderState() {
 	for {
 		select {
-		case order := <- bp.OrderStateChan:
+		case order := <- bp.OrderStateChan.OrderStateChan:
 			if (types.ORDER_NEW == order.Status) {
 				bp.newOrder(order)
 			} else if (types.ORDER_CANCEL == order.Status || types.ORDER_FINISHED == order.Status) {
