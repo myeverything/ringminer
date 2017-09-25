@@ -32,6 +32,7 @@ import (
 	ethClient "github.com/Loopring/ringminer/chainclient/eth"
 	"github.com/Loopring/ringminer/db"
 	ethCrypto "github.com/Loopring/ringminer/crypto/eth"
+	"github.com/Loopring/ringminer/crypto"
 )
 
 // TODO(fk): add services
@@ -48,7 +49,7 @@ type Node struct {
 }
 
 // TODO(fk): inject whisper
-func NewNode(logger *zap.Logger, globalConfig *config.GlobalConfig) *Node {
+func NewEthNode(logger *zap.Logger, globalConfig *config.GlobalConfig) *Node {
 	n := &Node{}
 	n.logger = logger
 	n.globalConfig = globalConfig
@@ -69,8 +70,7 @@ func NewNode(logger *zap.Logger, globalConfig *config.GlobalConfig) *Node {
 	n.registerOrderBook(database, peerOrderChan, chainOrderChan, engineOrderChan)
 	n.registerMiner(ringClient, engineOrderChan)
 
-
-	types.Crypto = &ethCrypto.EthCrypto{Homestead:false}
+	crypto.CryptoInstance = &ethCrypto.EthCrypto{Homestead:false}
 
 	return n
 }

@@ -35,7 +35,7 @@ const (
 	ORDER_REJECT
 )
 
-var Crypto crypto.Crypto
+
 
 //订单原始信息
 /**
@@ -77,7 +77,7 @@ address(this),
 
 func (o *OrderState) GenHash() Hash {
 	h := &Hash{}
-	hashBytes := Crypto.GenerateHash(
+	hashBytes := crypto.CryptoInstance.GenerateHash(
 		o.RawOrder.Protocol.Bytes(),
 		o.RawOrder.TokenS.Bytes(),
 		o.RawOrder.TokenB.Bytes(),
@@ -97,16 +97,16 @@ func (o *OrderState) GenHash() Hash {
 }
 
 func (o *OrderState) ValidateSignatureValues() bool {
-	return Crypto.ValidateSignatureValues(byte(o.RawOrder.V), o.RawOrder.R, o.RawOrder.S)
+	return crypto.CryptoInstance.ValidateSignatureValues(byte(o.RawOrder.V), o.RawOrder.R, o.RawOrder.S)
 }
 
 func (o *OrderState) SignerAddress() (Address,error) {
 	//todo:
 	hash := o.GenHash()
-	sig := Crypto.VRSToSig(o.RawOrder.V, o.RawOrder.R, o.RawOrder.S)
+	sig := crypto.CryptoInstance.VRSToSig(o.RawOrder.V, o.RawOrder.R, o.RawOrder.S)
 	println("hash:", hash.Hex())
 	address := &Address{}
-	if addressBytes,err := Crypto.SigToAddress(hash.Bytes(), sig);nil != err {
+	if addressBytes,err := crypto.CryptoInstance.SigToAddress(hash.Bytes(), sig);nil != err {
 		log.Errorf("error:%s", err.Error())
 		return *address, err
 	} else {

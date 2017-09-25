@@ -82,7 +82,7 @@ func main() {
 
 func minerNode(c *cli.Context) error {
 	//todo：设置flag到config中
-	n := node.NewNode(logger, globalConfig)
+	n := node.NewEthNode(logger, globalConfig)
 	n.Start()
 
 	log.Info("started")

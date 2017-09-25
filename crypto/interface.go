@@ -22,6 +22,8 @@ import (
 	"math/big"
 )
 
+var CryptoInstance Crypto
+
 type Crypto interface {
 	//生成账号
 	GenerateAccount(result interface{})
