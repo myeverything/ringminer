@@ -19,46 +19,46 @@
 package eth
 
 import (
+	"github.com/Loopring/ringminer/log"
+	types "github.com/Loopring/ringminer/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
+	ethTypes "github.com/ethereum/go-ethereum/core/types"
+	"math/big"
+	"qiniupkg.com/x/errors.v7"
 	"reflect"
 	"strings"
-	"github.com/ethereum/go-ethereum/common"
-	"math/big"
-	types "github.com/Loopring/ringminer/types"
-	ethTypes "github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/common/hexutil"
-	"qiniupkg.com/x/errors.v7"
-	"github.com/Loopring/ringminer/log"
 )
 
 type AbiMethod struct {
 	abi.Method
-	Abi *abi.ABI
+	Abi     *abi.ABI
 	Address string
 }
 
 func (m *AbiMethod) Call(result interface{}, blockParameter string, args ...interface{}) error {
 	dataBytes, err := m.Abi.Pack(m.Name, args...)
 
-	if (nil != err) {
+	if nil != err {
 		return err
 	}
 	data := common.ToHex(dataBytes)
 	//when call a contract method，gas,gasPrice and value are not needed.
 	arg := &CallArg{}
 	arg.From = m.Address
-	arg.To = m.Address	//when call a contract method this arg is unnecessary.
+	arg.To = m.Address //when call a contract method this arg is unnecessary.
 	arg.Data = data
 	//todo:m.Abi.Unpack
 	return EthClient.Call(result, arg, blockParameter)
 }
 
 //contract transaction
-func (m *AbiMethod) SendTransaction(from string, args ...interface{}) (string,error) {
+func (m *AbiMethod) SendTransaction(from string, args ...interface{}) (string, error) {
 	var gas, gasPrice *types.HexNumber
 	dataBytes, err := m.Abi.Pack(m.Name, args...)
 
-	if (nil != err) {
+	if nil != err {
 		return "", err
 	}
 
@@ -80,10 +80,10 @@ func (m *AbiMethod) SendTransaction(from string, args ...interface{}) (string,er
 	return m.SendTransactionWithSpecificGas(from, gas.BigInt(), gasPrice.BigInt(), args...)
 }
 
-func (m *AbiMethod) SendTransactionWithSpecificGas(from string, gas, gasPrice *big.Int, args ...interface{}) (string,error) {
+func (m *AbiMethod) SendTransactionWithSpecificGas(from string, gas, gasPrice *big.Int, args ...interface{}) (string, error) {
 	dataBytes, err := m.Abi.Pack(m.Name, args...)
 
-	if (nil != err) {
+	if nil != err {
 		return "", err
 	}
 
@@ -123,7 +123,7 @@ func applyAbiMethod(e reflect.Value, cabi *abi.ABI, address string) {
 	}
 }
 
-func NewContract(contract interface{}, address, abiStr string  ) error {
+func NewContract(contract interface{}, address, abiStr string) error {
 
 	cabi := &abi.ABI{}
 	if err := cabi.UnmarshalJSON([]byte(abiStr)); err != nil {
@@ -139,4 +139,3 @@ func NewContract(contract interface{}, address, abiStr string  ) error {
 
 	return nil
 }
-

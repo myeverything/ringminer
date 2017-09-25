@@ -19,20 +19,20 @@
 package node
 
 import (
-	"sync"
-	"go.uber.org/zap"
+	ethClient "github.com/Loopring/ringminer/chainclient/eth"
+	"github.com/Loopring/ringminer/config"
+	"github.com/Loopring/ringminer/crypto"
+	ethCrypto "github.com/Loopring/ringminer/crypto/eth"
+	"github.com/Loopring/ringminer/db"
+	"github.com/Loopring/ringminer/listener"
+	ethListener "github.com/Loopring/ringminer/listener/chain/eth"
+	ipfsListener "github.com/Loopring/ringminer/listener/p2p/ipfs"
+	"github.com/Loopring/ringminer/miner"
+	"github.com/Loopring/ringminer/miner/bucket"
 	"github.com/Loopring/ringminer/orderbook"
 	"github.com/Loopring/ringminer/types"
-	"github.com/Loopring/ringminer/config"
-	"github.com/Loopring/ringminer/miner/bucket"
-	"github.com/Loopring/ringminer/miner"
-	"github.com/Loopring/ringminer/listener"
-	ipfsListener "github.com/Loopring/ringminer/listener/p2p/ipfs"
-	ethListener "github.com/Loopring/ringminer/listener/chain/eth"
-	ethClient "github.com/Loopring/ringminer/chainclient/eth"
-	"github.com/Loopring/ringminer/db"
-	ethCrypto "github.com/Loopring/ringminer/crypto/eth"
-	"github.com/Loopring/ringminer/crypto"
+	"go.uber.org/zap"
+	"sync"
 )
 
 // TODO(fk): add services
@@ -45,7 +45,6 @@ type Node struct {
 	stop          chan struct{}
 	lock          sync.RWMutex
 	logger        *zap.Logger
-
 }
 
 // TODO(fk): inject whisper
@@ -70,7 +69,7 @@ func NewEthNode(logger *zap.Logger, globalConfig *config.GlobalConfig) *Node {
 	n.registerOrderBook(database, peerOrderChan, chainOrderChan, engineOrderChan)
 	n.registerMiner(ringClient, engineOrderChan)
 
-	crypto.CryptoInstance = &ethCrypto.EthCrypto{Homestead:false}
+	crypto.CryptoInstance = &ethCrypto.EthCrypto{Homestead: false}
 
 	return n
 }
@@ -120,11 +119,11 @@ func (n *Node) registerP2PListener(peerOrderChan chan *types.Order) {
 }
 
 func (n *Node) registerOrderBook(database db.Database, peerOrderChan chan *types.Order, chainOrderChan chan *types.OrderMined, engineOrderChan chan *types.OrderState) {
-	whisper := &orderbook.Whisper{PeerOrderChan:peerOrderChan, EngineOrderChan:engineOrderChan, ChainOrderChan:chainOrderChan}
+	whisper := &orderbook.Whisper{PeerOrderChan: peerOrderChan, EngineOrderChan: engineOrderChan, ChainOrderChan: chainOrderChan}
 	n.orderbook = orderbook.NewOrderBook(database, whisper)
 }
 
-func (n *Node) registerMiner(ringClient *miner.RingClient,orderStateChan chan *types.OrderState) {
+func (n *Node) registerMiner(ringClient *miner.RingClient, orderStateChan chan *types.OrderState) {
 	whisper := bucket.Whisper{orderStateChan}
 	n.miner = bucket.NewBucketProxy(ringClient, whisper)
 }

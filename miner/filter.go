@@ -20,7 +20,6 @@ package miner
 
 import "github.com/Loopring/ringminer/types"
 
-
 type Filter interface {
 	filter(ring *types.RingState)
 }
@@ -30,4 +29,4 @@ type Filter interface {
 1、inToken != outToken
 2、费用
 3、
- */
+*/

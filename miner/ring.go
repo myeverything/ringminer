@@ -19,12 +19,12 @@
 package miner
 
 import (
+	"github.com/Loopring/ringminer/log"
 	"github.com/Loopring/ringminer/types"
-	"strconv"
-	"math/rand"
 	"math"
 	"math/big"
-	"github.com/Loopring/ringminer/log"
+	"math/rand"
+	"strconv"
 )
 
 //ring相关的，包含链的判定、费用等数据计算等, 分润费用是必须计算的，便于判断等
@@ -65,21 +65,21 @@ func AvailableAmountS(order *types.FilledOrder) error {
 //todo:折扣
 func ComputeRing(ring *types.RingState) {
 	DECIMALS := big.NewInt(1000000000000) //todo:最好采用10的18次方，或者对应token的DECIMALS, 但是注意，计算价格时，目前使用math.pow, 需要转为float64，不要超出范围
-	FOURTIMESDECIMALS := &types.EnlargedInt{Value:big.NewInt(0).Mul(DECIMALS, DECIMALS), Decimals:big.NewInt(0).Mul(DECIMALS, DECIMALS)}
+	FOURTIMESDECIMALS := &types.EnlargedInt{Value: big.NewInt(0).Mul(DECIMALS, DECIMALS), Decimals: big.NewInt(0).Mul(DECIMALS, DECIMALS)}
 	FOURTIMESDECIMALS.Value.Mul(FOURTIMESDECIMALS.Value, DECIMALS)
 	FOURTIMESDECIMALS.Decimals.Mul(FOURTIMESDECIMALS.Decimals, DECIMALS)
 
-	ring.LegalFee = &types.EnlargedInt{Value:big.NewInt(0), Decimals:big.NewInt(1)}
+	ring.LegalFee = &types.EnlargedInt{Value: big.NewInt(0), Decimals: big.NewInt(1)}
 
 	//根据订单原始金额，计算成交量、成交价
 	productPrice := &types.EnlargedInt{}
-	productEnlargedAmountS := &types.EnlargedInt{Value:big.NewInt(1), Decimals:big.NewInt(1)}
-	productAmountB := &types.EnlargedInt{Value:big.NewInt(1), Decimals:big.NewInt(1)}
+	productEnlargedAmountS := &types.EnlargedInt{Value: big.NewInt(1), Decimals: big.NewInt(1)}
+	productAmountB := &types.EnlargedInt{Value: big.NewInt(1), Decimals: big.NewInt(1)}
 
 	for _, order := range ring.RawRing.Orders {
 
-		enlargedAmountS := &types.EnlargedInt{Value:big.NewInt(1).Mul(order.OrderState.RawOrder.AmountS, DECIMALS), Decimals:big.NewInt(1).Set(DECIMALS)}
-		enlargedAmountB := &types.EnlargedInt{Value:big.NewInt(1).Mul(order.OrderState.RawOrder.AmountB, DECIMALS), Decimals:big.NewInt(1).Set(DECIMALS)}
+		enlargedAmountS := &types.EnlargedInt{Value: big.NewInt(1).Mul(order.OrderState.RawOrder.AmountS, DECIMALS), Decimals: big.NewInt(1).Set(DECIMALS)}
+		enlargedAmountB := &types.EnlargedInt{Value: big.NewInt(1).Mul(order.OrderState.RawOrder.AmountB, DECIMALS), Decimals: big.NewInt(1).Set(DECIMALS)}
 
 		productEnlargedAmountS.Mul(productEnlargedAmountS, enlargedAmountS)
 		productAmountB.MulBigInt(productAmountB, order.OrderState.RawOrder.AmountB)
@@ -95,13 +95,13 @@ func ComputeRing(ring *types.RingState) {
 	}
 
 	productPrice.Div(productEnlargedAmountS, productAmountB)
-	priceOfFloat,_ := strconv.ParseFloat(productPrice.Value.String(), 0)
+	priceOfFloat, _ := strconv.ParseFloat(productPrice.Value.String(), 0)
 	rootOfRing := math.Pow(priceOfFloat, 1/float64(len(ring.RawRing.Orders)))
 
-	ring.ReducedRate = &types.EnlargedInt{Value:big.NewInt(int64((float64(DECIMALS.Int64()) / rootOfRing) * float64(DECIMALS.Int64()))), Decimals:big.NewInt(1).Set(DECIMALS)}
-	log.Debugf("priceFloat:%f , len:%d, rootOfRing:%f, reducedRate:%d ",priceOfFloat, len(ring.RawRing.Orders), rootOfRing, ring.ReducedRate.Value.Int64() )
+	ring.ReducedRate = &types.EnlargedInt{Value: big.NewInt(int64((float64(DECIMALS.Int64()) / rootOfRing) * float64(DECIMALS.Int64()))), Decimals: big.NewInt(1).Set(DECIMALS)}
+	log.Debugf("priceFloat:%f , len:%d, rootOfRing:%f, reducedRate:%d ", priceOfFloat, len(ring.RawRing.Orders), rootOfRing, ring.ReducedRate.Value.Int64())
 
-	shareRate := &types.EnlargedInt{Value:big.NewInt(100), Decimals:big.NewInt(100)}
+	shareRate := &types.EnlargedInt{Value: big.NewInt(100), Decimals: big.NewInt(100)}
 
 	//todo:计算fee，为了取出最大的环路
 	//LRC等比例下降，首先需要计算fillAmountS
@@ -113,7 +113,7 @@ func ComputeRing(ring *types.RingState) {
 		order.EnlargedSPrice.Mul(order.EnlargedSPrice, ring.ReducedRate)
 
 		order.EnlargedBPrice.Div(FOURTIMESDECIMALS, order.EnlargedSPrice)
-		enlargedAmountS := &types.EnlargedInt{Value:big.NewInt(0).Mul(order.OrderState.RawOrder.AmountS, DECIMALS), Decimals:DECIMALS}
+		enlargedAmountS := &types.EnlargedInt{Value: big.NewInt(0).Mul(order.OrderState.RawOrder.AmountS, DECIMALS), Decimals: DECIMALS}
 
 		//指定feeSelection
 		//todo:当以Sell为基准时，考虑账户余额、订单剩余金额的最小值
@@ -121,24 +121,24 @@ func ComputeRing(ring *types.RingState) {
 
 		//根据用户设置，判断是以卖还是买为基准
 		//买入不超过amountB
-		if (order.OrderState.RawOrder.BuyNoMoreThanAmountB) {
-			savingAmount := &types.EnlargedInt{Value:big.NewInt(1), Decimals:big.NewInt(1)}	//节省的金额
-			rate1 := &types.EnlargedInt{Decimals:big.NewInt(100), Value:big.NewInt(100)}
+		if order.OrderState.RawOrder.BuyNoMoreThanAmountB {
+			savingAmount := &types.EnlargedInt{Value: big.NewInt(1), Decimals: big.NewInt(1)} //节省的金额
+			rate1 := &types.EnlargedInt{Decimals: big.NewInt(100), Value: big.NewInt(100)}
 			savingAmount.Mul(enlargedAmountS, rate1.Sub(rate1, ring.ReducedRate))
 
 			order.RateAmountS = &big.Int{}
 			order.RateAmountS.Sub(order.OrderState.RawOrder.AmountS, savingAmount.RealValue())
 
 			//todo:计算availableAmountS
-			enlargedRemainAmountB := &types.EnlargedInt{Value:big.NewInt(0).Mul(order.OrderState.RemainedAmountB, DECIMALS), Decimals:DECIMALS}
-			availableAmountS := &types.EnlargedInt{Value:big.NewInt(0), Decimals:big.NewInt(1)}
+			enlargedRemainAmountB := &types.EnlargedInt{Value: big.NewInt(0).Mul(order.OrderState.RemainedAmountB, DECIMALS), Decimals: DECIMALS}
+			availableAmountS := &types.EnlargedInt{Value: big.NewInt(0), Decimals: big.NewInt(1)}
 
 			//BuyNoMoreThanAmountB，根据剩余的买入量以及价格重新计算卖出
-			rate := &types.EnlargedInt{Value:big.NewInt(1), Decimals:big.NewInt(1)}
+			rate := &types.EnlargedInt{Value: big.NewInt(1), Decimals: big.NewInt(1)}
 			rate.DivBigInt(enlargedRemainAmountB, order.OrderState.RawOrder.AmountB)
 
 			availableAmountS.MulBigInt(rate, order.RateAmountS)
-			if (availableAmountS.CmpBigInt(order.AvailableAmountS) < 0) {
+			if availableAmountS.CmpBigInt(order.AvailableAmountS) < 0 {
 				order.AvailableAmountS = availableAmountS.RealValue()
 			}
 		} else {
@@ -148,24 +148,23 @@ func ComputeRing(ring *types.RingState) {
 
 		//与上一订单的买入进行比较
 		var lastOrder *types.FilledOrder
-		if (idx > 0) {
-			lastOrder = ring.RawRing.Orders[idx - 1]
+		if idx > 0 {
+			lastOrder = ring.RawRing.Orders[idx-1]
 		}
 
-
-		if (lastOrder != nil && lastOrder.FillAmountB.CmpBigInt(order.AvailableAmountS) >= 0) {
+		if lastOrder != nil && lastOrder.FillAmountB.CmpBigInt(order.AvailableAmountS) >= 0 {
 			//当前订单为最小订单
-			order.FillAmountS = &types.EnlargedInt{Value:order.AvailableAmountS,Decimals:big.NewInt(1)}
+			order.FillAmountS = &types.EnlargedInt{Value: order.AvailableAmountS, Decimals: big.NewInt(1)}
 			minVolumeIdx = idx
 			//根据minVolumeIdx进行最小交易量的计算,两个方向进行
-		} else if (lastOrder == nil) {
-			order.FillAmountS = &types.EnlargedInt{Value:order.AvailableAmountS, Decimals:big.NewInt(1)}
+		} else if lastOrder == nil {
+			order.FillAmountS = &types.EnlargedInt{Value: order.AvailableAmountS, Decimals: big.NewInt(1)}
 		} else {
 			//上一订单为最小订单需要对remainAmountS进行折扣计算
 			order.FillAmountS = lastOrder.FillAmountB
 		}
-		order.FillAmountB = &types.EnlargedInt{Value:big.NewInt(1), Decimals:big.NewInt(1)}
-		order.FillAmountB.Mul(order.FillAmountS, order.EnlargedBPrice);
+		order.FillAmountB = &types.EnlargedInt{Value: big.NewInt(1), Decimals: big.NewInt(1)}
+		order.FillAmountB.Mul(order.FillAmountS, order.EnlargedBPrice)
 
 	}
 
@@ -185,12 +184,11 @@ func ComputeRing(ring *types.RingState) {
 	//	}
 	//}
 
-
-	for i := minVolumeIdx-1; i >= 0; i-- {
+	for i := minVolumeIdx - 1; i >= 0; i-- {
 		//按照前面的，同步减少交易量
 		order := ring.RawRing.Orders[i]
 		var nextOrder *types.FilledOrder
-		nextOrder = ring.RawRing.Orders[i + 1]
+		nextOrder = ring.RawRing.Orders[i+1]
 		order.FillAmountB = nextOrder.FillAmountS
 		order.FillAmountS.Mul(order.FillAmountB, order.EnlargedSPrice)
 	}
@@ -200,7 +198,7 @@ func ComputeRing(ring *types.RingState) {
 		order := ring.RawRing.Orders[i]
 		var lastOrder *types.FilledOrder
 
-		lastOrder = ring.RawRing.Orders[i - 1]
+		lastOrder = ring.RawRing.Orders[i-1]
 		order.FillAmountS = lastOrder.FillAmountB
 		order.FillAmountB.Mul(order.FillAmountS, order.EnlargedBPrice)
 	}
@@ -209,7 +207,7 @@ func ComputeRing(ring *types.RingState) {
 	for _, order := range ring.RawRing.Orders {
 		//todo:根据分润比例计算收益, 现在分润方式确定，都是先看lrcfee，然后看分润，因此无所谓的分润方式的选择
 		percentage := int64(order.OrderState.RawOrder.SavingSharePercentage)
-		if (shareRate.Value.Int64() > percentage) {
+		if shareRate.Value.Int64() > percentage {
 			shareRate.Value = big.NewInt(percentage)
 		}
 
@@ -240,15 +238,15 @@ func ComputeRing(ring *types.RingState) {
 
 		lrcAddress.SetBytes([]byte(LRC_ADDRESS))
 		//todo:成本节约
-		legalAmountOfSaving := &types.EnlargedInt{Value:big.NewInt(1),Decimals:big.NewInt(1)}
-		if (order.OrderState.RawOrder.BuyNoMoreThanAmountB) {
+		legalAmountOfSaving := &types.EnlargedInt{Value: big.NewInt(1), Decimals: big.NewInt(1)}
+		if order.OrderState.RawOrder.BuyNoMoreThanAmountB {
 
-			enlargedAmountS := &types.EnlargedInt{Value:big.NewInt(1).Mul(order.OrderState.RawOrder.AmountS, DECIMALS), Decimals:big.NewInt(1).Set(DECIMALS)}
+			enlargedAmountS := &types.EnlargedInt{Value: big.NewInt(1).Mul(order.OrderState.RawOrder.AmountS, DECIMALS), Decimals: big.NewInt(1).Set(DECIMALS)}
 
 			enlargedSPrice := &types.EnlargedInt{}
 			enlargedSPrice.DivBigInt(enlargedAmountS, order.OrderState.RawOrder.AmountB)
 
-			savingAmount := &types.EnlargedInt{Value:big.NewInt(1),Decimals:big.NewInt(1)}
+			savingAmount := &types.EnlargedInt{Value: big.NewInt(1), Decimals: big.NewInt(1)}
 			savingAmount.Mul(order.FillAmountB, enlargedSPrice)
 			savingAmount.Sub(savingAmount, order.FillAmountS)
 			order.FeeS = savingAmount
@@ -257,7 +255,7 @@ func ComputeRing(ring *types.RingState) {
 			println("savingAmount", savingAmount.RealValue().Int64())
 
 		} else {
-			savingAmount := &types.EnlargedInt{Value:big.NewInt(0).Set(order.FillAmountB.Value), Decimals:big.NewInt(0).Set(order.FillAmountB.Decimals)}
+			savingAmount := &types.EnlargedInt{Value: big.NewInt(0).Set(order.FillAmountB.Value), Decimals: big.NewInt(0).Set(order.FillAmountB.Decimals)}
 			savingAmount.Mul(savingAmount, ring.ReducedRate)
 			savingAmount.Sub(order.FillAmountB, savingAmount)
 			order.FeeS = savingAmount
@@ -267,18 +265,18 @@ func ComputeRing(ring *types.RingState) {
 		}
 
 		//lrcFee等比例
-		order.LrcFee = &types.EnlargedInt{Value:big.NewInt(1),Decimals:big.NewInt(1)}
-		rate := &types.EnlargedInt{Value:big.NewInt(1),Decimals:big.NewInt(1)}
-		enlargedAvailabeAmountS := &types.EnlargedInt{Value:big.NewInt(1).Mul(order.AvailableAmountS, DECIMALS), Decimals:DECIMALS}
+		order.LrcFee = &types.EnlargedInt{Value: big.NewInt(1), Decimals: big.NewInt(1)}
+		rate := &types.EnlargedInt{Value: big.NewInt(1), Decimals: big.NewInt(1)}
+		enlargedAvailabeAmountS := &types.EnlargedInt{Value: big.NewInt(1).Mul(order.AvailableAmountS, DECIMALS), Decimals: DECIMALS}
 		rate.DivBigInt(enlargedAvailabeAmountS, order.OrderState.RawOrder.AmountS)
 		order.LrcFee.MulBigInt(rate, order.OrderState.RawOrder.LrcFee)
 
-		legalAmountOfLrc := &types.EnlargedInt{Value:big.NewInt(1),Decimals:big.NewInt(1)}
+		legalAmountOfLrc := &types.EnlargedInt{Value: big.NewInt(1), Decimals: big.NewInt(1)}
 
 		legalAmountOfLrc.Mul(GetLegalRate(CNY, *lrcAddress), order.LrcFee)
 
 		//todo：比例以及lrc需要*2
-		if (legalAmountOfLrc.Cmp(legalAmountOfSaving) > 0) {
+		if legalAmountOfLrc.Cmp(legalAmountOfSaving) > 0 {
 			order.FeeSelection = 0
 			order.LegalFee = legalAmountOfLrc
 		} else {
@@ -286,10 +284,10 @@ func ComputeRing(ring *types.RingState) {
 
 			legalAmountOfSaving.Mul(legalAmountOfSaving, shareRate)
 			order.LegalFee = legalAmountOfSaving
-			lrcReward := &types.EnlargedInt{Value:big.NewInt(0).Set(legalAmountOfSaving.Value), Decimals:big.NewInt(0).Set(legalAmountOfSaving.Decimals)}
+			lrcReward := &types.EnlargedInt{Value: big.NewInt(0).Set(legalAmountOfSaving.Value), Decimals: big.NewInt(0).Set(legalAmountOfSaving.Decimals)}
 			lrcReward.DivBigInt(lrcReward, big.NewInt(2))
 			lrcReward.Div(lrcReward, GetLegalRate(CNY, *lrcAddress))
-			log.Debugf("lrcReward:%s  legalFee:%s", lrcReward.RealValue().String(),order.LegalFee.RealValue().String())
+			log.Debugf("lrcReward:%s  legalFee:%s", lrcReward.RealValue().String(), order.LegalFee.RealValue().String())
 			order.LrcReward = lrcReward
 		}
 		ring.LegalFee.Add(ring.LegalFee, order.LegalFee)
@@ -314,4 +312,3 @@ func PriceValid(ring *types.RingState) bool {
 	}
 	return amountS.Cmp(amountB) >= 0
 }
-

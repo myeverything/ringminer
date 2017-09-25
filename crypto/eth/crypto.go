@@ -19,10 +19,10 @@
 package eth
 
 import (
+	"github.com/Loopring/ringminer/chainclient/eth"
+	"github.com/Loopring/ringminer/log"
 	"github.com/ethereum/go-ethereum/crypto"
 	"math/big"
-	"github.com/Loopring/ringminer/log"
-	"github.com/Loopring/ringminer/chainclient/eth"
 )
 
 type EthCrypto struct {
@@ -31,7 +31,7 @@ type EthCrypto struct {
 
 //生成账号
 func (c *EthCrypto) GenerateAccount(result interface{}) {
-	privKey,err := crypto.GenerateKey()
+	privKey, err := crypto.GenerateKey()
 	if nil == err {
 		account := eth.Account{}
 		account.PrivKey = privKey
@@ -53,7 +53,7 @@ func (c *EthCrypto) GenerateHash(data ...[]byte) []byte {
 
 //签名回复到地址
 func (c *EthCrypto) SigToAddress(hash, sig []byte) ([]byte, error) {
-	pubKey,err := crypto.SigToPub(hash, sig)
+	pubKey, err := crypto.SigToPub(hash, sig)
 	if nil != err {
 		return nil, err
 	} else {
@@ -69,8 +69,8 @@ func (c *EthCrypto) VRSToSig(v byte, r, s *big.Int) []byte {
 	return sig
 }
 
-func (c *EthCrypto) Sign(hash, pkBytes []byte) ([]byte,error) {
-	if pk,err := crypto.ToECDSA(pkBytes);err != nil {
+func (c *EthCrypto) Sign(hash, pkBytes []byte) ([]byte, error) {
+	if pk, err := crypto.ToECDSA(pkBytes); err != nil {
 		log.Errorf("err:", err.Error())
 		return nil, err
 	} else {
@@ -84,5 +84,5 @@ func (c *EthCrypto) SigToVRS(sig []byte) (v byte, r *big.Int, s *big.Int) {
 	v = sig[64]
 	r.SetBytes(sig[0:32])
 	s.SetBytes(sig[32:64])
-	return v,r,s
+	return v, r, s
 }

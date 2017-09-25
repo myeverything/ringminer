@@ -19,9 +19,9 @@
 package types
 
 import (
-	"math/big"
 	"github.com/Loopring/ringminer/crypto"
 	"github.com/Loopring/ringminer/log"
+	"math/big"
 )
 
 type OrderStatus uint8
@@ -35,8 +35,6 @@ const (
 	ORDER_REJECT
 )
 
-
-
 //订单原始信息
 /**
 1、是否整体成交
@@ -44,7 +42,7 @@ const (
 3、分润比例 是否需要设置
 4、成交方向 待定
 5、过期时间，使用块数
- */
+*/
 type Order struct {
 	Protocol              Address  // 智能合约地址
 	TokenS                Address  // 卖出erc20代币智能合约地址
@@ -55,7 +53,7 @@ type Order struct {
 	Rand                  *big.Int
 	LrcFee                *big.Int // 交易总费用,部分成交的费用按该次撮合实际卖出代币额与比例计算
 	BuyNoMoreThanAmountB  bool
-	SavingSharePercentage int      // 不为0时支付给交易所的分润比例，否则视为100%
+	SavingSharePercentage int // 不为0时支付给交易所的分润比例，否则视为100%
 	V                     uint8
 	R                     *big.Int
 	S                     *big.Int
@@ -72,8 +70,7 @@ address(this),
             order.lrcFee,
             order.buyNoMoreThanAmountB,
             order.savingSharePercentage
- */
-
+*/
 
 func (o *OrderState) GenHash() Hash {
 	h := &Hash{}
@@ -100,13 +97,13 @@ func (o *OrderState) ValidateSignatureValues() bool {
 	return crypto.CryptoInstance.ValidateSignatureValues(byte(o.RawOrder.V), o.RawOrder.R, o.RawOrder.S)
 }
 
-func (o *OrderState) SignerAddress() (Address,error) {
+func (o *OrderState) SignerAddress() (Address, error) {
 	//todo:
 	hash := o.GenHash()
 	sig := crypto.CryptoInstance.VRSToSig(o.RawOrder.V, o.RawOrder.R, o.RawOrder.S)
 	println("hash:", hash.Hex())
 	address := &Address{}
-	if addressBytes,err := crypto.CryptoInstance.SigToAddress(hash.Bytes(), sig);nil != err {
+	if addressBytes, err := crypto.CryptoInstance.SigToAddress(hash.Bytes(), sig); nil != err {
 		log.Errorf("error:%s", err.Error())
 		return *address, err
 	} else {
@@ -124,36 +121,35 @@ func (o *OrderState) SignerAddress() (Address,error) {
 //RateAmountS、FeeSelection 需要提交到contract
 type FilledOrder struct {
 	OrderState       OrderState
-	FeeSelection     int	//0 -> lrc
-	RateAmountS      *big.Int	//提交需要
-	AvailableAmountS *big.Int	//需要，也是用于计算fee
+	FeeSelection     int      //0 -> lrc
+	RateAmountS      *big.Int //提交需要
+	AvailableAmountS *big.Int //需要，也是用于计算fee
 	//AvailableAmountB *big.Int	//需要，也是用于计算fee
-	FillAmountS      *EnlargedInt
-	FillAmountB      *EnlargedInt	//计算需要
-	LrcReward        *EnlargedInt
-	LrcFee           *EnlargedInt
-	FeeS             *EnlargedInt
+	FillAmountS *EnlargedInt
+	FillAmountB *EnlargedInt //计算需要
+	LrcReward   *EnlargedInt
+	LrcFee      *EnlargedInt
+	FeeS        *EnlargedInt
 	//FeeB             *EnlargedInt
-	LegalFee         *EnlargedInt //法币计算的fee
+	LegalFee *EnlargedInt //法币计算的fee
 
-	EnlargedSPrice   *EnlargedInt
-	EnlargedBPrice   *EnlargedInt
+	EnlargedSPrice *EnlargedInt
+	EnlargedBPrice *EnlargedInt
 
 	//FullFilled	bool	//this order is fullfilled
 }
 
 type OrderState struct {
-	RawOrder Order
-	Owner Address
-	OrderHash Hash
+	RawOrder        Order
+	Owner           Address
+	OrderHash       Hash
 	RemainedAmountS *big.Int
 	RemainedAmountB *big.Int
-	Status OrderStatus
+	Status          OrderStatus
 }
 
 // TODO(fukun): 来自以太坊的订单
 type OrderMined struct {
-
 }
 
 // convert order to ordersate

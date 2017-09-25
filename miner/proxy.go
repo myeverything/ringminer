@@ -19,10 +19,10 @@
 package miner
 
 import (
-	"github.com/Loopring/ringminer/types"
 	"github.com/Loopring/ringminer/chainclient"
-	"github.com/Loopring/ringminer/config"
 	"github.com/Loopring/ringminer/chainclient/eth"
+	"github.com/Loopring/ringminer/config"
+	"github.com/Loopring/ringminer/types"
 )
 
 //代理，控制整个match流程，其中会提供几种实现，如bucket、realtime，etc。
@@ -31,7 +31,7 @@ import (
 orderbook 实现:
 1、订单的最新状态
 2、订单是否满足剩余交易量等条件
- */
+*/
 //var orderMinAmount big.Int	//todo：订单的最小金额，可能需要用map，记录每种货币的最小金额，应该定义filter，过滤环的验证规则
 
 type RingSubmitFailedChan chan *types.RingState
@@ -39,11 +39,10 @@ type RingSubmitFailedChan chan *types.RingState
 var Loopring *chainclient.Loopring
 
 type Proxy interface {
-	Start()  //启动
-	Stop() //停止
+	Start() //启动
+	Stop()  //停止
 	AddFilter()
 }
-
 
 func Initialize(options config.MinerOptions, client *chainclient.Client) {
 	Loopring = &chainclient.Loopring{}
@@ -78,4 +77,4 @@ todo：仍需要工作：调试合约
 2、ring发送前的检测
 3、费用的整理
 4、
- */
+*/

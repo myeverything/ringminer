@@ -19,10 +19,10 @@
 package utils
 
 import (
-	"path/filepath"
-	"os"
-	"gopkg.in/urfave/cli.v1"
 	"github.com/Loopring/ringminer/params"
+	"gopkg.in/urfave/cli.v1"
+	"os"
+	"path/filepath"
 )
 
 func NewApp() *cli.App {
@@ -47,11 +47,11 @@ func matchengineCommands() cli.Command {
 
 func chainclientCommands() cli.Command {
 	matchengineCommand := cli.Command{
-		Name:     "chainclient",
-		Usage:    "chainclient ",
-		Category: "Chainclient Commands",
-		Subcommands:  []cli.Command{
-			//秘钥以及地址，生成时的密码
+		Name:        "chainclient",
+		Usage:       "chainclient ",
+		Category:    "Chainclient Commands",
+		Subcommands: []cli.Command{
+		//秘钥以及地址，生成时的密码
 		},
 	}
 	return matchengineCommand

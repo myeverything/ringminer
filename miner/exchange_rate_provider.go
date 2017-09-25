@@ -37,5 +37,5 @@ const (
 
 //todo:获取法币汇率
 func GetLegalRate(currency LegalCurrency, tokenAddress types.Address) *types.EnlargedInt {
-	return &types.EnlargedInt{Value:big.NewInt(100), Decimals:big.NewInt(100)}
+	return &types.EnlargedInt{Value: big.NewInt(100), Decimals: big.NewInt(100)}
 }

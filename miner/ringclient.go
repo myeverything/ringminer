@@ -19,33 +19,33 @@
 package miner
 
 import (
-	"github.com/Loopring/ringminer/db"
-	"github.com/Loopring/ringminer/types"
-	"github.com/Loopring/ringminer/chainclient"
 	"encoding/json"
+	"github.com/Loopring/ringminer/chainclient"
 	"github.com/Loopring/ringminer/chainclient/eth"
+	"github.com/Loopring/ringminer/db"
+	"github.com/Loopring/ringminer/log"
+	"github.com/Loopring/ringminer/types"
 	"github.com/ethereum/go-ethereum/common"
 	"sync"
-	"github.com/Loopring/ringminer/log"
 )
 
 //保存ring，并将ring发送到区块链，同样需要分为待完成和已完成
 type RingClient struct {
 	Chainclient *chainclient.Client
-	store                 db.Database
+	store       db.Database
 
-	submitedRingsStore    db.Database
+	submitedRingsStore db.Database
 
-	unSubmitedRingsStore  db.Database
+	unSubmitedRingsStore db.Database
 
-	fingerprintChan       chan *chainclient.FingerprintEvent
+	fingerprintChan chan *chainclient.FingerprintEvent
 
 	//ring 的失败包括：提交失败，ring的合约执行时失败，执行时包括：gas不足，以及其他失败
 	ringSubmitFailedChans []RingSubmitFailedChan
 
-	stopChan              chan bool
+	stopChan chan bool
 
-	mtx                   *sync.RWMutex
+	mtx *sync.RWMutex
 }
 
 func NewRingClient(database db.Database, client *chainclient.Client) *RingClient {
@@ -55,7 +55,7 @@ func NewRingClient(database db.Database, client *chainclient.Client) *RingClient
 	ringClient.unSubmitedRingsStore = db.NewTable(ringClient.store, "unsubmited")
 	ringClient.submitedRingsStore = db.NewTable(ringClient.store, "submited")
 	ringClient.mtx = &sync.RWMutex{}
-	ringClient.ringSubmitFailedChans = make([]RingSubmitFailedChan,0)
+	ringClient.ringSubmitFailedChans = make([]RingSubmitFailedChan, 0)
 	return ringClient
 }
 
@@ -82,22 +82,22 @@ func (ringClient *RingClient) NewRing(ring *types.RingState) {
 	ringClient.mtx.Lock()
 	defer ringClient.mtx.Unlock()
 
-	if (canSubmit(ring)) {
+	if canSubmit(ring) {
 		//todo:save
-		if ringBytes,err := json.Marshal(ring); err == nil {
+		if ringBytes, err := json.Marshal(ring); err == nil {
 			ringClient.unSubmitedRingsStore.Put(ring.Hash.Bytes(), ringBytes)
 			log.Infof("ringHash:%s", ring.Hash.Hex())
 			//todo:async send to block chain
 			ringClient.sendRingFingerprint(ring)
 		} else {
-			log.Errorf("error:%s",err.Error())
+			log.Errorf("error:%s", err.Error())
 		}
 	}
 }
 
 func canSubmit(ring *types.RingState) bool {
 	//todo:args validator
-	return true;
+	return true
 }
 
 //send Fingerprint to block chain
@@ -113,7 +113,7 @@ func (ringClient *RingClient) sendRingFingerprint(ring *types.RingState) {
 func (ringClient *RingClient) listenFingerprintSucessAndSendRing() {
 	var filterId string
 	addresses := []common.Address{}
-	for _,fingerprint := range Loopring.LoopringFingerprints {
+	for _, fingerprint := range Loopring.LoopringFingerprints {
 		addresses = append(addresses, common.HexToAddress(fingerprint.Address))
 	}
 	filterReq := &eth.FilterQuery{}
@@ -123,9 +123,9 @@ func (ringClient *RingClient) listenFingerprintSucessAndSendRing() {
 	//todo:topics, eventId
 	//filterReq.Topics =
 	if err := Loopring.Client.NewFilter(&filterId, filterReq); nil != err {
-		log.Errorf("error:%s",err.Error())
+		log.Errorf("error:%s", err.Error())
 	} else {
-		log.Infof("filterId:%s",filterId)
+		log.Infof("filterId:%s", filterId)
 	}
 	//todo：Uninstall this filterId when stop
 	defer func() {
@@ -134,8 +134,8 @@ func (ringClient *RingClient) listenFingerprintSucessAndSendRing() {
 	}()
 
 	logChan := make(chan []eth.Log)
-	if err := Loopring.Client.Subscribe(&logChan, filterId);nil != err {
-		log.Errorf("error:%s",err.Error())
+	if err := Loopring.Client.Subscribe(&logChan, filterId); nil != err {
+		log.Errorf("error:%s", err.Error())
 	} else {
 		for {
 			select {
@@ -148,7 +148,7 @@ func (ringClient *RingClient) listenFingerprintSucessAndSendRing() {
 						//todo:发送到区块链
 						_, err1 := Loopring.LoopringImpls[contractAddress].SubmitRing.SendTransactionWithSpecificGas("", nil, nil, "")
 						if err1 != nil {
-							log.Errorf("error:%s",err1.Error())
+							log.Errorf("error:%s", err1.Error())
 						} else {
 							//标记为已删除,迁移到已完成的列表中
 							ringClient.unSubmitedRingsStore.Delete(ringHash)
@@ -183,10 +183,10 @@ func (ringClient *RingClient) recoverRing() {
 			var isSubmitRing bool
 			if canSubmit(ring) {
 				if err := Loopring.LoopringFingerprints[contractAddress].FingerprintFound.Call(&isSubmitFingerprint, "", ""); err == nil {
-					if (isSubmitFingerprint) {
+					if isSubmitFingerprint {
 						//todo:sendTransaction, check have ring been submited.
 						if err := Loopring.LoopringImpls[contractAddress].SettleRing.Call(&isSubmitRing, "", ""); err == nil {
-							if (!isSubmitRing && canSubmit(ring)) {
+							if !isSubmitRing && canSubmit(ring) {
 								//loopring.LoopringImpls[contractAddress].SubmitRing.SendTransaction(contractAddress, "", "")
 							}
 						} else {

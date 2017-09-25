@@ -19,11 +19,11 @@
 package bucket
 
 import (
-	"sync"
-	"github.com/Loopring/ringminer/types"
-	"github.com/Loopring/ringminer/miner"
 	"github.com/Loopring/ringminer/config"
 	"github.com/Loopring/ringminer/log"
+	"github.com/Loopring/ringminer/miner"
+	"github.com/Loopring/ringminer/types"
+	"sync"
 )
 
 /**
@@ -35,13 +35,13 @@ todo：此时环路的撮合驱动是由新订单的到来进行驱动，但是�
  bucket中的更改如何反映到现有的,如何进行semiRing的遍历
  需要一个pool，对bucket进行抽象，由realtime调用pool接口，进行实时计算
  可能需要使用归约订单的结构
- */
+*/
 
 /**
 思路：设计符合要求的数据格式，
 负责协调各个bucket，将ring发送到区块链，
 该处负责接受neworder, cancleorder等事件，并把事件广播给所有的bucket，同时调用client将已形成的环路发送至区块链，发送时需要再次查询订单的最新状态，保证无错，一旦出错需要更改ring的各种数据，如交易量、费用分成等
- */
+*/
 
 //// TODO(fukun): modify config
 //type BucketProxyConfig struct {
@@ -62,7 +62,7 @@ type BucketProxy struct {
 	options              config.MinerOptions
 }
 
-func NewBucketProxy(ringClient *miner.RingClient,orderStateChan Whisper) miner.Proxy {
+func NewBucketProxy(ringClient *miner.RingClient, orderStateChan Whisper) miner.Proxy {
 	var proxy miner.Proxy
 	bp := &BucketProxy{}
 
@@ -91,7 +91,7 @@ func (bp *BucketProxy) Start() {
 
 	for {
 		select {
-		case orderRing := <- bp.ringChan:
+		case orderRing := <-bp.ringChan:
 			//todo:must be in debug mode
 			//debugRingChan <- orderRing
 
@@ -115,7 +115,7 @@ func (bp *BucketProxy) Stop() {
 	close(bp.ringChan)
 	close(bp.OrderStateChan.OrderStateChan)
 	bp.ringClient.DeleteRingSubmitFailedChan(bp.ringSubmitFailedChan)
-	for _,bucket := range bp.buckets {
+	for _, bucket := range bp.buckets {
 		bucket.Stop()
 	}
 }
@@ -123,10 +123,10 @@ func (bp *BucketProxy) Stop() {
 func (bp *BucketProxy) listenOrderState() {
 	for {
 		select {
-		case order := <- bp.OrderStateChan.OrderStateChan:
-			if (types.ORDER_NEW == order.Status) {
+		case order := <-bp.OrderStateChan.OrderStateChan:
+			if types.ORDER_NEW == order.Status {
 				bp.newOrder(order)
-			} else if (types.ORDER_CANCEL == order.Status || types.ORDER_FINISHED == order.Status) {
+			} else if types.ORDER_CANCEL == order.Status || types.ORDER_FINISHED == order.Status {
 				bp.deleteOrder(order)
 			}
 		}
@@ -137,13 +137,13 @@ func (bp *BucketProxy) newOrder(order *types.OrderState) {
 	bp.mtx.RLock()
 	defer bp.mtx.RUnlock()
 	//if bp.buckets doesn't contains the bucket named by tokenS, create it.
-	if _,ok := bp.buckets[order.RawOrder.TokenS] ; !ok {
+	if _, ok := bp.buckets[order.RawOrder.TokenS]; !ok {
 		bucket := NewBucket(order.RawOrder.TokenS, bp.ringChan)
 		bp.buckets[order.RawOrder.TokenS] = *bucket
 	}
 
 	//it is unnecessary actually
-	if _,ok := bp.buckets[order.RawOrder.TokenB] ; !ok {
+	if _, ok := bp.buckets[order.RawOrder.TokenB]; !ok {
 		bucket := NewBucket(order.RawOrder.TokenB, bp.ringChan)
 		bp.buckets[order.RawOrder.TokenB] = *bucket
 	}
@@ -174,8 +174,8 @@ func (bp *BucketProxy) listenRingSubmit() {
 
 //todo:需要ringclient在提交失败后通知到该proxy，估计使用chan
 func (bp *BucketProxy) submitFailed(ring *types.RingState) {
-	for _,bucket := range bp.buckets {
-		for _,order := range ring.RawRing.Orders {
+	for _, bucket := range bp.buckets {
+		for _, order := range ring.RawRing.Orders {
 			//todo:查询orderbook获取最新值,是否已被匹配过
 			bucket.NewOrder(order.OrderState)
 			//if (order.FullFilled) {
@@ -184,6 +184,3 @@ func (bp *BucketProxy) submitFailed(ring *types.RingState) {
 		}
 	}
 }
-
-
-

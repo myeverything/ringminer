@@ -19,13 +19,13 @@
 package types
 
 import (
-	"math/big"
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	"math/big"
 )
 
 const (
-	HashLength    = 32  // 以太坊中为
-	AddressLength = 42  // 以太坊中为20 20*2 + "0x"
+	HashLength    = 32 // 以太坊中为
+	AddressLength = 42 // 以太坊中为20 20*2 + "0x"
 	SignLength    = 32
 )
 

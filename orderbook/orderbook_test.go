@@ -19,17 +19,17 @@
 package orderbook_test
 
 import (
-	"testing"
 	"github.com/Loopring/ringminer/orderbook"
-	"path/filepath"
-	"os"
 	"github.com/Loopring/ringminer/types"
+	"os"
+	"path/filepath"
+	"testing"
 	"time"
 )
 
 const dbname = "leveldb"
 
-var sep = func() string {return string(filepath.Separator)}
+var sep = func() string { return string(filepath.Separator) }
 
 func file() string {
 	gopath := os.Getenv("GOPATH")
@@ -67,14 +67,14 @@ func getOrderWrap() *types.OrderWrap {
 }
 
 func TestNewOrder(t *testing.T) {
-	conf := &orderbook.OrderBookConfig{DBName:file(), DBCacheCapcity:12 , DBBufferCapcity:12}
+	conf := &orderbook.OrderBookConfig{DBName: file(), DBCacheCapcity: 12, DBBufferCapcity: 12}
 	orderbook.InitializeOrderBook(conf)
 	odw := getOrderWrap()
 	orderbook.NewOrder(odw)
 }
 
 func TestGetOrder(t *testing.T) {
-	conf := &orderbook.OrderBookConfig{DBName:file(), DBCacheCapcity:12 , DBBufferCapcity:12}
+	conf := &orderbook.OrderBookConfig{DBName: file(), DBCacheCapcity: 12, DBBufferCapcity: 12}
 	orderbook.InitializeOrderBook(conf)
 
 	if w, err := orderbook.GetOrder(types.StringToHash("test1")); err != nil {

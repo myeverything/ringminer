@@ -19,8 +19,8 @@
 package chainclient
 
 import (
-	"math/big"
 	"github.com/Loopring/ringminer/types"
+	"math/big"
 )
 
 type AbiMethod interface {
@@ -31,19 +31,19 @@ type AbiMethod interface {
 
 //the base info of contract
 type Contract struct {
-	Abi interface{}
+	Abi     interface{}
 	Address string
 }
 
 type Erc20Token struct {
 	Contract
-	Name string
-	TotalSupply AbiMethod
-	BalanceOf AbiMethod
-	Transfer AbiMethod
+	Name         string
+	TotalSupply  AbiMethod
+	BalanceOf    AbiMethod
+	Transfer     AbiMethod
 	TransferFrom AbiMethod
-	Approve AbiMethod
-	Allowance AbiMethod
+	Approve      AbiMethod
+	Allowance    AbiMethod
 }
 
 type LoopringProtocolImpl struct {
@@ -51,29 +51,29 @@ type LoopringProtocolImpl struct {
 
 	RemainAmount AbiMethod //todo:
 
-	SubmitRing AbiMethod
-	SubmitRingFingerPrint AbiMethod
-	CancelOrder AbiMethod
-	VerifyTokensRegistered AbiMethod
-	CalculateSignerAddress AbiMethod
-	CalculateOrderHash AbiMethod
-	ValidateOrder AbiMethod
-	AssembleOrders AbiMethod
-	CalculateOrderFillAmount AbiMethod
-	CalculateRingFillAmount AbiMethod
-	CalculateRingFees AbiMethod
+	SubmitRing                   AbiMethod
+	SubmitRingFingerPrint        AbiMethod
+	CancelOrder                  AbiMethod
+	VerifyTokensRegistered       AbiMethod
+	CalculateSignerAddress       AbiMethod
+	CalculateOrderHash           AbiMethod
+	ValidateOrder                AbiMethod
+	AssembleOrders               AbiMethod
+	CalculateOrderFillAmount     AbiMethod
+	CalculateRingFillAmount      AbiMethod
+	CalculateRingFees            AbiMethod
 	VerifyMinerSuppliedFillRates AbiMethod
-	SettleRing AbiMethod
-	VerifyRingHasNoSubRing AbiMethod
+	SettleRing                   AbiMethod
+	VerifyRingHasNoSubRing       AbiMethod
 }
 
 type LoopringFingerprintRegistry struct {
 	Contract
 	SubmitRingFingerprint AbiMethod
-	CanSubmit AbiMethod
-	FingerprintFound AbiMethod
-	IsExpired AbiMethod
-	GetRingHash AbiMethod
+	CanSubmit             AbiMethod
+	FingerprintFound      AbiMethod
+	IsExpired             AbiMethod
+	GetRingHash           AbiMethod
 }
 
 type FingerprintEvent struct {
@@ -82,8 +82,8 @@ type FingerprintEvent struct {
 
 type TokenRegistry struct {
 	Contract
-	RegisterToken AbiMethod
-	UnregisterToken AbiMethod
+	RegisterToken     AbiMethod
+	UnregisterToken   AbiMethod
 	IsTokenRegistered AbiMethod
 }
 
@@ -93,8 +93,8 @@ type LoopringProtocolImplMap map[types.Address]*LoopringProtocolImpl
 type LoopringFingerprintRegistryMap map[types.Address]*LoopringFingerprintRegistry
 
 type Loopring struct {
-	Client *Client
-	Tokens map[types.Address]*Erc20Token
-	LoopringImpls LoopringProtocolImplMap
+	Client               *Client
+	Tokens               map[types.Address]*Erc20Token
+	LoopringImpls        LoopringProtocolImplMap
 	LoopringFingerprints LoopringFingerprintRegistryMap
 }

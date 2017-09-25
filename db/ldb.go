@@ -19,21 +19,21 @@
 package db
 
 import (
-	"github.com/syndtr/goleveldb/leveldb"
-	"sync"
+	"github.com/Loopring/ringminer/config"
 	"github.com/Loopring/ringminer/log"
+	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/syndtr/goleveldb/leveldb/opt"
 	"github.com/syndtr/goleveldb/leveldb/util"
 	"math/big"
-	"github.com/Loopring/ringminer/config"
+	"sync"
 )
 
 var OpenFileLimit = 64
 
 type LDBDatabase struct {
-	*leveldb.DB       // LevelDB instance
-	fn string            // filename for reporting
-	lock sync.Mutex      // Mutex protecting the quit channel access
+	*leveldb.DB            // LevelDB instance
+	fn          string     // filename for reporting
+	lock        sync.Mutex // Mutex protecting the quit channel access
 }
 
 // TODO(fk): use config and log
@@ -93,7 +93,7 @@ func (db *LDBDatabase) Delete(key []byte) error {
 }
 
 func (db *LDBDatabase) NewIterator(start []byte, limit []byte) Iterator {
-	return db.DB.NewIterator(&util.Range{Start:start, Limit:limit}, nil)
+	return db.DB.NewIterator(&util.Range{Start: start, Limit: limit}, nil)
 }
 
 // TODO(fk): scan db with iterator means nothing
@@ -112,9 +112,9 @@ func (db *LDBDatabase) Close() {
 
 	err := db.DB.Close()
 	if err == nil {
-		log.Info("Database closed", log.NewField("content",err.Error()))
+		log.Info("Database closed", log.NewField("content", err.Error()))
 	} else {
-		log.Error("Failed to close database", log.NewField("content",err.Error()))
+		log.Error("Failed to close database", log.NewField("content", err.Error()))
 	}
 }
 
@@ -139,7 +139,7 @@ const seprator = "_"
 
 type table struct {
 	Database
-	prefix []byte
+	prefix        []byte
 	prefixLargest []byte //todo: remove it ??
 }
 
@@ -151,9 +151,9 @@ func NewTable(db Database, prefix string) Database {
 	bi.Add(bi, big.NewInt(1))
 
 	return &table{
-		Database:     db,
-		prefix: pb,
-		prefixLargest:bi.Bytes(),
+		Database:      db,
+		prefix:        pb,
+		prefixLargest: bi.Bytes(),
 	}
 }
 
@@ -191,8 +191,8 @@ type tableBatch struct {
 // NewTableBatch returns a Batch object which prefixes all keys with a given string.
 func NewTableBatch(db Database, prefix string) Batch {
 	return &tableBatch{
-		Batch:db.NewBatch(),
-		prefix:[]byte(prefix + seprator),
+		Batch:  db.NewBatch(),
+		prefix: []byte(prefix + seprator),
 	}
 }
 

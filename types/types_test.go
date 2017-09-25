@@ -19,8 +19,8 @@
 package types_test
 
 import (
-	"testing"
 	"github.com/Loopring/ringminer/types"
+	"testing"
 )
 
 func TestStringToAddress(t *testing.T) {

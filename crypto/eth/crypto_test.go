@@ -1,15 +1,15 @@
 package eth_test
 
 import (
-	"testing"
-	"github.com/Loopring/ringminer/types"
-	"time"
-	"github.com/Loopring/ringminer/crypto/eth"
-	ethClient "github.com/Loopring/ringminer/chainclient/eth"
-	"strconv"
-	ethTypes "github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/Loopring/ringminer/chainclient"
+	ethClient "github.com/Loopring/ringminer/chainclient/eth"
+	"github.com/Loopring/ringminer/crypto/eth"
+	"github.com/Loopring/ringminer/types"
+	"github.com/ethereum/go-ethereum/common"
+	ethTypes "github.com/ethereum/go-ethereum/core/types"
+	"strconv"
+	"testing"
+	"time"
 )
 
 func TestGenOrderHash(t *testing.T) {
@@ -61,11 +61,11 @@ func TestEthCrypto_SigToAddress(t *testing.T) {
 	//}
 	//t.Log("address", common.Bytes2Hex(address))
 	tx := &ethTypes.Transaction{}
-	if err := ethClient.EthClient.GetTransactionByHash(tx, "0xb0fae8141315ea396b5b6c5576e59b15c2ee156ef0d8c06f32753575f4616557");err != nil {
+	if err := ethClient.EthClient.GetTransactionByHash(tx, "0xb0fae8141315ea396b5b6c5576e59b15c2ee156ef0d8c06f32753575f4616557"); err != nil {
 		t.Error(err.Error())
 	} else {
-		v,r,s := tx.RawSignatureValues()
-		println(v.Int64(),r.Int64(), s.Int64())
+		v, r, s := tx.RawSignatureValues()
+		println(v.Int64(), r.Int64(), s.Int64())
 		//vb,rb,sb := v.Bytes(),r.Bytes(), s.Bytes()
 		//a := new(big.Int).SetBytes([]byte{[]byte("1")[0] + 27})
 		//chainId := tx.ChainId()
@@ -80,7 +80,7 @@ func TestEthCrypto_SigToAddress(t *testing.T) {
 		signer := &ethTypes.HomesteadSigner{}
 		tx.Hash()
 
-		if pubkey, err := ethCrypto.SigToAddress(signer.Hash(tx).Bytes(), sig);err != nil {
+		if pubkey, err := ethCrypto.SigToAddress(signer.Hash(tx).Bytes(), sig); err != nil {
 			println(err.Error())
 		} else {
 			println(common.HexToAddress("d86ee51b02c5ac295e59711f4335fed9805c0148").Hex())
@@ -100,26 +100,24 @@ func TestEthCrypto_SigToAddress(t *testing.T) {
 
 }
 
-
-
 func TestWithContract(t *testing.T) {
 	type SigTest struct {
 		chainclient.Contract
-		CalculateHash chainclient.AbiMethod
+		CalculateHash          chainclient.AbiMethod
 		CalculateSignerAddress chainclient.AbiMethod
 	}
 	contractAddress := "0xc184dd351f215f689f481c329916bb33d8df8ced"
 	abiStr := `[{"constant":true,"inputs":[{"name":"hash","type":"bytes32"},{"name":"v","type":"uint8"},{"name":"r","type":"bytes32"},{"name":"s","type":"bytes32"}],"name":"calculateSignerAddress","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"s","type":"bytes32[]"}],"name":"calculateHash","outputs":[{"name":"","type":"bytes32"}],"payable":false,"stateMutability":"view","type":"function"}]`
 	sigTest := &SigTest{}
 
-	if err := ethClient.NewContract(sigTest, contractAddress, abiStr); err !=nil {
+	if err := ethClient.NewContract(sigTest, contractAddress, abiStr); err != nil {
 		t.Error(err.Error())
 	}
 
 	bs := common.FromHex("0x093e56de3901764da17fef7e89f016cfdd1a88b98b1f8e3d2ebda4aff2343380")
-	bytes1 := [][]byte{bs}//[][]byte([]byte("a"))
+	bytes1 := [][]byte{bs} //[][]byte([]byte("a"))
 	res := ""
-	if err := sigTest.CalculateHash.Call(&res, "pending", bytes1);err !=nil {
+	if err := sigTest.CalculateHash.Call(&res, "pending", bytes1); err != nil {
 		t.Error(err.Error())
 	} else {
 		t.Log(res)

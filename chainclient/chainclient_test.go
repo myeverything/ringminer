@@ -19,14 +19,14 @@
 package chainclient_test
 
 import (
-	"testing"
-	"github.com/Loopring/ringminer/chainclient/eth"
-	"github.com/Loopring/ringminer/types"
-	"github.com/ethereum/go-ethereum/common"
 	"encoding/json"
 	"github.com/Loopring/ringminer/chainclient"
-	"math/big"
+	"github.com/Loopring/ringminer/chainclient/eth"
 	"github.com/Loopring/ringminer/log"
+	"github.com/Loopring/ringminer/types"
+	"github.com/ethereum/go-ethereum/common"
+	"math/big"
+	"testing"
 )
 
 func TestChainClient(t *testing.T) {
@@ -50,15 +50,15 @@ func TestSubscribeNewBlock(t *testing.T) {
 	}
 	hashChan := make(chan []string)
 
-	if err := eth.EthClient.Subscribe(&hashChan, filterId);nil != err {
+	if err := eth.EthClient.Subscribe(&hashChan, filterId); nil != err {
 		t.Error(err.Error())
 	} else {
 
 		for {
 			select {
-			case blockHashes := <- hashChan:
+			case blockHashes := <-hashChan:
 				if len(blockHashes) > 0 {
-					t.Log("len:", len(blockHashes), "first:",blockHashes[0])
+					t.Log("len:", len(blockHashes), "first:", blockHashes[0])
 				} else {
 					t.Log("len:", len(blockHashes))
 				}
@@ -77,7 +77,7 @@ func TestErc20Transfer(t *testing.T) {
 	eth.NewContract(erc20, contractAddress, erc20TokenAbiStr)
 	if txHash, err := erc20.Transfer.SendTransaction("0x4ec94e1007605d70a86279370ec5e4b755295eda",
 		common.HexToAddress("0xd86ee51b02c5ac295e59711f4335fed9805c0148"),
-		big.NewInt(10));err != nil {
+		big.NewInt(10)); err != nil {
 		t.Error(err.Error())
 	} else {
 		t.Log("txHash:", txHash)
@@ -101,18 +101,18 @@ func TestSubscribeErc20Event(t *testing.T) {
 	//	eth.EthClient.UninstallFilter()
 	//}()
 	logChan := make(chan []eth.Log)
-	if err := eth.EthClient.Subscribe(&logChan, filterId);nil != err {
+	if err := eth.EthClient.Subscribe(&logChan, filterId); nil != err {
 		t.Error(err.Error())
 	} else {
 		for {
 			select {
-			case logs := <- logChan:
+			case logs := <-logChan:
 				if len(logs) > 0 {
 					//println("len:", len(logs), "first:",logs[0])
-					for _,log := range logs {
-						logBytes,_ := json.Marshal(log)
+					for _, log := range logs {
+						logBytes, _ := json.Marshal(log)
 						println(string(logBytes))
-						println("blockNumber:", log.BlockNumber.Int64()," blockHash:", log.BlockHash)
+						println("blockNumber:", log.BlockNumber.Int64(), " blockHash:", log.BlockHash)
 					}
 				} else {
 					//println("len:", len(logs))
@@ -121,7 +121,6 @@ func TestSubscribeErc20Event(t *testing.T) {
 		}
 	}
 }
-
 
 func TestNewContract(t *testing.T) {
 

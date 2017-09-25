@@ -19,11 +19,11 @@
 package miner_test
 
 import (
-	"testing"
-	"github.com/Loopring/ringminer/types"
-	"github.com/Loopring/ringminer/miner"
 	"github.com/Loopring/ringminer/chainclient"
 	"github.com/Loopring/ringminer/chainclient/eth"
+	"github.com/Loopring/ringminer/miner"
+	"github.com/Loopring/ringminer/types"
+	"testing"
 )
 
 func TestRingClient(t *testing.T) {
@@ -44,4 +44,3 @@ func TestRingClient(t *testing.T) {
 
 	ringClient.NewRing(ring)
 }
-

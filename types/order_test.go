@@ -19,11 +19,11 @@
 package types_test
 
 import (
-	"testing"
 	"github.com/Loopring/ringminer/types"
+	"testing"
 	//ethCrypto "github.com/ethereum/go-ethereum/crypto"
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/Loopring/ringminer/crypto/eth"
+	"github.com/ethereum/go-ethereum/common"
 )
 
 //func TestOrder_MarshalJson(t *testing.T) {
@@ -92,7 +92,7 @@ func TestOrder_UnMarshalJson(t *testing.T) {
 	println(input1)
 	println(input2)
 
-	types.Crypto = &eth.EthCrypto{Homestead:false}
+	types.Crypto = &eth.EthCrypto{Homestead: false}
 	pkHex := "4f5b916dc82fb59cc57dbdd2fee5b49b2bdfe6ea34534a5d40c4475e9740c66e"
 	//pk,_ := ethCrypto.HexToECDSA(pkHex)
 	ord := &types.Order{}
@@ -101,18 +101,18 @@ func TestOrder_UnMarshalJson(t *testing.T) {
 	} else {
 		state := ord.Convert()
 		state.GenHash()
-		if sig,err := types.Crypto.Sign(state.OrderHash.Bytes(), common.Hex2Bytes(pkHex));err != nil {
+		if sig, err := types.Crypto.Sign(state.OrderHash.Bytes(), common.Hex2Bytes(pkHex)); err != nil {
 			println(err.Error())
 		} else {
-			v,r,s := types.Crypto.SigToVRS(sig)
+			v, r, s := types.Crypto.SigToVRS(sig)
 			state.RawOrder.V = uint8(v)
 			state.RawOrder.R = r
 			state.RawOrder.S = s
 
 			println("r:", common.Bytes2Hex(r.Bytes()), " s:", common.Bytes2Hex(s.Bytes()))
 		}
-		addr,_ := state.SignerAddress()
-		println("addr:",addr.Hex())
+		addr, _ := state.SignerAddress()
+		println("addr:", addr.Hex())
 		println("hash:", state.OrderHash.Hex())
 		t.Log(ord.Protocol.Hex())
 		//t.Log(ord.TokenS.Str())
@@ -124,9 +124,9 @@ func TestOrder_UnMarshalJson(t *testing.T) {
 }
 
 func TestA(t *testing.T) {
-	arr := []int{1,2,3,4,5,6}
+	arr := []int{1, 2, 3, 4, 5, 6}
 	a1 := arr[0:3]
-	for _,a := range a1 {
+	for _, a := range a1 {
 		println(a)
 	}
 }

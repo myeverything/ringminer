@@ -18,24 +18,24 @@
 
 package main
 
-import(
-	"github.com/Loopring/ringminer/cmd/utils"
-	"sort"
-	"gopkg.in/urfave/cli.v1"
-	"os"
+import (
 	"fmt"
-	"github.com/Loopring/ringminer/node"
-	"go.uber.org/zap"
+	"github.com/Loopring/ringminer/cmd/utils"
 	"github.com/Loopring/ringminer/config"
 	"github.com/Loopring/ringminer/log"
+	"github.com/Loopring/ringminer/node"
+	"go.uber.org/zap"
+	"gopkg.in/urfave/cli.v1"
+	"os"
 	"os/signal"
+	"sort"
 )
 
 var (
-	app *cli.App
-	configFile string
+	app          *cli.App
+	configFile   string
 	globalConfig *config.GlobalConfig
-	logger *zap.Logger
+	logger       *zap.Logger
 )
 
 func main() {
@@ -43,11 +43,10 @@ func main() {
 	app.Action = minerNode
 	app.HideVersion = true // we have a command to print the version
 	app.Copyright = "Copyright 2013-2017 The Looprint Authors"
-	app.Flags = []cli.Flag{cli.StringFlag{Name:"conf", Usage:" config file"}}
-
+	app.Flags = []cli.Flag{cli.StringFlag{Name: "conf", Usage: " config file"}}
 
 	app.Commands = []cli.Command{
-		//matchengineCommand,
+	//matchengineCommand,
 	}
 
 	sort.Sort(cli.CommandsByName(app.Commands))
@@ -55,15 +54,14 @@ func main() {
 	app.Before = func(ctx *cli.Context) error {
 		//runtime.GOMAXPROCS(runtime.NumCPU())
 		file := ""
-		if (ctx.IsSet(configFile)) {
+		if ctx.IsSet(configFile) {
 			file = ctx.String("conf")
 		}
 		var err error
-		globalConfig,err = config.LoadConfig(file)
+		globalConfig, err = config.LoadConfig(file)
 		if nil != err {
 			return err
 		}
-
 
 		logger = log.Initialize(globalConfig.LogOptions)
 		return nil
@@ -93,7 +91,7 @@ func minerNode(c *cli.Context) error {
 	go func() {
 		for {
 			select {
-			case sig := <- signalChan:
+			case sig := <-signalChan:
 				log.Infof("captured %s, exiting...\n", sig.String())
 				n.Stop()
 				os.Exit(1)

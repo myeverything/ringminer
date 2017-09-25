@@ -19,24 +19,24 @@
 package orderbook
 
 import (
-	"sync"
-	"github.com/Loopring/ringminer/types"
-	"github.com/Loopring/ringminer/db"
 	"github.com/Loopring/ringminer/config"
+	"github.com/Loopring/ringminer/db"
 	"github.com/Loopring/ringminer/log"
+	"github.com/Loopring/ringminer/types"
+	"sync"
 )
 
 type ORDER_STATUS int
 
 const (
-	FINISH_TABLE_NAME = "finished"
+	FINISH_TABLE_NAME  = "finished"
 	PARTIAL_TABLE_NAME = "partial"
 )
 
 type Whisper struct {
-	PeerOrderChan chan *types.Order
+	PeerOrderChan   chan *types.Order
 	EngineOrderChan chan *types.OrderState
-	ChainOrderChan chan *types.OrderMined
+	ChainOrderChan  chan *types.OrderMined
 }
 
 type OrderBook struct {
@@ -63,10 +63,10 @@ func (s *OrderBook) Start() {
 	go func() {
 		for {
 			select {
-			case ord := <- s.whisper.PeerOrderChan:
+			case ord := <-s.whisper.PeerOrderChan:
 				log.Debugf("accept data from peer:%s", ord.Protocol.Hex())
 				s.peerOrderHook(ord)
-			case ord := <- s.whisper.ChainOrderChan:
+			case ord := <-s.whisper.ChainOrderChan:
 				s.chainOrderHook(ord)
 			}
 		}
@@ -115,7 +115,7 @@ func (ob *OrderBook) peerOrderHook(ord *types.Order) error {
 	state := ord.Convert()
 	state.GenHash()
 
-	if addr,err := state.SignerAddress();err != nil {
+	if addr, err := state.SignerAddress(); err != nil {
 		log.Errorf("err:%s", err.Error())
 	} else {
 		log.Debugf("addrreeseresrs:%s", addr.Hex())
@@ -137,8 +137,8 @@ func (ob *OrderBook) chainOrderHook(ord *types.OrderMined) error {
 func (ob *OrderBook) GetOrder(id types.Hash) (*types.OrderState, error) {
 	var (
 		value []byte
-		err error
-		ord types.OrderState
+		err   error
+		ord   types.OrderState
 	)
 
 	if value, err = ob.partialTable.Get(id.Bytes()); err != nil {

@@ -21,25 +21,25 @@ package types
 import (
 	"encoding/json"
 	"errors"
-	"reflect"
 	"math/big"
+	"reflect"
 )
 
-func (ord Order) MarshalJson() ([]byte,error) {
+func (ord Order) MarshalJson() ([]byte, error) {
 	type order struct {
-		Protocol              string	`json:"protocol"`
-		TokenS                string	`json:"tokenS"`
-		TokenB                string	`json:"tokenB"`
-		AmountS               uint64	`json:"amountS"`
-		AmountB               uint64	`json:"amountB"`
-		Rand                  uint64	`json:"rand"`
-		Expiration            uint64	`json:"expiration"`
-		LrcFee                uint64	`json:"lrcFee"`
-		SavingSharePercentage int		`json:"savingShareRate"`
-		buyNoMoreThanAmountB  bool		`json:"buyNoMoreThanAmountB"`
-		V                     uint8		`json:"v"`
-		R                     string	`json:"r"`
-		S                     string	`json:"s"`
+		Protocol              string `json:"protocol"`
+		TokenS                string `json:"tokenS"`
+		TokenB                string `json:"tokenB"`
+		AmountS               uint64 `json:"amountS"`
+		AmountB               uint64 `json:"amountB"`
+		Rand                  uint64 `json:"rand"`
+		Expiration            uint64 `json:"expiration"`
+		LrcFee                uint64 `json:"lrcFee"`
+		SavingSharePercentage int    `json:"savingShareRate"`
+		buyNoMoreThanAmountB  bool   `json:"buyNoMoreThanAmountB"`
+		V                     uint8  `json:"v"`
+		R                     string `json:"r"`
+		S                     string `json:"s"`
 	}
 
 	var enc order
@@ -66,19 +66,19 @@ func (ord Order) MarshalJson() ([]byte,error) {
 
 func (ord *Order) UnMarshalJson(input []byte) error {
 	type order struct {
-		Protocol              string	`json:"protocol"`
-		TokenS                string	`json:"tokenS"`
-		TokenB                string	`json:"tokenB"`
-		AmountS               uint64	`json:"amountS"`
-		AmountB               uint64	`json:"amountB"`
-		Rand                  uint64	`json:"rand"`
-		Expiration            uint64	`json:"expiration"`
-		LrcFee                uint64	`json:"lrcFee"`
-		SavingSharePercentage int		`json:"savingSharePercentage"`
-		buyNoMoreThanAmountB  bool		`json:"buyNoMoreThanAmountB"`
-		V                     uint8		`json:"v"`
-		R                     string	`json:"r"`
-		S                     string	`json:"s"`
+		Protocol              string `json:"protocol"`
+		TokenS                string `json:"tokenS"`
+		TokenB                string `json:"tokenB"`
+		AmountS               uint64 `json:"amountS"`
+		AmountB               uint64 `json:"amountB"`
+		Rand                  uint64 `json:"rand"`
+		Expiration            uint64 `json:"expiration"`
+		LrcFee                uint64 `json:"lrcFee"`
+		SavingSharePercentage int    `json:"savingSharePercentage"`
+		buyNoMoreThanAmountB  bool   `json:"buyNoMoreThanAmountB"`
+		V                     uint8  `json:"v"`
+		R                     string `json:"r"`
+		S                     string `json:"s"`
 	}
 
 	var dec order
@@ -146,11 +146,11 @@ func (ord *Order) UnMarshalJson(input []byte) error {
 		return errors.New("missing required field 'ECDSA.S' for order")
 	}
 	s := big.NewInt(1)
-	println("ssssssss:",dec.S)
+	println("ssssssss:", dec.S)
 	s.SetBytes(Hex2Bytes(dec.S))
 	ord.S = s
 
-	if  !reflect.ValueOf(dec.R).IsValid() {
+	if !reflect.ValueOf(dec.R).IsValid() {
 		return errors.New("missing required field 'ECSA.R' for order")
 	}
 	r := big.NewInt(0)
@@ -160,26 +160,26 @@ func (ord *Order) UnMarshalJson(input []byte) error {
 	return nil
 }
 
-func (ord OrderState) MarshalJson() ([]byte,error) {
+func (ord OrderState) MarshalJson() ([]byte, error) {
 	type state struct {
-		Protocol              string	`json:"protocol"`
-		TokenS                string	`json:"tokenS"`
-		TokenB                string	`json:"tokenB"`
-		AmountS               uint64	`json:"amountS"`
-		AmountB               uint64	`json:"amountB"`
-		Rand                  uint64	`json:"rand"`
-		Expiration            uint64	`json:"expiration"`
-		LrcFee                uint64	`json:"lrcFee"`
-		SavingSharePercentage int		`json:"savingShareRate"`
-		buyNoMoreThanAmountB  bool		`json:"buyNoMoreThanAmountB"`
-		V                     uint8		`json:"v"`
-		R                     string	`json:"r"`
-		S                     string	`json:"s"`
-		Owner 				  string	`json:"owner"`
-		OrderHash 			  string    `json:"hash"`
-		RemainedAmountS 	  uint64  	`json:"remainedAmountS"`
-		RemainedAmountB 	  uint64	`json:"remainedAmountB"`
-		Status 				  uint8		`json:"status"`
+		Protocol              string `json:"protocol"`
+		TokenS                string `json:"tokenS"`
+		TokenB                string `json:"tokenB"`
+		AmountS               uint64 `json:"amountS"`
+		AmountB               uint64 `json:"amountB"`
+		Rand                  uint64 `json:"rand"`
+		Expiration            uint64 `json:"expiration"`
+		LrcFee                uint64 `json:"lrcFee"`
+		SavingSharePercentage int    `json:"savingShareRate"`
+		buyNoMoreThanAmountB  bool   `json:"buyNoMoreThanAmountB"`
+		V                     uint8  `json:"v"`
+		R                     string `json:"r"`
+		S                     string `json:"s"`
+		Owner                 string `json:"owner"`
+		OrderHash             string `json:"hash"`
+		RemainedAmountS       uint64 `json:"remainedAmountS"`
+		RemainedAmountB       uint64 `json:"remainedAmountB"`
+		Status                uint8  `json:"status"`
 	}
 
 	var enc state
@@ -212,24 +212,24 @@ func (ord OrderState) MarshalJson() ([]byte,error) {
 
 func (ord *OrderState) UnMarshalJson(input []byte) error {
 	type state struct {
-		Protocol              string	`json:"protocol"`
-		TokenS                string	`json:"tokenS"`
-		TokenB                string	`json:"tokenB"`
-		AmountS               uint64	`json:"amountS"`
-		AmountB               uint64	`json:"amountB"`
-		Rand                  uint64	`json:"rand"`
-		Expiration            uint64	`json:"expiration"`
-		LrcFee                uint64	`json:"lrcFee"`
-		SavingSharePercentage int		`json:"savingShareRate"`
-		buyNoMoreThanAmountB  bool		`json:"buyNoMoreThanAmountB"`
-		V                     uint8		`json:"v"`
-		R                     string	`json:"r"`
-		S                     string	`json:"s"`
-		Owner 				  string	`json:"owner"`
-		OrderHash 			  string    `json:"hash"`
-		RemainedAmountS 	  uint64  	`json:"remainedAmountS"`
-		RemainedAmountB 	  uint64	`json:"remainedAmountB"`
-		Status 				  uint8		`json:"status"`
+		Protocol              string `json:"protocol"`
+		TokenS                string `json:"tokenS"`
+		TokenB                string `json:"tokenB"`
+		AmountS               uint64 `json:"amountS"`
+		AmountB               uint64 `json:"amountB"`
+		Rand                  uint64 `json:"rand"`
+		Expiration            uint64 `json:"expiration"`
+		LrcFee                uint64 `json:"lrcFee"`
+		SavingSharePercentage int    `json:"savingShareRate"`
+		buyNoMoreThanAmountB  bool   `json:"buyNoMoreThanAmountB"`
+		V                     uint8  `json:"v"`
+		R                     string `json:"r"`
+		S                     string `json:"s"`
+		Owner                 string `json:"owner"`
+		OrderHash             string `json:"hash"`
+		RemainedAmountS       uint64 `json:"remainedAmountS"`
+		RemainedAmountB       uint64 `json:"remainedAmountB"`
+		Status                uint8  `json:"status"`
 	}
 
 	var dec state
@@ -298,7 +298,7 @@ func (ord *OrderState) UnMarshalJson(input []byte) error {
 	}
 	//ord.RawOrder.S = StringToSign(dec.S)
 
-	if  !reflect.ValueOf(dec.R).IsValid() {
+	if !reflect.ValueOf(dec.R).IsValid() {
 		return errors.New("missing required field 'ECSA.R' for orderState")
 	}
 	//ord.RawOrder.R = StringToSign(dec.R)

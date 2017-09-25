@@ -27,21 +27,21 @@ package types
 // 此外，在选择最优环路的时候，撮合者会在确定了选择fee/savingShare后，选择某个具有最大利润的环路
 // 但是，根据谷歌竞拍法则(A出价10,B出价20,最终成交价为10)，撮合者最终获得的利润只能是利润最小的环路利润
 type Ring struct {
-	Orders []*FilledOrder
-	Miner Address
-	FeeRecepient Address
+	Orders                                      []*FilledOrder
+	Miner                                       Address
+	FeeRecepient                                Address
 	ThrowIfTokenAllowanceOrBalanceIsInsuffcient bool
-	V                 uint8   `json:"v"`
-	R                 Sign    `json:"r"`
-	S                 Sign    `json:"s"`
+	V                                           uint8 `json:"v"`
+	R                                           Sign  `json:"r"`
+	S                                           Sign  `json:"s"`
 }
 
 type RingState struct {
-	RawRing     *Ring	`json:"rawRing"`
-	Hash        Hash    `json:"hash"` // 订单链id
-	ReducedRate *EnlargedInt	`json:"reducedRate"`              //成环之后，折价比例
-	LegalFee    *EnlargedInt	`json:"legalFee"`//法币计算的fee
-	FeeMode     int	`json:"feeMode"`//收费方式，0 lrc 1 share
+	RawRing     *Ring        `json:"rawRing"`
+	Hash        Hash         `json:"hash"`        // 订单链id
+	ReducedRate *EnlargedInt `json:"reducedRate"` //成环之后，折价比例
+	LegalFee    *EnlargedInt `json:"legalFee"`    //法币计算的fee
+	FeeMode     int          `json:"feeMode"`     //收费方式，0 lrc 1 share
 }
 
 //func (ring *RingState) UnmarshalJSON(input []byte) error {
@@ -60,4 +60,3 @@ type RingState struct {
 //	Ring         `json:"ring"`     // 订单链
 //	Closure bool `json:"closure"`  // 是否闭合
 //}
-

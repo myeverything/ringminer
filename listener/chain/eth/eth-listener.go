@@ -19,15 +19,15 @@
 package eth
 
 import (
-	"github.com/Loopring/ringminer/types"
-	"github.com/Loopring/ringminer/config"
-	"sync"
 	"github.com/Loopring/ringminer/chainclient/eth"
+	"github.com/Loopring/ringminer/config"
+	"github.com/Loopring/ringminer/types"
+	"sync"
 )
 
 /**
 区块链的listener, 得到order以及ring的事件，
- */
+*/
 
 type Whisper struct {
 	ChainOrderChan chan *types.OrderMined
@@ -35,10 +35,10 @@ type Whisper struct {
 
 // TODO(fukun):不同的channel，应当交给orderbook统一进行后续处理，可以将channel作为函数返回值、全局变量、参数等方式
 type EthClientListener struct {
-	options 	config.ChainClientOptions
-	whisper 	*Whisper
-	stop 		chan struct{}
-	lock 		sync.RWMutex
+	options config.ChainClientOptions
+	whisper *Whisper
+	stop    chan struct{}
+	lock    sync.RWMutex
 }
 
 func NewListener(options config.ChainClientOptions, whisper *Whisper) *EthClientListener {

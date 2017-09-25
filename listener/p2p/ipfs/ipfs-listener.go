@@ -19,24 +19,24 @@
 package ipfs
 
 import (
-	"github.com/ipfs/go-ipfs-api"
-	"sync"
-	"github.com/Loopring/ringminer/types"
 	"github.com/Loopring/ringminer/config"
 	"github.com/Loopring/ringminer/log"
+	"github.com/Loopring/ringminer/types"
+	"github.com/ipfs/go-ipfs-api"
+	"sync"
 )
 
 type Whisper struct {
-	PeerOrderChan			chan *types.Order
+	PeerOrderChan chan *types.Order
 }
 
 type IPFSListener struct {
-	options 					config.IpfsOptions
-	sh 						*shell.Shell
-	sub 					*shell.PubSubSubscription
-	whisper                 *Whisper
-	stop 					chan struct{}
-	lock 					sync.RWMutex
+	options config.IpfsOptions
+	sh      *shell.Shell
+	sub     *shell.PubSubSubscription
+	whisper *Whisper
+	stop    chan struct{}
+	lock    sync.RWMutex
 }
 
 func NewListener(options config.IpfsOptions, whisper *Whisper) *IPFSListener {
@@ -64,7 +64,7 @@ func (l *IPFSListener) Start() {
 			ord := &types.Order{}
 			err := ord.UnMarshalJson(data)
 			if err != nil {
-				log.Errorf(log.ERROR_P2P_LISTEN_ACCEPT,  err.Error())
+				log.Errorf(log.ERROR_P2P_LISTEN_ACCEPT, err.Error())
 			} else {
 				log.Debugf(log.LOG_P2P_ACCEPT, string(data))
 				l.whisper.PeerOrderChan <- ord

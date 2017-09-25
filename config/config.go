@@ -20,13 +20,13 @@ package config
 
 import (
 	"github.com/naoina/toml"
+	"go.uber.org/zap"
 	"os"
 	"reflect"
-	"go.uber.org/zap"
 )
 
 func LoadConfig(file string) (*GlobalConfig, error) {
-	if ("" == file) {
+	if "" == file {
 		dir, _ := os.Getwd()
 		file = dir + "/config/ringminer.toml"
 	}
@@ -43,15 +43,15 @@ func LoadConfig(file string) (*GlobalConfig, error) {
 		panic(err)
 	}
 
-	if _,err := validator(c);nil != err {
-		return nil,err
+	if _, err := validator(c); nil != err {
+		return nil, err
 	}
 	return c, nil
 }
 
 type GlobalConfig struct {
-	Title       string `required:"true"`
-	Owner       struct {
+	Title string `required:"true"`
+	Owner struct {
 		Name string
 	}
 	Database    DbOptions
@@ -62,7 +62,7 @@ type GlobalConfig struct {
 }
 
 //todo:optimize it
-func  validator(c *GlobalConfig) (bool,error) {
+func validator(c *GlobalConfig) (bool, error) {
 	//cv := reflect.ValueOf(c).Elem()
 	//for i:=0;i<cv.NumField();i++ {
 	//	println("field:",cv.Field(i).String(), " tag:",cv.Type().Field(i).Tag.Get("required"), " f:", isNil(cv.Field(i)))
@@ -72,7 +72,7 @@ func  validator(c *GlobalConfig) (bool,error) {
 	//		return false
 	//	}
 	//}
-	return true,nil
+	return true, nil
 }
 
 func isNil(v reflect.Value) bool {
@@ -82,7 +82,7 @@ func isNil(v reflect.Value) bool {
 	case reflect.String:
 		return v.String() != ""
 	}
-	return false;
+	return false
 }
 
 func (c *GlobalConfig) defaultConfig() {
@@ -91,36 +91,36 @@ func (c *GlobalConfig) defaultConfig() {
 
 type IpfsOptions struct {
 	Server string
-	Port int
-	Topic string
+	Port   int
+	Topic  string
 }
 
 type DbOptions struct {
-	Server string `required:"true"`
-	Port int `required:"true"`
-	Name string `required:"true"`
-	DataDir string
-	CacheCapacity int
+	Server         string `required:"true"`
+	Port           int    `required:"true"`
+	Name           string `required:"true"`
+	DataDir        string
+	CacheCapacity  int
 	BufferCapacity int
 }
 
 type ChainClientOptions struct {
-	RawUrl string	`required:"true"`
-	Eth    struct{
-		    GasPrice int
-		    GasLimit int
-		    PrivateKeys map[string]string `required:"true"` //地址 -> 加密后的私钥，如果密码不对，地址与私钥则不会匹配
-		    Password string	//密码，用于加密私钥，最好不出现在配置文件中
-	    }
+	RawUrl string `required:"true"`
+	Eth    struct {
+		GasPrice    int
+		GasLimit    int
+		PrivateKeys map[string]string `required:"true"` //地址 -> 加密后的私钥，如果密码不对，地址与私钥则不会匹配
+		Password    string            //密码，用于加密私钥，最好不出现在配置文件中
+	}
 }
 
 type MinerOptions struct {
-	LoopringImps []ContractOpts `required:"true"`
+	LoopringImps         []ContractOpts `required:"true"`
 	LoopringFingerprints []ContractOpts `required:"true"`
-	RingMaxLength	int
+	RingMaxLength        int
 }
 
 type ContractOpts struct {
-	Abi	string `required:"true"`
-	Address	string `required:"true"`
+	Abi     string `required:"true"`
+	Address string `required:"true"`
 }

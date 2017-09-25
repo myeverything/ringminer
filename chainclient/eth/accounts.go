@@ -28,7 +28,6 @@ var PrivateMap map[string]*ecdsa.PrivateKey
 
 type Account struct {
 	PrivKey *ecdsa.PrivateKey
-	PubKey *ecdsa.PublicKey
+	PubKey  *ecdsa.PublicKey
 	Address common.Address
 }
-

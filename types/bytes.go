@@ -108,4 +108,3 @@ func LeftPadBytes(slice []byte, l int) []byte {
 
 	return padded
 }
-

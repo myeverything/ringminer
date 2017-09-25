@@ -32,9 +32,9 @@ type Crypto interface {
 	//生成hash
 	GenerateHash(data ...[]byte) []byte
 	//签名
-	Sign(hash , pkBytes []byte) ([]byte,error)
+	Sign(hash, pkBytes []byte) ([]byte, error)
 	//签名恢复到地址
-	SigToAddress(hash, sig []byte) ([]byte,error)
+	SigToAddress(hash, sig []byte) ([]byte, error)
 	//生成sig
 	VRSToSig(v byte, r, s *big.Int) []byte
 	SigToVRS([]byte) (v byte, r *big.Int, s *big.Int)

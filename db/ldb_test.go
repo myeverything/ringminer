@@ -19,16 +19,16 @@
 package db_test
 
 import (
-	"testing"
 	"github.com/Loopring/ringminer/db"
 	"os"
 	"path/filepath"
 	"strconv"
+	"testing"
 )
 
 const dbname = "leveldb"
 
-var sep = func() string {return string(filepath.Separator)}
+var sep = func() string { return string(filepath.Separator) }
 
 func file() string {
 	gopath := os.Getenv("GOPATH")
@@ -37,12 +37,12 @@ func file() string {
 }
 
 func getdb() db.Database {
-	return db.NewDB(file(), 12,12)
+	return db.NewDB(file(), 12, 12)
 }
 
 func TestLDBDatabase_Path(t *testing.T) {
-	path := db.NewDB(file(),12,12).Path()
-	t.Log("db path is:",path)
+	path := db.NewDB(file(), 12, 12).Path()
+	t.Log("db path is:", path)
 }
 
 func TestLDBDatabase_Put(t *testing.T) {
@@ -142,12 +142,10 @@ func TestTableBatch_Put(t *testing.T) {
 	tablebatch.Write()
 }
 
-
-
 func TestIterator(t *testing.T) {
 	ldb := getdb()
 	kt := db.NewTable(ldb, "ddd")
-	iterator := kt.NewIterator(nil,nil)
+	iterator := kt.NewIterator(nil, nil)
 	for iterator.Next() {
 		t.Log("key:", string(iterator.Key()), "value:", string(iterator.Value()))
 	}
