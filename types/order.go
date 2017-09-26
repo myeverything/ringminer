@@ -59,63 +59,46 @@ type Order struct {
 	S                     *big.Int
 }
 
-/**
-address(this),
-            order.tokenS,
-            order.tokenB,
-            order.amountS,
-            order.amountB,
-            order.expiration,
-            order.rand,
-            order.lrcFee,
-            order.buyNoMoreThanAmountB,
-            order.savingSharePercentage
-*/
-
-func (o *OrderState) GenHash() Hash {
+func (o *Order) Hash() Hash {
 	h := &Hash{}
 	hashBytes := crypto.CryptoInstance.GenerateHash(
-		o.RawOrder.Protocol.Bytes(),
-		o.RawOrder.TokenS.Bytes(),
-		o.RawOrder.TokenB.Bytes(),
-		o.RawOrder.AmountS.Bytes(),
-		o.RawOrder.AmountB.Bytes(),
-		o.RawOrder.Expiration.Bytes(),
-		o.RawOrder.Rand.Bytes(),
-		o.RawOrder.LrcFee.Bytes(),
-		[]byte{byte(0)},
-		[]byte{byte(o.RawOrder.SavingSharePercentage)},
+		o.Protocol.Bytes(),
+		o.TokenS.Bytes(),
+		o.TokenB.Bytes(),
+		o.AmountS.Bytes(),
+		o.AmountB.Bytes(),
+		o.Expiration.Bytes(),
+		o.Rand.Bytes(),
+		o.LrcFee.Bytes(),
+		[]byte{byte(0)}, //todo:o.BuyNoMoreThanAmountB to byte, test with contract
+		[]byte{byte(o.SavingSharePercentage)},
 	)
 	h.SetBytes(hashBytes)
-
-	o.OrderHash = *h
 
 	return *h
 }
 
-func (o *OrderState) ValidateSignatureValues() bool {
-	return crypto.CryptoInstance.ValidateSignatureValues(byte(o.RawOrder.V), o.RawOrder.R, o.RawOrder.S)
+func (o *Order) ValidateSignatureValues() bool {
+	return crypto.CryptoInstance.ValidateSignatureValues(byte(o.V), o.R, o.S)
 }
 
-func (o *OrderState) SignerAddress() (Address, error) {
-	//todo:
-	hash := o.GenHash()
-	sig := crypto.CryptoInstance.VRSToSig(o.RawOrder.V, o.RawOrder.R, o.RawOrder.S)
-	println("hash:", hash.Hex())
+func (o *Order) SignerAddress(hash Hash) (Address, error) {
 	address := &Address{}
+	//todo:check hash is nil
+	if hash.Big().Cmp(big.NewInt(0)) <= 0 {
+		hash = o.Hash()
+	}
+
+	sig := crypto.CryptoInstance.VRSToSig(o.V, o.R, o.S)
+	log.Debugf("orderstate.hash:%s", hash.Hex())
+
 	if addressBytes, err := crypto.CryptoInstance.SigToAddress(hash.Bytes(), sig); nil != err {
 		log.Errorf("error:%s", err.Error())
 		return *address, err
 	} else {
 		address.SetBytes(addressBytes)
-		o.Owner = *address
 		return *address, nil
 	}
-	//address := &Address{}
-	//address.SetBytes(common.HexToAddress("0x1b9f8da77f2288eb4ce1096b1cfdc30cc4d0a961").Bytes())
-
-	//o.Owner = *address
-	//return *address,nil
 }
 
 //RateAmountS、FeeSelection 需要提交到contract
@@ -152,17 +135,3 @@ type OrderState struct {
 type OrderMined struct {
 }
 
-// convert order to ordersate
-func (ord *Order) Convert() *OrderState {
-	var s OrderState
-	s.RawOrder = *ord
-
-	// TODO(fukun): 计算owner，hash等
-	//s.Owner = StringToAddress("")
-	//s.OrderHash = StringToHash("")
-	s.RemainedAmountS = s.RawOrder.AmountS
-	s.RemainedAmountB = s.RawOrder.AmountB
-	s.Status = ORDER_NEW
-
-	return &s
-}

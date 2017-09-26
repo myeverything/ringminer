@@ -26,6 +26,12 @@ import (
 	"sync"
 )
 
+/**
+todo:
+1. filter
+2. chain event
+3. 订单完成的标志，以及需要发送到miner
+ */
 type ORDER_STATUS int
 
 const (
@@ -58,70 +64,97 @@ func NewOrderBook(database db.Database, whisper *Whisper) *OrderBook {
 	return s
 }
 
+func (ob *OrderBook) recoverOrder() error {
+	iterator := ob.partialTable.NewIterator(nil, nil)
+	for iterator.Next() {
+		dataBytes := iterator.Value()
+		state := &types.OrderState{}
+		if err := state.UnMarshalJson(dataBytes);nil != err {
+			log.Errorf("err:%s", err.Error())
+		} else {
+			ob.whisper.EngineOrderChan <- state
+		}
+	}
+	return nil
+}
+
 // Start start orderbook as a service
-func (s *OrderBook) Start() {
+func (ob *OrderBook) Start() {
+	ob.recoverOrder()
+
 	go func() {
 		for {
 			select {
-			case ord := <-s.whisper.PeerOrderChan:
+			case ord := <-ob.whisper.PeerOrderChan:
 				log.Debugf("accept data from peer:%s", ord.Protocol.Hex())
-				s.peerOrderHook(ord)
-			case ord := <-s.whisper.ChainOrderChan:
-				s.chainOrderHook(ord)
+				if err := ob.peerOrderHook(ord); nil != err {
+					log.Errorf("err:", err.Error())
+				}
+			case ord := <-ob.whisper.ChainOrderChan:
+				ob.chainOrderHook(ord)
 			}
 		}
 	}()
 }
 
-func (s *OrderBook) Stop() {
-	s.lock.Lock()
-	defer s.lock.Unlock()
+func (ob *OrderBook) Stop() {
+	ob.lock.Lock()
+	defer ob.lock.Unlock()
 
-	s.finishTable.Close()
-	s.partialTable.Close()
-	s.db.Close()
+	ob.finishTable.Close()
+	ob.partialTable.Close()
+	//ob.db.Close()
 }
 
 func (ob *OrderBook) peerOrderHook(ord *types.Order) error {
 
-	// TODO(fk): order filtering
-
 	ob.lock.Lock()
 	defer ob.lock.Unlock()
 
-	//todo:apologize for it
-	//key := ord.GenHash().Bytes()
-	//value,err := ord.MarshalJson()
-	//if err != nil {
-	//	return err
-	//}
-	//
-	//ob.partialTable.Put(key, value)
-	//
-	//// TODO(fk): delete after test
-	//if input, err := ob.partialTable.Get(key); err != nil {
-	//	panic(err)
-	//} else {
-	//	var ord types.Order
-	//	ord.UnMarshalJson(input)
-	//	log.Println(ord.TokenS.Str())
-	//	log.Println(ord.TokenB.Str())
-	//	log.Println(ord.AmountS.Uint64())
-	//	log.Println(ord.AmountB.Uint64())
-	//}
-	//
-	//// TODO(fk): send orderState to matchengine
+	// TODO(fk): order filtering
 
-	state := ord.Convert()
-	state.GenHash()
+	state := &types.OrderState{}
+	state.RawOrder = *ord
+	state.OrderHash = ord.Hash()
 
-	if addr, err := state.SignerAddress(); err != nil {
-		log.Errorf("err:%s", err.Error())
+	//todo:it should not query db everytime.
+	if input, err := ob.partialTable.Get(state.OrderHash.Bytes()); err != nil {
+		panic(err)
+	} else if len(input) == 0 {
+		if inpupt1,err1 := ob.finishTable.Get(state.OrderHash.Bytes());nil != err1 {
+			panic(err1)
+		} else if len(inpupt1) == 0 {
+			state.Status = types.ORDER_NEW
+			state.RemainedAmountS = state.RawOrder.AmountS
+			state.RemainedAmountB = state.RawOrder.AmountB
+		} else {
+			state.Status = types.ORDER_FINISHED
+		}
 	} else {
-		log.Debugf("addrreeseresrs:%s", addr.Hex())
+		state.Status = types.ORDER_PARTIAL
 	}
-	log.Debugf("state hash:%s", state.OrderHash.Hex())
-	ob.whisper.EngineOrderChan <- state
+
+	//do nothing when types.ORDER_NEW != state.Status
+	if types.ORDER_NEW == state.Status {
+		if addr, err := state.RawOrder.SignerAddress(state.OrderHash); err != nil {
+			//log.Errorf("err:%s", err.Error())
+			return err
+		} else {
+			log.Debugf("addrreeseresrs:%s", addr.Hex())
+			state.Owner = addr
+		}
+		log.Debugf("state hash:%s", state.OrderHash.Hex())
+
+		//save to db
+		value,err := state.MarshalJson()
+		if err != nil {
+			return err
+		}
+		ob.partialTable.Put(state.OrderHash.Bytes(), value)
+
+		//send to miner
+		ob.whisper.EngineOrderChan <- state
+	}
 
 	return nil
 }
@@ -144,6 +177,7 @@ func (ob *OrderBook) GetOrder(id types.Hash) (*types.OrderState, error) {
 	if value, err = ob.partialTable.Get(id.Bytes()); err != nil {
 		value, err = ob.finishTable.Get(id.Bytes())
 	}
+
 	if err != nil {
 		return nil, err
 	}
