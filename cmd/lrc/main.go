@@ -29,6 +29,7 @@ import (
 	"os"
 	"os/signal"
 	"sort"
+	"reflect"
 )
 
 var (
@@ -57,10 +58,12 @@ func main() {
 		if ctx.IsSet(configFile) {
 			file = ctx.String("conf")
 		}
-		var err error
-		globalConfig, err = config.LoadConfig(file)
-		if nil != err {
-			return err
+		globalConfig = config.LoadConfig(file)
+
+		//todo:merge flags to config, 区分node
+
+		if _, err := config.Validator(reflect.ValueOf(globalConfig).Elem()); nil != err {
+			panic(err)
 		}
 
 		logger = log.Initialize(globalConfig.LogOptions)

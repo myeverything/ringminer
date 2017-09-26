@@ -23,9 +23,10 @@ import (
 	"go.uber.org/zap"
 	"os"
 	"reflect"
+	"errors"
 )
 
-func LoadConfig(file string) (*GlobalConfig, error) {
+func LoadConfig(file string) *GlobalConfig {
 	if "" == file {
 		dir, _ := os.Getwd()
 		file = dir + "/config/ringminer.toml"
@@ -43,10 +44,7 @@ func LoadConfig(file string) (*GlobalConfig, error) {
 		panic(err)
 	}
 
-	if _, err := validator(c); nil != err {
-		return nil, err
-	}
-	return c, nil
+	return c
 }
 
 type GlobalConfig struct {
@@ -59,30 +57,6 @@ type GlobalConfig struct {
 	ChainClient ChainClientOptions
 	Miner       MinerOptions
 	LogOptions  zap.Config
-}
-
-//todo:optimize it
-func validator(c *GlobalConfig) (bool, error) {
-	//cv := reflect.ValueOf(c).Elem()
-	//for i:=0;i<cv.NumField();i++ {
-	//	println("field:",cv.Field(i).String(), " tag:",cv.Type().Field(i).Tag.Get("required"), " f:", isNil(cv.Field(i)))
-	//}
-	//if "true" == cv.Type().Field(0).Tag.Get("required") {
-	//	if cv.Field(0).IsNil() {
-	//		return false
-	//	}
-	//}
-	return true, nil
-}
-
-func isNil(v reflect.Value) bool {
-	switch v.Type().Kind() {
-	case reflect.Invalid:
-		return false
-	case reflect.String:
-		return v.String() != ""
-	}
-	return false
 }
 
 func (c *GlobalConfig) defaultConfig() {
@@ -123,4 +97,41 @@ type MinerOptions struct {
 type ContractOpts struct {
 	Abi     string `required:"true"`
 	Address string `required:"true"`
+}
+
+
+func Validator(cv reflect.Value) (bool, error) {
+	for i:=0;i<cv.NumField();i++ {
+		cvt := cv.Type().Field(i)
+
+		if (cv.Field(i).Type().Kind() == reflect.Struct) {
+			if res,err := Validator(cv.Field(i));nil != err {
+				return res,err
+			}
+		} else {
+			if "true" == cvt.Tag.Get("required") {
+				if isNil(cv.Field(i)) {
+					return false, errors.New("The field " + cvt.Name + " in config must be setted")
+				}
+			}
+		}
+	}
+
+	return true, nil
+}
+
+func isNil(v reflect.Value) bool {
+	switch v.Type().Kind() {
+	case reflect.Invalid:
+		return false
+	case reflect.String:
+		return v.String() == ""
+	case reflect.Uint,reflect.Uint8,reflect.Uint16,reflect.Uint32,reflect.Uint64:
+		return v.Uint() == 0
+	case reflect.Int,reflect.Int8,reflect.Int16,reflect.Int32,reflect.Int64:
+		return v.Int() == 0
+	case reflect.Map:
+		return len(v.MapKeys()) == 0
+	}
+	return false
 }
