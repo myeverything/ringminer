@@ -25,7 +25,7 @@ import (
 
 const (
 	HashLength    = 32 // 以太坊中为
-	AddressLength = 42 // 以太坊中为20 20*2 + "0x"
+	AddressLength = 20 // 以太坊中为20 20*2 + "0x"
 	SignLength    = 32
 )
 
@@ -50,7 +50,7 @@ func (h Hash) Hex() string   { return hexutil.Encode(h[:]) }
 func (a Address) Str() string   { return string(a[:]) }
 func (a Address) Bytes() []byte { return a[:] }
 func (a Address) Big() *big.Int { return new(big.Int).SetBytes(a[:]) }
-func (a Address) Hex() string   { return hexutil.Encode(a.Bytes()) }
+func (a Address) Hex() string   {return hexutil.Encode(a[:])}
 
 // Get the string representation of the underlying sign
 func (s Sign) Str() string   { return string(s[:]) }
@@ -113,4 +113,17 @@ func (s *Sign) SetBytes(b []byte) {
 		b = b[len(b)-SignLength:]
 	}
 	copy(s[SignLength-len(b):], b)
+}
+
+
+
+func BigToHex(b *big.Int) string {
+	if nil == b {
+		b = big.NewInt(0)
+	}
+	return ToHex(b.Bytes())
+}
+
+func HexToBig(h string) *big.Int {
+	return new(big.Int).SetBytes(FromHex(h))
 }

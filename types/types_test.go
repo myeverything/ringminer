@@ -29,3 +29,17 @@ func TestStringToAddress(t *testing.T) {
 	t.Log(add.Str())
 	t.Log(len("0x08935625ce172eb3c6561404c09f130268808d08ba59dda70aefa0016619acbc"))
 }
+
+func TestHash(t *testing.T) {
+	s := "0x093e56de3901764da17fef7e89f016cfdd1a88b98b1f8e3d2ebda4aff2343380"
+	h := types.HexToHash(s)
+	t.Log(h.Hex())
+}
+
+func TestAddress(t *testing.T) {
+	s := "0xc184dd351f215f689f481c329916bb33d8df8ced"
+	addr := types.HexToAddress(s)
+	//addr := &types.Address{}
+	//addr.SetBytes(types.Hex2Bytes(s))
+	t.Log(addr.Hex())
+}

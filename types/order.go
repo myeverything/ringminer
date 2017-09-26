@@ -49,7 +49,7 @@ type Order struct {
 	TokenB                Address  // 买入erc20代币智能合约地址
 	AmountS               *big.Int // 卖出erc20代币数量上限
 	AmountB               *big.Int // 买入erc20代币数量上限
-	Expiration            uint64   // 订单过期时间
+	Expiration            *big.Int // 订单过期时间
 	Rand                  *big.Int
 	LrcFee                *big.Int // 交易总费用,部分成交的费用按该次撮合实际卖出代币额与比例计算
 	BuyNoMoreThanAmountB  bool
@@ -80,7 +80,7 @@ func (o *OrderState) GenHash() Hash {
 		o.RawOrder.TokenB.Bytes(),
 		o.RawOrder.AmountS.Bytes(),
 		o.RawOrder.AmountB.Bytes(),
-		[]byte{byte(o.RawOrder.Expiration)},
+		o.RawOrder.Expiration.Bytes(),
 		o.RawOrder.Rand.Bytes(),
 		o.RawOrder.LrcFee.Bytes(),
 		[]byte{byte(0)},

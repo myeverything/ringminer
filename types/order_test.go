@@ -50,78 +50,7 @@ import (
 //	}
 //}
 
-func TestOrder_UnMarshalJson(t *testing.T) {
-	//input := `
-	//{"protocol":"0xb794f5ea0ba39494ce839613fffba74279579268","tokenS":"0xb794f5ea0ba39494ce839613fffba74279579268","tokenB":"0xb794f5ea0ba39494ce839613fffba74279579268","amountS":20000,"amountB":800,"rand":3,"expiration":1504259224,"lrcFee":30,"savingShareRate":51,"v":8,"r":"\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000hhhhhhhh","s":"\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000fjalskdf"}
-	//`
-	input := "{\"protocol\":\"0x4ec94e1007605d70a86279370ec5e4b755295eda\"," +
-		"\"tokenS\":\"token1\"," +
-		"\"tokenB\":\"token2\"," +
-		"\"amountS\":20000," +
-		"\"amountB\":10000," +
-		"\"rand\":100," +
-		"\"expiration\":11111," +
-		"\"lrcFee\":100," +
-		"\"savingSharePercentage\":30," +
-		"\"buyNoMoreThanAmountB\":false" +
-		"}"
 
-	input1 := "{\"protocol\":\"0x4ec94e1007605d70a86279370ec5e4b755295eda\"," +
-		"\"tokenS\":\"token2\"," +
-		"\"tokenB\":\"token3\"," +
-		"\"amountS\":30000," +
-		"\"amountB\":30000," +
-		"\"rand\":100," +
-		"\"expiration\":11111," +
-		"\"lrcFee\":100," +
-		"\"savingSharePercentage\":30," +
-		"\"buyNoMoreThanAmountB\":false" +
-		"}"
-	input2 := "{\"protocol\":\"0x4ec94e1007605d70a86279370ec5e4b755295eda\"," +
-		"\"tokenS\":\"token3\"," +
-		"\"tokenB\":\"token1\"," +
-		"\"amountS\":40000," +
-		"\"amountB\":20000," +
-		"\"rand\":100," +
-		"\"expiration\":11111," +
-		"\"lrcFee\":100," +
-		"\"savingSharePercentage\":30," +
-		"\"buyNoMoreThanAmountB\":false" +
-		"}"
-	println(input)
-	println(input1)
-	println(input2)
-
-	types.Crypto = &eth.EthCrypto{Homestead: false}
-	pkHex := "4f5b916dc82fb59cc57dbdd2fee5b49b2bdfe6ea34534a5d40c4475e9740c66e"
-	//pk,_ := ethCrypto.HexToECDSA(pkHex)
-	ord := &types.Order{}
-	if err := ord.UnMarshalJson([]byte(input2)); err != nil {
-		t.Log(err.Error())
-	} else {
-		state := ord.Convert()
-		state.GenHash()
-		if sig, err := types.Crypto.Sign(state.OrderHash.Bytes(), common.Hex2Bytes(pkHex)); err != nil {
-			println(err.Error())
-		} else {
-			v, r, s := types.Crypto.SigToVRS(sig)
-			state.RawOrder.V = uint8(v)
-			state.RawOrder.R = r
-			state.RawOrder.S = s
-
-			println("r:", common.Bytes2Hex(r.Bytes()), " s:", common.Bytes2Hex(s.Bytes()))
-		}
-		addr, _ := state.SignerAddress()
-		println("addr:", addr.Hex())
-		println("hash:", state.OrderHash.Hex())
-		t.Log(ord.Protocol.Hex())
-		//t.Log(ord.TokenS.Str())
-		//t.Log(ord.TokenB.Str())
-		//t.Log(ord.AmountS)
-		//t.Log(ord.AmountB)
-		//t.Log(ord.LrcFee)
-	}
-}
 
 func TestA(t *testing.T) {
 	arr := []int{1, 2, 3, 4, 5, 6}

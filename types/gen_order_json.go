@@ -20,23 +20,22 @@ package types
 
 import (
 	"encoding/json"
-	"errors"
-	"math/big"
 	"reflect"
+	"errors"
 )
 
-func (ord Order) MarshalJson() ([]byte, error) {
+func (ord *Order) MarshalJson() ([]byte, error) {
 	type order struct {
 		Protocol              string `json:"protocol"`
 		TokenS                string `json:"tokenS"`
 		TokenB                string `json:"tokenB"`
-		AmountS               uint64 `json:"amountS"`
-		AmountB               uint64 `json:"amountB"`
-		Rand                  uint64 `json:"rand"`
-		Expiration            uint64 `json:"expiration"`
-		LrcFee                uint64 `json:"lrcFee"`
+		AmountS               string `json:"amountS"`
+		AmountB               string `json:"amountB"`
+		Rand                  string `json:"rand"`
+		Expiration            string `json:"expiration"`
+		LrcFee                string `json:"lrcFee"`
 		SavingSharePercentage int    `json:"savingShareRate"`
-		buyNoMoreThanAmountB  bool   `json:"buyNoMoreThanAmountB"`
+		BuyNoMoreThanAmountB  bool   `json:"buyNoMoreThanAmountB"`
 		V                     uint8  `json:"v"`
 		R                     string `json:"r"`
 		S                     string `json:"s"`
@@ -44,22 +43,22 @@ func (ord Order) MarshalJson() ([]byte, error) {
 
 	var enc order
 
-	enc.Protocol = ord.Protocol.Str()
-	enc.TokenS = ord.TokenS.Str()
-	enc.TokenB = ord.TokenB.Str()
+	enc.Protocol = ord.Protocol.Hex()
+	enc.TokenS = ord.TokenS.Hex()
+	enc.TokenB = ord.TokenB.Hex()
 
-	enc.AmountS = ord.AmountS.Uint64()
-	enc.AmountB = ord.AmountB.Uint64()
+	enc.AmountS = BigToHex(ord.AmountS)
+	enc.AmountB = BigToHex(ord.AmountB)
 
-	enc.Rand = ord.Rand.Uint64()
-	enc.Expiration = ord.Expiration
-	enc.LrcFee = ord.LrcFee.Uint64()
+	enc.Rand = BigToHex(ord.Rand)
+	enc.Expiration = BigToHex(ord.Expiration)
+	enc.LrcFee = BigToHex(ord.LrcFee)
 	enc.SavingSharePercentage = ord.SavingSharePercentage
-	enc.buyNoMoreThanAmountB = ord.BuyNoMoreThanAmountB
+	enc.BuyNoMoreThanAmountB = ord.BuyNoMoreThanAmountB
 
-	//enc.V = ord.V
-	//enc.R = ord.R.Str()
-	//enc.S = ord.S.Str()
+	enc.V = ord.V
+	enc.R = BigToHex(ord.R)
+	enc.S = BigToHex(ord.S)
 
 	return json.Marshal(enc)
 }
@@ -69,13 +68,13 @@ func (ord *Order) UnMarshalJson(input []byte) error {
 		Protocol              string `json:"protocol"`
 		TokenS                string `json:"tokenS"`
 		TokenB                string `json:"tokenB"`
-		AmountS               uint64 `json:"amountS"`
-		AmountB               uint64 `json:"amountB"`
-		Rand                  uint64 `json:"rand"`
-		Expiration            uint64 `json:"expiration"`
-		LrcFee                uint64 `json:"lrcFee"`
-		SavingSharePercentage int    `json:"savingSharePercentage"`
-		buyNoMoreThanAmountB  bool   `json:"buyNoMoreThanAmountB"`
+		AmountS               string `json:"amountS"`
+		AmountB               string `json:"amountB"`
+		Rand                  string `json:"rand"`
+		Expiration            string `json:"expiration"`
+		LrcFee                string `json:"lrcFee"`
+		SavingSharePercentage int    `json:"savingShareRate"`
+		BuyNoMoreThanAmountB  bool   `json:"buyNoMoreThanAmountB"`
 		V                     uint8  `json:"v"`
 		R                     string `json:"r"`
 		S                     string `json:"s"`
@@ -90,52 +89,52 @@ func (ord *Order) UnMarshalJson(input []byte) error {
 	if !reflect.ValueOf(dec.Protocol).IsValid() {
 		return errors.New("missing required field 'Protocol' for order")
 	}
-	ord.Protocol = StringToAddress(dec.Protocol)
+	ord.Protocol = HexToAddress(dec.Protocol)
 
 	if !reflect.ValueOf(dec.TokenS).IsValid() {
 		return errors.New("missing required field 'tokenS' for order")
 	}
-	ord.TokenS = StringToAddress(dec.TokenS)
+	ord.TokenS = HexToAddress(dec.TokenS)
 
 	if !reflect.ValueOf(dec.TokenB).IsValid() {
 		return errors.New("missing required field 'tokenB' for order")
 	}
-	ord.TokenB = StringToAddress(dec.TokenB)
+	ord.TokenB = HexToAddress(dec.TokenB)
 
 	if !reflect.ValueOf(dec.AmountS).IsValid() {
 		return errors.New("missing required field 'amountS' for order")
 	}
-	ord.AmountS = IntToBig(int64(dec.AmountS))
+	ord.AmountS = HexToBig(dec.AmountS)
 
 	if !reflect.ValueOf(dec.AmountB).IsValid() {
 		return errors.New("missing required field 'amountB' for order")
 	}
-	ord.AmountB = IntToBig(int64(dec.AmountB))
+	ord.AmountB = HexToBig(dec.AmountB)
 
 	if !reflect.ValueOf(dec.Rand).IsValid() {
 		return errors.New("missing required field 'rand' for order")
 	}
-	ord.Rand = IntToBig(int64(dec.Rand))
+	ord.Rand = HexToBig(dec.Rand)
 
 	if !reflect.ValueOf(dec.Expiration).IsValid() {
 		return errors.New("missing required field 'expiration' for order")
 	}
-	ord.Expiration = dec.Expiration
+	ord.Expiration = HexToBig(dec.Expiration)
 
 	if !reflect.ValueOf(dec.LrcFee).IsValid() {
 		return errors.New("missing required field 'lrcFee' for order")
 	}
-	ord.LrcFee = IntToBig(int64(dec.LrcFee))
+	ord.LrcFee = HexToBig(dec.LrcFee)
 
 	if !reflect.ValueOf(dec.SavingSharePercentage).IsValid() {
 		return errors.New("missing required field 'savingSharePercentage' for order")
 	}
 	ord.SavingSharePercentage = dec.SavingSharePercentage
 
-	if !reflect.ValueOf(dec.buyNoMoreThanAmountB).IsValid() {
+	if !reflect.ValueOf(dec.BuyNoMoreThanAmountB).IsValid() {
 		return errors.New("missing required field 'fullyFilled' for order")
 	}
-	ord.BuyNoMoreThanAmountB = dec.buyNoMoreThanAmountB
+	ord.BuyNoMoreThanAmountB = dec.BuyNoMoreThanAmountB
 
 	if !reflect.ValueOf(dec.V).IsValid() {
 		return errors.New("missing required field 'ECDSA.V' for order")
@@ -145,66 +144,61 @@ func (ord *Order) UnMarshalJson(input []byte) error {
 	if !reflect.ValueOf(dec.S).IsValid() {
 		return errors.New("missing required field 'ECDSA.S' for order")
 	}
-	s := big.NewInt(1)
-	println("ssssssss:", dec.S)
-	s.SetBytes(Hex2Bytes(dec.S))
-	ord.S = s
+	ord.S = HexToBig(dec.S)
 
 	if !reflect.ValueOf(dec.R).IsValid() {
 		return errors.New("missing required field 'ECSA.R' for order")
 	}
-	r := big.NewInt(0)
-	r.SetBytes(Hex2Bytes(dec.R))
-	ord.R = r
+	ord.R = HexToBig(dec.R)
 
 	return nil
 }
 
-func (ord OrderState) MarshalJson() ([]byte, error) {
+func (ord *OrderState) MarshalJson() ([]byte, error) {
 	type state struct {
 		Protocol              string `json:"protocol"`
 		TokenS                string `json:"tokenS"`
 		TokenB                string `json:"tokenB"`
-		AmountS               uint64 `json:"amountS"`
-		AmountB               uint64 `json:"amountB"`
-		Rand                  uint64 `json:"rand"`
-		Expiration            uint64 `json:"expiration"`
-		LrcFee                uint64 `json:"lrcFee"`
+		AmountS               string `json:"amountS"`
+		AmountB               string `json:"amountB"`
+		Rand                  string `json:"rand"`
+		Expiration            string `json:"expiration"`
+		LrcFee                string `json:"lrcFee"`
 		SavingSharePercentage int    `json:"savingShareRate"`
-		buyNoMoreThanAmountB  bool   `json:"buyNoMoreThanAmountB"`
+		BuyNoMoreThanAmountB  bool   `json:"buyNoMoreThanAmountB"`
 		V                     uint8  `json:"v"`
 		R                     string `json:"r"`
 		S                     string `json:"s"`
 		Owner                 string `json:"owner"`
 		OrderHash             string `json:"hash"`
-		RemainedAmountS       uint64 `json:"remainedAmountS"`
-		RemainedAmountB       uint64 `json:"remainedAmountB"`
+		RemainedAmountS       string `json:"remainedAmountS"`
+		RemainedAmountB       string `json:"remainedAmountB"`
 		Status                uint8  `json:"status"`
 	}
 
 	var enc state
 
-	enc.Protocol = ord.RawOrder.Protocol.Str()
-	enc.TokenS = ord.RawOrder.TokenS.Str()
-	enc.TokenB = ord.RawOrder.TokenB.Str()
+	enc.Protocol = ord.RawOrder.Protocol.Hex()
+	enc.TokenS = ord.RawOrder.TokenS.Hex()
+	enc.TokenB = ord.RawOrder.TokenB.Hex()
 
-	enc.AmountS = ord.RawOrder.AmountS.Uint64()
-	enc.AmountB = ord.RawOrder.AmountB.Uint64()
+	enc.AmountS = BigToHex(ord.RawOrder.AmountS)
+	enc.AmountB = BigToHex(ord.RawOrder.AmountB)
 
-	enc.Rand = ord.RawOrder.Rand.Uint64()
-	enc.Expiration = ord.RawOrder.Expiration
-	enc.LrcFee = ord.RawOrder.LrcFee.Uint64()
+	enc.Rand = BigToHex(ord.RawOrder.Rand)
+	enc.Expiration = BigToHex(ord.RawOrder.Expiration)
+	enc.LrcFee = BigToHex(ord.RawOrder.LrcFee)
 	enc.SavingSharePercentage = ord.RawOrder.SavingSharePercentage
-	enc.buyNoMoreThanAmountB = ord.RawOrder.BuyNoMoreThanAmountB
+	enc.BuyNoMoreThanAmountB = ord.RawOrder.BuyNoMoreThanAmountB
 
-	//enc.V = ord.RawOrder.V
-	//enc.R = ord.RawOrder.R.Str()
-	//enc.S = ord.RawOrder.S.Str()
+	enc.V = ord.RawOrder.V
+	enc.R = BigToHex(ord.RawOrder.R)
+	enc.S = BigToHex(ord.RawOrder.S)
 
-	enc.Owner = ord.Owner.Str()
-	enc.OrderHash = ord.OrderHash.Str()
-	enc.RemainedAmountS = ord.RemainedAmountS.Uint64()
-	enc.RemainedAmountB = ord.RemainedAmountB.Uint64()
+	enc.Owner = ord.Owner.Hex()
+	enc.OrderHash = ord.OrderHash.Hex()
+	enc.RemainedAmountS = BigToHex(ord.RemainedAmountS)
+	enc.RemainedAmountB = BigToHex(ord.RemainedAmountB)
 	enc.Status = uint8(ord.Status)
 
 	return json.Marshal(enc)
@@ -215,20 +209,20 @@ func (ord *OrderState) UnMarshalJson(input []byte) error {
 		Protocol              string `json:"protocol"`
 		TokenS                string `json:"tokenS"`
 		TokenB                string `json:"tokenB"`
-		AmountS               uint64 `json:"amountS"`
-		AmountB               uint64 `json:"amountB"`
-		Rand                  uint64 `json:"rand"`
-		Expiration            uint64 `json:"expiration"`
-		LrcFee                uint64 `json:"lrcFee"`
+		AmountS               string `json:"amountS"`
+		AmountB               string `json:"amountB"`
+		Rand                  string `json:"rand"`
+		Expiration            string `json:"expiration"`
+		LrcFee                string `json:"lrcFee"`
 		SavingSharePercentage int    `json:"savingShareRate"`
-		buyNoMoreThanAmountB  bool   `json:"buyNoMoreThanAmountB"`
+		BuyNoMoreThanAmountB  bool   `json:"buyNoMoreThanAmountB"`
 		V                     uint8  `json:"v"`
 		R                     string `json:"r"`
 		S                     string `json:"s"`
 		Owner                 string `json:"owner"`
 		OrderHash             string `json:"hash"`
-		RemainedAmountS       uint64 `json:"remainedAmountS"`
-		RemainedAmountB       uint64 `json:"remainedAmountB"`
+		RemainedAmountS       string `json:"remainedAmountS"`
+		RemainedAmountB       string `json:"remainedAmountB"`
 		Status                uint8  `json:"status"`
 	}
 
@@ -237,76 +231,76 @@ func (ord *OrderState) UnMarshalJson(input []byte) error {
 	if err != nil {
 		return err
 	}
-
+	//
 	if !reflect.ValueOf(dec.Protocol).IsValid() {
 		return errors.New("missing required field 'Protocol' for orderState")
 	}
-	ord.RawOrder.Protocol = StringToAddress(dec.Protocol)
+	ord.RawOrder.Protocol = HexToAddress(dec.Protocol)
 
 	if !reflect.ValueOf(dec.TokenS).IsValid() {
 		return errors.New("missing required field 'tokenS' for orderState")
 	}
-	ord.RawOrder.TokenS = StringToAddress(dec.TokenS)
+	ord.RawOrder.TokenS = HexToAddress(dec.TokenS)
 
 	if !reflect.ValueOf(dec.TokenB).IsValid() {
 		return errors.New("missing required field 'tokenB' for orderState")
 	}
-	ord.RawOrder.TokenB = StringToAddress(dec.TokenB)
+	ord.RawOrder.TokenB = HexToAddress(dec.TokenB)
 
 	if !reflect.ValueOf(dec.AmountS).IsValid() {
 		return errors.New("missing required field 'amountS' for orderState")
 	}
-	ord.RawOrder.AmountS = IntToBig(int64(dec.AmountS))
+	ord.RawOrder.AmountS = HexToBig(dec.AmountS)
 
 	if !reflect.ValueOf(dec.AmountB).IsValid() {
 		return errors.New("missing required field 'amountB' for orderState")
 	}
-	ord.RawOrder.AmountB = IntToBig(int64(dec.AmountB))
+	ord.RawOrder.AmountB = HexToBig(dec.AmountB)
 
 	if !reflect.ValueOf(dec.Rand).IsValid() {
 		return errors.New("missing required field 'rand' for orderState")
 	}
-	ord.RawOrder.Rand = IntToBig(int64(dec.Rand))
+	ord.RawOrder.Rand = HexToBig(dec.Rand)
 
 	if !reflect.ValueOf(dec.Expiration).IsValid() {
 		return errors.New("missing required field 'expiration' for orderState")
 	}
-	ord.RawOrder.Expiration = dec.Expiration
+	ord.RawOrder.Expiration = HexToBig(dec.Expiration)
 
 	if !reflect.ValueOf(dec.LrcFee).IsValid() {
 		return errors.New("missing required field 'lrcFee' for orderState")
 	}
-	ord.RawOrder.LrcFee = IntToBig(int64(dec.LrcFee))
+	ord.RawOrder.LrcFee = HexToBig(dec.LrcFee)
 
 	if !reflect.ValueOf(dec.SavingSharePercentage).IsValid() {
 		return errors.New("missing required field 'savingSharePercentage' for orderState")
 	}
 	ord.RawOrder.SavingSharePercentage = dec.SavingSharePercentage
 
-	if !reflect.ValueOf(dec.buyNoMoreThanAmountB).IsValid() {
+	if !reflect.ValueOf(dec.BuyNoMoreThanAmountB).IsValid() {
 		return errors.New("missing required field 'fullyFilled' for orderState")
 	}
-	ord.RawOrder.BuyNoMoreThanAmountB = dec.buyNoMoreThanAmountB
+	ord.RawOrder.BuyNoMoreThanAmountB = dec.BuyNoMoreThanAmountB
 
 	if !reflect.ValueOf(dec.V).IsValid() {
 		return errors.New("missing required field 'ECDSA.V' for orderState")
 	}
-	//ord.RawOrder.V = dec.V
+	ord.RawOrder.V = dec.V
 
 	if !reflect.ValueOf(dec.S).IsValid() {
 		return errors.New("missing required field 'ECDSA.S' for orderState")
 	}
-	//ord.RawOrder.S = StringToSign(dec.S)
+	ord.RawOrder.S = HexToBig(dec.S)
 
 	if !reflect.ValueOf(dec.R).IsValid() {
 		return errors.New("missing required field 'ECSA.R' for orderState")
 	}
-	//ord.RawOrder.R = StringToSign(dec.R)
+	ord.RawOrder.R = HexToBig(dec.R)
 
 	if !reflect.ValueOf(dec.Owner).IsValid() {
 		return errors.New("missing required field 'owner' for orderState")
 	}
-	ord.Owner = StringToAddress(dec.Owner)
+	ord.Owner = HexToAddress(dec.Owner)
 
 	if !reflect.ValueOf(dec.OrderHash).IsValid() {
 		return errors.New("missing required field 'orderHash' for orderState")
@@ -316,12 +310,12 @@ func (ord *OrderState) UnMarshalJson(input []byte) error {
 	if !reflect.ValueOf(dec.RemainedAmountS).IsValid() {
 		return errors.New("missing required field 'remainedAmountS' for orderState")
 	}
-	ord.RemainedAmountS = IntToBig(int64(dec.RemainedAmountS))
+	ord.RemainedAmountS = HexToBig(dec.RemainedAmountS)
 
 	if !reflect.ValueOf(dec.RemainedAmountB).IsValid() {
 		return errors.New("missing required field 'remainedAmountB' for orderState")
 	}
-	ord.RemainedAmountB = IntToBig(int64(dec.RemainedAmountB))
+	ord.RemainedAmountB = HexToBig(dec.RemainedAmountB)
 
 	if !reflect.ValueOf(dec.Status).IsValid() {
 		return errors.New("missing required field 'status' for orderState")

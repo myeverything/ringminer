@@ -18,7 +18,9 @@
 
 package types
 
-import "encoding/hex"
+import (
+	"encoding/hex"
+)
 
 func ToHex(b []byte) string {
 	hex := Bytes2Hex(b)
@@ -65,6 +67,8 @@ func IsHex(str string) bool {
 func Bytes2Hex(d []byte) string {
 	return hex.EncodeToString(d)
 }
+
+
 
 func Hex2Bytes(str string) []byte {
 	h, _ := hex.DecodeString(str)
