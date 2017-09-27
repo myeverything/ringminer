@@ -19,13 +19,13 @@
 package types
 
 import (
-	"github.com/ethereum/go-ethereum/common/hexutil"
 	"math/big"
 )
 
+//this should be diff value for diff chain
 const (
-	HashLength    = 32 // 以太坊中为
-	AddressLength = 20 // 以太坊中为20 20*2 + "0x"
+	HashLength    = 32 //todo：this is eth value
+	AddressLength = 20
 	SignLength    = 32
 )
 
@@ -49,7 +49,7 @@ func (a *Sign) UnmarshalText(input []byte) error {
 func (s Sign) Str() string   { return string(s[:]) }
 func (s Sign) Bytes() []byte { return s[:] }
 func (s Sign) Big() *big.Int { return new(big.Int).SetBytes(s[:]) }
-func (s Sign) Hex() string   { return hexutil.Encode(s[:]) }
+func (s Sign) Hex() string   { return ToHex(s[:]) }
 
 func BytesToSign(b []byte) Sign {
 	var s Sign
@@ -71,7 +71,7 @@ type Hash [HashLength]byte
 func (h Hash) Str() string   { return string(h[:]) }
 func (h Hash) Bytes() []byte { return h[:] }
 func (h Hash) Big() *big.Int { return new(big.Int).SetBytes(h[:]) }
-func (h Hash) Hex() string   { return hexutil.Encode(h[:]) }
+func (h Hash) Hex() string   { return ToHex(h[:]) }
 
 //MarshalJson
 func (a *Hash) MarshalText() ([]byte, error) {
@@ -107,7 +107,7 @@ type Address [AddressLength]byte
 func (a Address) Str() string   { return string(a[:]) }
 func (a Address) Bytes() []byte { return a[:] }
 func (a Address) Big() *big.Int { return new(big.Int).SetBytes(a[:]) }
-func (a Address) Hex() string   {return hexutil.Encode(a[:])}
+func (a Address) Hex() string   {return ToHex(a[:])}
 
 func (a *Address) MarshalText() ([]byte, error) {
 	return []byte(a.Hex()),nil

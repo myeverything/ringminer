@@ -23,7 +23,6 @@ import (
 	"testing"
 	"math/big"
 	"github.com/ethereum/go-ethereum/common/hexutil"
-	"fmt"
 )
 
 func TestStringToAddress(t *testing.T) {
@@ -61,9 +60,9 @@ func (h *Hash) SetBytes(b []byte) {
 }
 func TestHash(t *testing.T) {
 	s := "0x093e56de3901764da17fef7e89f016cfdd1a88b98b1f8e3d2ebda4aff2343380"
-	h := HexToHash(s)
-	//t.Log(h.Hex())
-	println(fmt.Sprintf(`Header(%x)`, h.Bytes()))
+	h := types.HexToHash(s)
+	t.Log(h.Hex())
+	//println(fmt.Sprintf(`Header(%x)`, h.Bytes()))
 }
 
 func TestAddress(t *testing.T) {
