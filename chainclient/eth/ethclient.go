@@ -21,18 +21,17 @@ package eth
 import (
 	"crypto/ecdsa"
 	"github.com/Loopring/ringminer/chainclient"
-	"github.com/ethereum/go-ethereum/common/hexutil"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/rlp"
 	"github.com/ethereum/go-ethereum/rpc"
 	"reflect"
-
 	"errors"
 	"github.com/Loopring/ringminer/config"
 	"github.com/Loopring/ringminer/log"
 	"github.com/ethereum/go-ethereum/common"
 	"time"
+	"github.com/Loopring/ringminer/types"
 )
 
 var rpcClient *rpc.Client
@@ -45,13 +44,12 @@ func newRpcMethod(name string) func(result interface{}, args ...interface{}) err
 	}
 }
 
-//todo:hexutil.Big should be insteaded ?
 type CallArg struct {
 	From     string
 	To       string
-	Gas      hexutil.Big
-	GasPrice hexutil.Big
-	Value    hexutil.Big
+	Gas      types.Big
+	GasPrice types.Big
+	Value    types.Big
 	Data     string
 }
 

@@ -43,20 +43,32 @@ const (
 4、成交方向 待定
 5、过期时间，使用块数
 */
+
+//go:generate gencodec -type Order -field-override orderMarshaling -out gen_order_json.go
 type Order struct {
-	Protocol              Address  // 智能合约地址
-	TokenS                Address  // 卖出erc20代币智能合约地址
-	TokenB                Address  // 买入erc20代币智能合约地址
-	AmountS               *big.Int // 卖出erc20代币数量上限
-	AmountB               *big.Int // 买入erc20代币数量上限
-	Expiration            *big.Int // 订单过期时间
-	Rand                  *big.Int
-	LrcFee                *big.Int // 交易总费用,部分成交的费用按该次撮合实际卖出代币额与比例计算
-	BuyNoMoreThanAmountB  bool
-	SavingSharePercentage int // 不为0时支付给交易所的分润比例，否则视为100%
-	V                     uint8
-	R                     *big.Int
-	S                     *big.Int
+	Protocol              Address  `json:"protocol" gencodec:"required"`// 智能合约地址
+	TokenS                Address  `json:"tokenS" gencodec:"required"`// 卖出erc20代币智能合约地址
+	TokenB                Address  `json:"tokenB" gencodec:"required"`// 买入erc20代币智能合约地址
+	AmountS               *big.Int `json:"amountS" gencodec:"required"`// 卖出erc20代币数量上限
+	AmountB               *big.Int `json:"amountB" gencodec:"required"`// 买入erc20代币数量上限
+	Expiration            *big.Int `json:"expiration" gencodec:"required"`// 订单过期时间
+	Rand                  *big.Int `json:"rand" gencodec:"required"`
+	LrcFee                *big.Int `json:"lrcFee" `// 交易总费用,部分成交的费用按该次撮合实际卖出代币额与比例计算
+	BuyNoMoreThanAmountB  bool `json:"buyNoMoreThanAmountB" gencodec:"required"`
+	SavingSharePercentage int `json:"savingSharePercentage" gencodec:"required"`// 不为0时支付给交易所的分润比例，否则视为100%
+	V                     uint8 `json:"v" gencodec:"required"`
+	R                     *big.Int `json:"r" gencodec:"required"`
+	S                     *big.Int `json:"s" gencodec:"required"`
+}
+
+type orderMarshaling struct {
+	AmountS *Big
+	AmountB *Big
+	Expiration *Big
+	Rand *Big
+	LrcFee *Big
+	R *Big
+	S *Big
 }
 
 func (o *Order) Hash() Hash {
@@ -102,36 +114,50 @@ func (o *Order) SignerAddress(hash Hash) (Address, error) {
 }
 
 //RateAmountS、FeeSelection 需要提交到contract
-type FilledOrder struct {
-	OrderState       OrderState
-	FeeSelection     int      //0 -> lrc
-	RateAmountS      *big.Int //提交需要
-	AvailableAmountS *big.Int //需要，也是用于计算fee
-	//AvailableAmountB *big.Int	//需要，也是用于计算fee
-	FillAmountS *EnlargedInt
-	FillAmountB *EnlargedInt //计算需要
-	LrcReward   *EnlargedInt
-	LrcFee      *EnlargedInt
-	FeeS        *EnlargedInt
-	//FeeB             *EnlargedInt
-	LegalFee *EnlargedInt //法币计算的fee
+//go:generate gencodec -type FilledOrder -field-override filledOrderMarshaling -out gen_filledorder_json.go
 
-	EnlargedSPrice *EnlargedInt
-	EnlargedBPrice *EnlargedInt
+type FilledOrder struct {
+	OrderState       OrderState `json:"orderState" gencodec:"required"`
+	FeeSelection     int      `json:"feeSelection"`//0 -> lrc
+	RateAmountS      *big.Int `json:"rateAmountS"`//提交需要
+	AvailableAmountS *big.Int `json:"availableAmountS"`//需要，也是用于计算fee
+	//AvailableAmountB *big.Int	//需要，也是用于计算fee
+	FillAmountS *EnlargedInt `json:"fillAmountS"`
+	FillAmountB *EnlargedInt `json:"fillAmountB"`//计算需要
+	LrcReward   *EnlargedInt `json:"lrcReward"`
+	LrcFee      *EnlargedInt `json:"lrcFee"`
+	FeeS        *EnlargedInt `json:"feeS"`
+	//FeeB             *EnlargedInt
+	LegalFee *EnlargedInt `json:"legalFee"`//法币计算的fee
+
+	EnlargedSPrice *EnlargedInt `json:"enlargedSPrice"`
+	EnlargedBPrice *EnlargedInt `json:"enlargedBPrice"`
 
 	//FullFilled	bool	//this order is fullfilled
 }
 
+type filledOrderMarshaling struct {
+	RateAmountS *Big
+	AvailableAmountS *Big
+}
+
+
+//go:generate gencodec -type OrderState -field-override orderStateMarshaling -out gen_orderstate_json.go
 type OrderState struct {
-	RawOrder        Order
-	Owner           Address
-	OrderHash       Hash
-	RemainedAmountS *big.Int
-	RemainedAmountB *big.Int
-	Status          OrderStatus
+	RawOrder        Order `json:"rawOrder"`
+	Owner           Address	`json:"owner" `
+	OrderHash       Hash `json:"orderHash"`
+	RemainedAmountS *big.Int `json:"remainedAmountS"`
+	RemainedAmountB *big.Int `json:"remainedAmountB"`
+	Status          OrderStatus `json:"status"`
 }
 
-// TODO(fukun): 来自以太坊的订单
+type orderStateMarshaling struct {
+	RemainedAmountS *Big
+	RemainedAmountB *Big
+}
+
+
 type OrderMined struct {
-}
 
+}

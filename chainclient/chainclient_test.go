@@ -21,23 +21,43 @@ package chainclient_test
 import (
 	"encoding/json"
 	"github.com/Loopring/ringminer/chainclient"
-	"github.com/Loopring/ringminer/chainclient/eth"
-	"github.com/Loopring/ringminer/log"
+	 "github.com/Loopring/ringminer/chainclient/eth"
 	"github.com/Loopring/ringminer/types"
 	"github.com/ethereum/go-ethereum/common"
 	"math/big"
 	"testing"
+	"github.com/Loopring/ringminer/config"
 )
 
+type A struct {
+	A1 *types.Big `json:"a1"`
+}
 func TestChainClient(t *testing.T) {
+	config := &config.ChainClientOptions{}
+	config.RawUrl = "http://127.0.0.1:8545"
+	eth.Initialize(*config)
 
-	var amount types.HexNumber
+	var amount types.Big
 	eth.EthClient.GetBalance(&amount, "0xd86ee51b02c5ac295e59711f4335fed9805c0148", "pending")
+	//h := (*big.Int)(&amount)
 	t.Log(amount.BigInt().String())
 
-	var accounts []string
-	eth.EthClient.Accounts(&accounts)
-	t.Log(accounts[0])
+	b := big.NewInt(1031001682784)
+	b.Mul(b, big.NewInt(1000000000))
+	a1 := &types.Big{b}
+	a := &A{}
+	a.A1 = a1
+
+	if bytes,err := json.Marshal(a);nil != err {
+		println(err.Error())
+	} else {
+		println(string(bytes))
+	}
+	//1031001682784000000000
+
+	//var accounts []string
+	//eth.EthClient.Accounts(&accounts)
+	//t.Log(accounts[0])
 
 }
 
@@ -69,7 +89,7 @@ func TestSubscribeNewBlock(t *testing.T) {
 }
 
 func TestErc20Transfer(t *testing.T) {
-	log.Initialize()
+	//log.Initialize()
 	contractAddress := "0x211c9fb2c5ad60a31587a4a11b289e37ed3ea520"
 	erc20 := &chainclient.Erc20Token{}
 
@@ -129,7 +149,7 @@ func TestNewContract(t *testing.T) {
 
 	erc20TokenAbiStr := `[{"constant":false,"inputs":[{"name":"_spender","type":"address"},{"name":"_value","type":"uint256"}],"name":"approve","outputs":[{"name":"success","type":"bool"}],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"totalSupply","outputs":[{"name":"totalSupply","type":"uint256"}],"payable":false,"type":"function"},{"constant":false,"inputs":[{"name":"_from","type":"address"},{"name":"_to","type":"address"},{"name":"_value","type":"uint256"}],"name":"transferFrom","outputs":[{"name":"success","type":"bool"}],"payable":false,"type":"function"},{"constant":true,"inputs":[{"name":"_owner","type":"address"}],"name":"balanceOf","outputs":[{"name":"balance","type":"uint256"}],"payable":false,"type":"function"},{"constant":false,"inputs":[{"name":"_to","type":"address"},{"name":"_value","type":"uint256"}],"name":"transfer","outputs":[{"name":"success","type":"bool"}],"payable":false,"type":"function"},{"constant":true,"inputs":[{"name":"_owner","type":"address"},{"name":"_spender","type":"address"}],"name":"allowance","outputs":[{"name":"remaining","type":"uint256"}],"payable":false,"type":"function"},{"anonymous":false,"inputs":[{"indexed":true,"name":"_from","type":"address"},{"indexed":true,"name":"_to","type":"address"},{"indexed":false,"name":"_value","type":"uint256"}],"name":"Transfer","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"_owner","type":"address"},{"indexed":true,"name":"_spender","type":"address"},{"indexed":false,"name":"_value","type":"uint256"}],"name":"Approval","type":"event"}]`
 	eth.NewContract(c, "0x211c9fb2c5ad60a31587a4a11b289e37ed3ea520", erc20TokenAbiStr)
-	var amount types.HexNumber
+	var amount types.Big
 	err := c.BalanceOf.Call(&amount, "pending", common.HexToAddress("0xd86ee51b02c5ac295e59711f4335fed9805c0148"))
 	if err != nil {
 		println(err.Error())

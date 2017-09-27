@@ -24,6 +24,7 @@ import (
 	"github.com/Loopring/ringminer/types"
 	"github.com/ipfs/go-ipfs-api"
 	"sync"
+	"encoding/json"
 )
 
 type Whisper struct {
@@ -62,7 +63,7 @@ func (l *IPFSListener) Start() {
 			record, _ := l.sub.Next()
 			data := record.Data()
 			ord := &types.Order{}
-			err := ord.UnMarshalJson(data)
+			err := json.Unmarshal(data, ord)
 			if err != nil {
 				log.Errorf(log.ERROR_P2P_LISTEN_ACCEPT, err.Error())
 			} else {

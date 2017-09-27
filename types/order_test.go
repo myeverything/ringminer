@@ -22,8 +22,8 @@ import (
 	"github.com/Loopring/ringminer/types"
 	"testing"
 	//ethCrypto "github.com/ethereum/go-ethereum/crypto"
-	"github.com/Loopring/ringminer/crypto/eth"
-	"github.com/ethereum/go-ethereum/common"
+	"math/big"
+	"encoding/json"
 )
 
 //func TestOrder_MarshalJson(t *testing.T) {
@@ -50,14 +50,45 @@ import (
 //	}
 //}
 
+type B struct {
+	B1
+	Age int
+}
 
+type B1 struct {
+	Name string
+}
 
 func TestA(t *testing.T) {
-	arr := []int{1, 2, 3, 4, 5, 6}
-	a1 := arr[0:3]
-	for _, a := range a1 {
-		println(a)
+	filledOrder := &types.FilledOrder{}
+	b := big.NewInt(1031001682784)
+	b.Mul(b, big.NewInt(1000000000))
+	t1 := &types.Big{b}
+	filledOrder.RateAmountS = t1
+
+	orderState := &types.OrderState{}
+	orderState.RemainedAmountB = big.NewInt(1000)
+	ei := &types.EnlargedInt{}
+	ei.Decimals = big.NewInt(1)
+	ei.Value = b
+	filledOrder.FillAmountB = ei
+	if bytes,err := json.Marshal(filledOrder);nil != err {
+		println(err.Error())
+	} else {
+		println(string(bytes))
 	}
+
+	b1 := &B1{}
+	b1.Name = "test"
+	b2 := &B{}
+	b2.Age = 2
+	b2.B1 = *b1
+	if bytes,err := json.Marshal(b2);nil != err {
+		println(err.Error())
+	} else {
+		println(string(bytes))
+	}
+
 }
 
 //func TestOrderState_MarshalJson(t *testing.T) {
@@ -151,3 +182,119 @@ func TestA(t *testing.T) {
 //
 //	t.Log(string(data))
 //}
+
+
+func TestOrder_MarshalJson(t *testing.T) {
+	order := &types.Order{}
+	order.Protocol = types.HexToAddress("0x211c9fb2c5ad60a31587a4a11b289e37ed3ea520")
+	order.TokenS = types.HexToAddress("0xc184dd351f215f689f481c329916bb33d8df8ced")
+	order.TokenB = types.HexToAddress("0xc184dd351f215f689f481c329916bb33d8df8ced")
+	order.AmountS = big.NewInt(100000)
+	order.AmountB = big.NewInt(100000000)
+
+	order.Rand = big.NewInt(10000)
+	order.Expiration = big.NewInt(1000000)
+	order.LrcFee = big.NewInt(10000000000)
+	order.SavingSharePercentage = 40
+	order.BuyNoMoreThanAmountB = false
+
+	order.V = byte(1)
+	order.R = big.NewInt(10000000)
+	order.S = big.NewInt(200000)
+
+	if bytes,err := order.MarshalJSON();err != nil {
+		t.Error(err)
+	} else {
+		t.Log(string(bytes))
+	}
+}
+
+func TestOrder_UnMarshalJson(t *testing.T) {
+	input := "{\"protocol\":\"0x4ec94e1007605d70a86279370ec5e4b755295eda\"," +
+		"\"tokenS\":\"0xc184dd351f215f689f481c329916bb33d8df8ced\"," +
+		"\"tokenB\":\"0xc184dd351f215f689f481c329916bb33d8df8ced\"," +
+		"\"amountS\":\"0x0186a0\"," +
+		"\"amountB\":\"0x05f5e100\"," +
+		"\"rand\":\"0x2710\"," +
+		"\"expiration\":\"0x0f4240\"," +
+		"\"lrcFee\":\"0x02540be400\"," +
+		"\"savingSharePercentage\":30," +
+		"\"buyNoMoreThanAmountB\":false," +
+		"\"v\":1,"  +
+		"\"r\":\"0x02540be400\"," +
+		"\"s\":\"0x02540be400\"" +
+		"}"
+
+	//types.Crypto = &eth.EthCrypto{Homestead: false}
+	//pkHex := "4f5b916dc82fb59cc57dbdd2fee5b49b2bdfe6ea34534a5d40c4475e9740c66e"
+	//pk,_ := ethCrypto.HexToECDSA(pkHex)
+	ord := &types.Order{}
+	if err := ord.UnmarshalJSON([]byte(input)); err != nil {
+		t.Log(err.Error())
+	} else {
+		//state := ord.Convert()
+		//state.GenHash()
+		//if sig, err := types.Crypto.Sign(state.OrderHash.Bytes(), common.Hex2Bytes(pkHex)); err != nil {
+		//	println(err.Error())
+		//} else {
+		//	v, r, s := types.Crypto.SigToVRS(sig)
+		//	state.RawOrder.V = uint8(v)
+		//	state.RawOrder.R = r
+		//	state.RawOrder.S = s
+		//
+		//	println("r:", common.Bytes2Hex(r.Bytes()), " s:", common.Bytes2Hex(s.Bytes()))
+		//}
+		//addr, _ := state.SignerAddress()
+		t.Logf("protocol:%s, tokenS:%s, tokenB:%s, amountS:%d",ord.Protocol.Hex(),ord.TokenS.Hex(),ord.TokenB.Hex(),ord.AmountS.Int64())
+	}
+}
+
+
+func TestOrderState_MarshalJson(t *testing.T) {
+	//orderState := &types.OrderState{}
+	//order := &types.Order{}
+	//order.Protocol = types.HexToAddress("0x211c9fb2c5ad60a31587a4a11b289e37ed3ea520")
+	//order.TokenS = types.HexToAddress("0xc184dd351f215f689f481c329916bb33d8df8ced")
+	//order.TokenB = types.HexToAddress("0xc184dd351f215f689f481c329916bb33d8df8ced")
+	//order.AmountS = big.NewInt(100000)
+	//order.AmountB = big.NewInt(100000000)
+	//
+	//order.Rand = big.NewInt(10000)
+	//order.Expiration = big.NewInt(1000000)
+	//order.LrcFee = big.NewInt(10000000000)
+	//order.SavingSharePercentage = 40
+	//order.BuyNoMoreThanAmountB = false
+	//
+	//order.V = byte(1)
+	//order.R = big.NewInt(10000000)
+	//order.S = big.NewInt(200000)
+	//orderState.RawOrder = *order
+	//
+	//orderState.Owner = types.HexToAddress("0xc184dd351f215f689f481c329916bb33d8df8ced")
+
+	//if bytes,err := orderState();err != nil {
+	//	t.Error(err)
+	//} else {
+	//	t.Log(string(bytes))
+	//}
+}
+
+func TestOrderState_UnMarshalJson(t *testing.T) {
+	//input := "{\"protocol\":\"0x4ec94e1007605d70a86279370ec5e4b755295eda\"," +
+	//	"\"tokenS\":\"0xc184dd351f215f689f481c329916bb33d8df8ced\"," +
+	//	"\"tokenB\":\"0xc184dd351f215f689f481c329916bb33d8df8ced\"," +
+	//	"\"amountS\":\"0x0186a0\"," +
+	//	"\"amountB\":\"0x05f5e100\"," +
+	//	"\"rand\":\"0x2710\"," +
+	//	"\"expiration\":\"0x0f4240\"," +
+	//	"\"lrcFee\":\"0x02540be400\"," +
+	//	"\"savingSharePercentage\":30," +
+	//	"\"buyNoMoreThanAmountB\":false" +
+	//	"}"
+	//var o types.OrderState
+	//if err := o.UnMarshalJson([]byte(input)); err != nil {
+	//	t.Log(err.Error())
+	//} else {
+	//	t.Logf("protocol:%s", o.RawOrder.Protocol.Hex())
+	//}
+}

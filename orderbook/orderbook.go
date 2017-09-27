@@ -24,13 +24,15 @@ import (
 	"github.com/Loopring/ringminer/log"
 	"github.com/Loopring/ringminer/types"
 	"sync"
+	"encoding/json"
 )
 
 /**
 todo:
 1. filter
 2. chain event
-3. 订单完成的标志，以及需要发送到miner
+3. 事件执行到第几个块等信息数据
+4. 订单完成的标志，以及需要发送到miner
  */
 type ORDER_STATUS int
 
@@ -69,7 +71,7 @@ func (ob *OrderBook) recoverOrder() error {
 	for iterator.Next() {
 		dataBytes := iterator.Value()
 		state := &types.OrderState{}
-		if err := state.UnMarshalJson(dataBytes);nil != err {
+		if err := json.Unmarshal(dataBytes, state);nil != err {
 			log.Errorf("err:%s", err.Error())
 		} else {
 			ob.whisper.EngineOrderChan <- state
@@ -146,11 +148,11 @@ func (ob *OrderBook) peerOrderHook(ord *types.Order) error {
 		log.Debugf("state hash:%s", state.OrderHash.Hex())
 
 		//save to db
-		value,err := state.MarshalJson()
+		dataBytes,err := json.Marshal(state)
 		if err != nil {
 			return err
 		}
-		ob.partialTable.Put(state.OrderHash.Bytes(), value)
+		ob.partialTable.Put(state.OrderHash.Bytes(), dataBytes)
 
 		//send to miner
 		ob.whisper.EngineOrderChan <- state
@@ -182,7 +184,7 @@ func (ob *OrderBook) GetOrder(id types.Hash) (*types.OrderState, error) {
 		return nil, err
 	}
 
-	err = ord.UnMarshalJson(value)
+	err = json.Unmarshal(value, &ord)
 	if err != nil {
 		return nil, err
 	}
@@ -198,7 +200,7 @@ func (ob *OrderBook) GetOrders() {
 // moveOrder move order when partial finished order fully exchanged
 func (ob *OrderBook) moveOrder(odw *types.OrderState) error {
 	key := odw.OrderHash.Bytes()
-	value, err := odw.MarshalJson()
+	value, err := json.Marshal(odw)
 	if err != nil {
 		return err
 	}

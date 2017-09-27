@@ -19,9 +19,7 @@
 package types
 
 import (
-	"fmt"
 	"math/big"
-	"reflect"
 )
 
 //todo:test and fix bug (bug exists)
@@ -153,90 +151,66 @@ func (ei *EnlargedInt) CmpBigInt(x *big.Int) int {
 	return ei.RealValue().Cmp(x)
 }
 
+func (ei *EnlargedInt) UnmarshalJSON(input []byte) error {
+	length := len(input)
+	if length >= 2 && input[0] == '"' && input[length-1] == '"' {
+		input = input[1 : length-1]
+	}
+	bn := HexToBigint(string(input))
+	ei.Value = bn
+	ei.Decimals = big.NewInt(1)
+	return nil
+}
+
+func (ei *EnlargedInt) MarshalJSON() ([]byte, error) {
+	bn := ei.RealValue()
+	bytes := []byte("\"" + BigintToHex(bn)  + "\"")
+	return bytes, nil
+}
+
 func NewEnlargedInt(value *big.Int) *EnlargedInt {
 	return &EnlargedInt{Value: value, Decimals: big.NewInt(1)}
 }
 
-type HexNumber big.Int
+type Big big.Int
 
-// NewHexNumber creates a new hex number instance which will serialize the given val with `%#x` on marshal.
-func NewHexNumber(val interface{}) *HexNumber {
-	if val == nil {
-		return nil // note, this doesn't catch nil pointers, only passing nil directly!
-	}
-
-	if v, ok := val.(*big.Int); ok {
-		if v != nil {
-			return (*HexNumber)(new(big.Int).Set(v))
-		}
-		return nil
-	}
-
-	rval := reflect.ValueOf(val)
-
-	var unsigned uint64
-	utype := reflect.TypeOf(unsigned)
-	if t := rval.Type(); t.ConvertibleTo(utype) {
-		hn := new(big.Int).SetUint64(rval.Convert(utype).Uint())
-		return (*HexNumber)(hn)
-	}
-
-	var signed int64
-	stype := reflect.TypeOf(signed)
-	if t := rval.Type(); t.ConvertibleTo(stype) {
-		hn := new(big.Int).SetInt64(rval.Convert(stype).Int())
-		return (*HexNumber)(hn)
-	}
-
-	return nil
-}
-
-func (h *HexNumber) UnmarshalJSON(input []byte) error {
+func (h *Big) UnmarshalText(input []byte) error {
 	length := len(input)
 	if length >= 2 && input[0] == '"' && input[length-1] == '"' {
 		input = input[1 : length-1]
 	}
 
 	hn := (*big.Int)(h)
-	if _, ok := hn.SetString(string(input), 0); ok {
-		return nil
-	}
-
-	return fmt.Errorf("Unable to parse number")
+	hn.Set(HexToBigint(string(input)))
+	return nil
 }
 
-// MarshalJSON serialize the hex number instance to a hex representation.
-func (h *HexNumber) MarshalJSON() ([]byte, error) {
-	if h != nil {
-		hn := (*big.Int)(h)
-		if hn.BitLen() == 0 {
-			return []byte(`"0x0"`), nil
-		}
-		return []byte(fmt.Sprintf(`"0x%x"`, hn)), nil
-	}
-	return nil, nil
+func (h *Big) MarshalText() ([]byte, error) {
+	hn := (*big.Int)(h)
+	bytes := []byte(BigintToHex(hn))
+	return bytes, nil
 }
 
-func (h *HexNumber) Int() int {
+func (h *Big) Int() int {
 	hn := (*big.Int)(h)
 	return int(hn.Int64())
 }
 
-func (h *HexNumber) Int64() int64 {
+func (h *Big) Int64() int64 {
 	hn := (*big.Int)(h)
 	return hn.Int64()
 }
 
-func (h *HexNumber) Uint() uint {
+func (h *Big) Uint() uint {
 	hn := (*big.Int)(h)
 	return uint(hn.Uint64())
 }
 
-func (h *HexNumber) Uint64() uint64 {
+func (h *Big) Uint64() uint64 {
 	hn := (*big.Int)(h)
 	return hn.Uint64()
 }
 
-func (h *HexNumber) BigInt() *big.Int {
+func (h *Big) BigInt() *big.Int {
 	return (*big.Int)(h)
 }

@@ -21,12 +21,13 @@ package eth
 import (
 	"github.com/Loopring/ringminer/types"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
+//todo:need to modify
+
 type Block struct {
-	Number           hexutil.Big
-	Hash             string
+	Number           types.Big
+	Hash             types.Hash
 	ParentHash       string
 	Nonce            string
 	Sha3Uncles       string
@@ -34,13 +35,13 @@ type Block struct {
 	TransactionsRoot string
 	ReceiptsRoot     string
 	Miner            string
-	Difficulty       hexutil.Big
-	TotalDifficulty  hexutil.Big
+	Difficulty       types.Big
+	TotalDifficulty  types.Big
 	ExtraData        string
-	Size             hexutil.Big
-	GasLimit         hexutil.Big
-	GasUsed          hexutil.Big
-	Timestamp        hexutil.Big
+	Size             types.Big
+	GasLimit         types.Big
+	GasUsed          types.Big
+	Timestamp        types.Big
 	Uncles           []string
 }
 
@@ -56,24 +57,24 @@ type BlockWithTxHash struct {
 
 type Transaction struct {
 	Hash             string
-	Nonce            hexutil.Big
+	Nonce            types.Big
 	BlockHash        string
-	BlockNumber      hexutil.Big
-	TransactionIndex hexutil.Big
+	BlockNumber      types.Big
+	TransactionIndex types.Big
 	From             string
 	To               string
-	Value            hexutil.Big
-	GasPrice         hexutil.Big
-	Gas              hexutil.Big
+	Value            types.Big
+	GasPrice         types.Big
+	Gas              types.Big
 	Input            string
 }
 
 type Log struct {
-	LogIndex         types.HexNumber `json:"logIndex"`
-	BlockNumber      types.HexNumber `json:"blockNumber"`
+	LogIndex         types.Big `json:"logIndex"`
+	BlockNumber      types.Big `json:"blockNumber"`
 	BlockHash        string          `json:"blockHash"`
 	TransactionHash  string          `json:"transactionHash"`
-	TransactionIndex types.HexNumber `json:"transactionIndex"`
+	TransactionIndex types.Big `json:"transactionIndex"`
 	Address          string          `json:"address"`
 	Data             string          `json:"data"`
 	Topics           []string        `json:"topics"`
@@ -82,7 +83,7 @@ type Log struct {
 type FilterQuery struct {
 	FromBlock string           `json:"fromBlock"`
 	ToBlock   string           `json:"toBlock"`
-	Address   []common.Address `json:"addresse"`
+	Address   []common.Address `json:"address"`
 	Topics    [][]common.Hash  `json:"topics"`
 }
 

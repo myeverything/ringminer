@@ -23,12 +23,11 @@ import (
 	types "github.com/Loopring/ringminer/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/common/hexutil"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"math/big"
-	"qiniupkg.com/x/errors.v7"
 	"reflect"
 	"strings"
+	"errors"
 )
 
 type AbiMethod struct {
@@ -55,7 +54,7 @@ func (m *AbiMethod) Call(result interface{}, blockParameter string, args ...inte
 
 //contract transaction
 func (m *AbiMethod) SendTransaction(from string, args ...interface{}) (string, error) {
-	var gas, gasPrice *types.HexNumber
+	var gas, gasPrice *types.Big
 	dataBytes, err := m.Abi.Pack(m.Name, args...)
 
 	if nil != err {
@@ -71,7 +70,7 @@ func (m *AbiMethod) SendTransaction(from string, args ...interface{}) (string, e
 	callArg.From = from
 	callArg.To = m.Address
 	callArg.Data = dataHex
-	callArg.GasPrice = hexutil.Big(*gasPrice)
+	callArg.GasPrice = *gasPrice
 	if err = EthClient.EstimateGas(&gas, callArg); nil != err {
 		return "", err
 	}
@@ -95,7 +94,7 @@ func (m *AbiMethod) SendTransactionWithSpecificGas(from string, gas, gasPrice *b
 		return "", errors.New("gas must be setted.")
 	}
 
-	var nonce types.HexNumber
+	var nonce types.Big
 	if err = EthClient.GetTransactionCount(&nonce, from, "pending"); nil != err {
 		return "", err
 	}
