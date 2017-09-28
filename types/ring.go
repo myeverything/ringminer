@@ -45,30 +45,46 @@ type Ring struct {
 }
 
 
-func (r *Ring) GenerateHash() Hash {
+func (ring *Ring) GenerateHash() Hash {
 	h := &Hash{}
 	//todo:refer to contract
 	hashBytes := crypto.CryptoInstance.GenerateHash(
-		r.Hash.Bytes(),
+		ring.Hash.Bytes(),
 	)
 	h.SetBytes(hashBytes)
 
 	return *h
 }
 
-func (r *Ring) ValidateSignatureValues() bool {
-	return crypto.CryptoInstance.ValidateSignatureValues(byte(r.V), r.R.Bytes(), r.S.Bytes())
+func (ring *Ring) GenerateAndSetSignature(pkBytes []byte) error {
+	//todo:how to check hash is nil,this use big.Int
+	if ring.Hash.Big().Cmp(big.NewInt(0)) == 0 {
+		ring.Hash = ring.GenerateHash()
+	}
+	if sig,err := crypto.CryptoInstance.Sign(ring.Hash, pkBytes);nil != err {
+		return err
+	} else {
+		v,r,s := crypto.CryptoInstance.SigToVRS(sig)
+		ring.V = uint8(v)
+		ring.R = BytesToSign(r)
+		ring.S = BytesToSign(s)
+		return nil
+	}
 }
 
-func (r *Ring) SignerAddress() (Address, error) {
+func (ring *Ring) ValidateSignatureValues() bool {
+	return crypto.CryptoInstance.ValidateSignatureValues(byte(ring.V), ring.R.Bytes(), ring.S.Bytes())
+}
+
+func (ring *Ring) SignerAddress() (Address, error) {
 	address := &Address{}
-	hash := r.Hash
+	hash := ring.Hash
 	//todo:how to check hash is nil,this use big.Int
 	if hash.Big().Cmp(big.NewInt(0)) == 0 {
-		hash = r.GenerateHash()
+		hash = ring.GenerateHash()
 	}
 
-	sig := crypto.CryptoInstance.VRSToSig(r.V, r.R.Bytes(), r.S.Bytes())
+	sig := crypto.CryptoInstance.VRSToSig(ring.V, ring.R.Bytes(), ring.S.Bytes())
 	log.Debugf("orderstate.hash:%s", hash.Hex())
 
 	if addressBytes, err := crypto.CryptoInstance.SigToAddress(hash.Bytes(), sig); nil != err {

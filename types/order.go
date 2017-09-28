@@ -90,22 +90,37 @@ func (o *Order) GenerateHash() Hash {
 	return *h
 }
 
+func (o *Order) GenerateAndSetSignature(pkBytes []byte) error {
+	//todo:how to check hash is nil,this use big.Int
+	if o.Hash.Big().Cmp(big.NewInt(0)) == 0 {
+		o.Hash = o.GenerateHash()
+	}
+	if sig,err := crypto.CryptoInstance.Sign(o.Hash, pkBytes);nil != err {
+		return err
+	} else {
+		v,r,s := crypto.CryptoInstance.SigToVRS(sig)
+		o.V = uint8(v)
+		o.R = BytesToSign(r)
+		o.S = BytesToSign(s)
+		return nil
+	}
+}
+
 func (o *Order) ValidateSignatureValues() bool {
 	return crypto.CryptoInstance.ValidateSignatureValues(byte(o.V), o.R.Bytes(), o.S.Bytes())
 }
 
 func (o *Order) SignerAddress() (Address, error) {
 	address := &Address{}
-	hash := o.Hash
 	//todo:how to check hash is nil,this use big.Int
-	if hash.Big().Cmp(big.NewInt(0)) == 0 {
-		hash = o.GenerateHash()
+	if o.Hash.Big().Cmp(big.NewInt(0)) == 0 {
+		o.Hash = o.GenerateHash()
 	}
 
 	sig := crypto.CryptoInstance.VRSToSig(o.V, o.R.Bytes(), o.S.Bytes())
-	log.Debugf("orderstate.hash:%s", hash.Hex())
+	log.Debugf("orderstate.hash:%s", o.Hash.Hex())
 
-	if addressBytes, err := crypto.CryptoInstance.SigToAddress(hash.Bytes(), sig); nil != err {
+	if addressBytes, err := crypto.CryptoInstance.SigToAddress(o.Hash.Bytes(), sig); nil != err {
 		log.Errorf("error:%s", err.Error())
 		return *address, err
 	} else {
