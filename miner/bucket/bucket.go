@@ -104,7 +104,7 @@ func (b *Bucket) generateRing(order *types.OrderState) {
 			//兑换率是否匹配
 			if miner.PriceValid(ringTmp) {
 				miner.ComputeRing(ringTmp) //计算兑换的费用、折扣率等，便于计算收益，选择最大环
-				log.Debugf("bucket:%s, len:%d, fee:%d, order.idx:%s", b.token.Str(), len(b.orders), ringTmp.LegalFee.RealValue().Int64(), semiRing.orders[0].OrderHash.Str())
+				log.Debugf("bucket:%s, len:%d, fee:%d, order.idx:%s", b.token.Str(), len(b.orders), ringTmp.LegalFee.RealValue().Int64(), semiRing.orders[0].Hash.Str())
 				//选择收益最大的环
 				if ring == nil ||
 					ringTmp.LegalFee.Cmp(ring.LegalFee) > 0 ||
@@ -135,7 +135,7 @@ func (b *Bucket) generateSemiRing(order *types.OrderState) {
 	selfSemiRing.hash = selfSemiRing.hashFunc()
 	pos := &semiRingPos{semiRingKey: selfSemiRing.hash, index: len(selfSemiRing.orders)}
 	orderWithPos.postions = []*semiRingPos{pos}
-	b.orders[orderWithPos.OrderHash] = orderWithPos
+	b.orders[orderWithPos.Hash] = orderWithPos
 	b.semiRings[selfSemiRing.hash] = selfSemiRing
 
 	//新半环列表
@@ -179,7 +179,7 @@ func (b *Bucket) appendToSemiRing(order *types.OrderState) {
 			orderWithPos := &OrderWithPos{}
 			orderWithPos.OrderState = *order
 			orderWithPos.postions = []*semiRingPos{}
-			b.orders[orderWithPos.OrderHash] = orderWithPos
+			b.orders[orderWithPos.Hash] = orderWithPos
 
 			semiRingNew := &SemiRing{}
 			semiRingNew.orders = append(semiRing.orders, orderWithPos)
@@ -208,11 +208,11 @@ func (b *Bucket) DeleteOrder(ord types.OrderState) {
 	b.mtx.RLock()
 	defer b.mtx.RUnlock()
 
-	if o, ok := b.orders[ord.OrderHash]; ok {
+	if o, ok := b.orders[ord.Hash]; ok {
 		for _, pos := range o.postions {
 			delete(b.semiRings, pos.semiRingKey)
 		}
-		delete(b.orders, ord.OrderHash)
+		delete(b.orders, ord.Hash)
 	}
 
 }
@@ -228,10 +228,10 @@ func (b *Bucket) Stop() {
 //this fun should not be called without mtx.lock()
 func (b *Bucket) newOrderWithoutLock(ord types.OrderState) {
 	//if orders contains this order, there are nothing to do
-	if _, ok := b.orders[ord.OrderHash]; !ok {
+	if _, ok := b.orders[ord.Hash]; !ok {
 		//最后一个token为当前token，则可以组成环，匹配出最大环，并发送到proxy
 		if ord.RawOrder.TokenB == b.token {
-			log.Debugf("bucket receive order:%s", ord.OrderHash.Hex())
+			log.Debugf("bucket receive order:%s", ord.Hash.Hex())
 
 			b.generateRing(&ord)
 		} else if ord.RawOrder.TokenS == b.token {

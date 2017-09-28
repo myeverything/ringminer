@@ -42,8 +42,8 @@ func (c *EthCrypto) GenerateAccount(result interface{}) {
 }
 
 //签名验证
-func (c *EthCrypto) ValidateSignatureValues(v byte, r, s *big.Int) bool {
-	return crypto.ValidateSignatureValues(v, r, s, c.Homestead)
+func (c *EthCrypto) ValidateSignatureValues(v byte, r, s []byte) bool {
+	return crypto.ValidateSignatureValues(v, new(big.Int).SetBytes(r), new(big.Int).SetBytes(s), c.Homestead)
 }
 
 //生成hash
@@ -61,10 +61,10 @@ func (c *EthCrypto) SigToAddress(hash, sig []byte) ([]byte, error) {
 	}
 }
 
-func (c *EthCrypto) VRSToSig(v byte, r, s *big.Int) []byte {
+func (c *EthCrypto) VRSToSig(v byte, r, s []byte) []byte {
 	sig := make([]byte, 65)
-	copy(sig[32-len(r.Bytes()):32], r.Bytes())
-	copy(sig[64-len(s.Bytes()):64], s.Bytes())
+	copy(sig[32-len(r):32], r)
+	copy(sig[64-len(s):64], s)
 	sig[64] = v
 	return sig
 }
@@ -78,11 +78,11 @@ func (c *EthCrypto) Sign(hash, pkBytes []byte) ([]byte, error) {
 	}
 }
 
-func (c *EthCrypto) SigToVRS(sig []byte) (v byte, r *big.Int, s *big.Int) {
-	r = big.NewInt(0)
-	s = big.NewInt(0)
+func (c *EthCrypto) SigToVRS(sig []byte) (v byte, r []byte, s []byte) {
+	r = []byte{}
+	s = []byte{}
 	v = sig[64]
-	r.SetBytes(sig[0:32])
-	s.SetBytes(sig[32:64])
+	copy(r, sig[0:32])
+	copy(s, sig[32:64])
 	return v, r, s
 }

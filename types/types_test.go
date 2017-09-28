@@ -23,6 +23,7 @@ import (
 	"testing"
 	"math/big"
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	"encoding/json"
 )
 
 func TestStringToAddress(t *testing.T) {
@@ -35,7 +36,6 @@ func TestStringToAddress(t *testing.T) {
 
 type Hash []byte
 
-// Get the string representation of the underlying hash
 func (h Hash) Str() string   { return string(h[:]) }
 func (h Hash) Bytes() []byte { return h[:] }
 func (h Hash) Big() *big.Int { return new(big.Int).SetBytes(h[:]) }
@@ -48,6 +48,7 @@ func BytesToHash(b []byte) Hash {
 	h.SetBytes(b)
 	return h
 }
+
 func (h *Hash) SetBytes(b []byte) {
 	//if len(b) > len(*h) {
 	//	b = b[len(b)-32:]
@@ -58,11 +59,29 @@ func (h *Hash) SetBytes(b []byte) {
 	//copy((*h)[32-len(b):], b)
 	println(len(*h))
 }
+
 func TestHash(t *testing.T) {
-	s := "0x093e56de3901764da17fef7e89f016cfdd1a88b98b1f8e3d2ebda4aff2343380"
-	h := types.HexToHash(s)
-	t.Log(h.Hex())
+	//s := "0x093e56de3901764da17fef7e89f016cfdd1a88b98b1f8e3d2ebda4aff2343380"
+	//h := types.HexToHash(s)
+	//t.Log(h.Hex())
 	//println(fmt.Sprintf(`Header(%x)`, h.Bytes()))
+	a := &A{}
+	i := &types.EnlargedInt{}
+	i.Decimals = big.NewInt(1000)
+	i.Value = big.NewInt(10000)
+	a.I = i
+	a.Name = "dd"
+
+	dataBytes,_ := json.Marshal(a)
+	println(string(dataBytes))
+
+	s := `{"I":"0x0a","Name":"l"}`
+
+	a1 := &A{}
+	json.Unmarshal([]byte(s), a1)
+	println(a1.I.Decimals.String())
+	println(a1.I.Value.String())
+	println(a1.Name)
 }
 
 func TestAddress(t *testing.T) {
@@ -71,4 +90,9 @@ func TestAddress(t *testing.T) {
 	//addr := &types.Address{}
 	//addr.SetBytes(types.Hex2Bytes(s))
 	t.Log(addr.Hex())
+}
+
+type A struct {
+	I *types.EnlargedInt
+	Name string `json:"-"`
 }

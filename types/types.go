@@ -45,7 +45,6 @@ func (a *Sign) UnmarshalText(input []byte) error {
 	return nil
 }
 
-// Get the string representation of the underlying sign
 func (s Sign) Str() string   { return string(s[:]) }
 func (s Sign) Bytes() []byte { return s[:] }
 func (s Sign) Big() *big.Int { return new(big.Int).SetBytes(s[:]) }
@@ -57,7 +56,6 @@ func BytesToSign(b []byte) Sign {
 	return s
 }
 
-// Sets the sign to the value of b. If b is larger than len(h) it will panic
 func (s *Sign) SetBytes(b []byte) {
 	if len(b) > len(s) {
 		b = b[len(b)-SignLength:]
@@ -67,7 +65,6 @@ func (s *Sign) SetBytes(b []byte) {
 
 type Hash [HashLength]byte
 
-// Get the string representation of the underlying hash
 func (h Hash) Str() string   { return string(h[:]) }
 func (h Hash) Bytes() []byte { return h[:] }
 func (h Hash) Big() *big.Int { return new(big.Int).SetBytes(h[:]) }
@@ -93,7 +90,6 @@ func BytesToHash(b []byte) Hash {
 	return h
 }
 
-// Sets the hash to the value of b. If b is larger than len(h) it will panic
 func (h *Hash) SetBytes(b []byte) {
 	if len(b) > len(h) {
 		b = b[len(b)-HashLength:]
@@ -103,7 +99,6 @@ func (h *Hash) SetBytes(b []byte) {
 
 type Address [AddressLength]byte
 
-// Get the string representation of the underlying address
 func (a Address) Str() string   { return string(a[:]) }
 func (a Address) Bytes() []byte { return a[:] }
 func (a Address) Big() *big.Int { return new(big.Int).SetBytes(a[:]) }

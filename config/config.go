@@ -123,7 +123,7 @@ func Validator(cv reflect.Value) (bool, error) {
 func isNil(v reflect.Value) bool {
 	switch v.Type().Kind() {
 	case reflect.Invalid:
-		return false
+		return true
 	case reflect.String:
 		return v.String() == ""
 	case reflect.Uint,reflect.Uint8,reflect.Uint16,reflect.Uint32,reflect.Uint64:

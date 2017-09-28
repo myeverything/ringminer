@@ -23,8 +23,9 @@ func (o Order) MarshalJSON() ([]byte, error) {
 		BuyNoMoreThanAmountB  bool    `json:"buyNoMoreThanAmountB" gencodec:"required"`
 		SavingSharePercentage int     `json:"savingSharePercentage" gencodec:"required"`
 		V                     uint8   `json:"v" gencodec:"required"`
-		R                     *Big    `json:"r" gencodec:"required"`
-		S                     *Big    `json:"s" gencodec:"required"`
+		R                     Sign    `json:"r" gencodec:"required"`
+		S                     Sign    `json:"s" gencodec:"required"`
+		Hash                  Hash    `json:"-"`
 	}
 	var enc Order
 	enc.Protocol = o.Protocol
@@ -38,8 +39,9 @@ func (o Order) MarshalJSON() ([]byte, error) {
 	enc.BuyNoMoreThanAmountB = o.BuyNoMoreThanAmountB
 	enc.SavingSharePercentage = o.SavingSharePercentage
 	enc.V = o.V
-	enc.R = (*Big)(o.R)
-	enc.S = (*Big)(o.S)
+	enc.R = o.R
+	enc.S = o.S
+	enc.Hash = o.Hash
 	return json.Marshal(&enc)
 }
 
@@ -56,8 +58,9 @@ func (o *Order) UnmarshalJSON(input []byte) error {
 		BuyNoMoreThanAmountB  *bool    `json:"buyNoMoreThanAmountB" gencodec:"required"`
 		SavingSharePercentage *int     `json:"savingSharePercentage" gencodec:"required"`
 		V                     *uint8   `json:"v" gencodec:"required"`
-		R                     *Big     `json:"r" gencodec:"required"`
-		S                     *Big     `json:"s" gencodec:"required"`
+		R                     *Sign    `json:"r" gencodec:"required"`
+		S                     *Sign    `json:"s" gencodec:"required"`
+		Hash                  *Hash    `json:"-"`
 	}
 	var dec Order
 	if err := json.Unmarshal(input, &dec); err != nil {
@@ -109,10 +112,13 @@ func (o *Order) UnmarshalJSON(input []byte) error {
 	if dec.R == nil {
 		return errors.New("missing required field 'r' for Order")
 	}
-	o.R = (*big.Int)(dec.R)
+	o.R = *dec.R
 	if dec.S == nil {
 		return errors.New("missing required field 's' for Order")
 	}
-	o.S = (*big.Int)(dec.S)
+	o.S = *dec.S
+	if dec.Hash != nil {
+		o.Hash = *dec.Hash
+	}
 	return nil
 }

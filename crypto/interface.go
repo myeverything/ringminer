@@ -18,17 +18,13 @@
 
 package crypto
 
-import (
-	"math/big"
-)
-
 var CryptoInstance Crypto
 
 type Crypto interface {
 	//生成账号
 	GenerateAccount(result interface{})
 	//签名验证
-	ValidateSignatureValues(v byte, r, s *big.Int) bool
+	ValidateSignatureValues(v byte, r, s []byte) bool
 	//生成hash
 	GenerateHash(data ...[]byte) []byte
 	//签名
@@ -36,6 +32,6 @@ type Crypto interface {
 	//签名恢复到地址
 	SigToAddress(hash, sig []byte) ([]byte, error)
 	//生成sig
-	VRSToSig(v byte, r, s *big.Int) []byte
-	SigToVRS([]byte) (v byte, r *big.Int, s *big.Int)
+	VRSToSig(v byte, r, s []byte) []byte
+	SigToVRS([]byte) (v byte, r []byte, s []byte)
 }

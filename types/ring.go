@@ -18,6 +18,12 @@
 
 package types
 
+import (
+	"math/big"
+	"github.com/Loopring/ringminer/crypto"
+	"github.com/Loopring/ringminer/log"
+)
+
 // 旷工在成本节约和fee上二选一，撮合者计算出:
 // 1.fee(lrc)的市场价(法币交易价格)
 // 2.成本节约(savingShare)的市场价(法币交易价格)
@@ -35,6 +41,43 @@ type Ring struct {
 	V                                           uint8 `json:"v"`
 	R                                           Sign  `json:"r"`
 	S                                           Sign  `json:"s"`
+	Hash Hash `json:"-"`
+}
+
+
+func (r *Ring) GenerateHash() Hash {
+	h := &Hash{}
+	//todo:refer to contract
+	hashBytes := crypto.CryptoInstance.GenerateHash(
+		r.Hash.Bytes(),
+	)
+	h.SetBytes(hashBytes)
+
+	return *h
+}
+
+func (r *Ring) ValidateSignatureValues() bool {
+	return crypto.CryptoInstance.ValidateSignatureValues(byte(r.V), r.R.Bytes(), r.S.Bytes())
+}
+
+func (r *Ring) SignerAddress() (Address, error) {
+	address := &Address{}
+	hash := r.Hash
+	//todo:how to check hash is nil,this use big.Int
+	if hash.Big().Cmp(big.NewInt(0)) == 0 {
+		hash = r.GenerateHash()
+	}
+
+	sig := crypto.CryptoInstance.VRSToSig(r.V, r.R.Bytes(), r.S.Bytes())
+	log.Debugf("orderstate.hash:%s", hash.Hex())
+
+	if addressBytes, err := crypto.CryptoInstance.SigToAddress(hash.Bytes(), sig); nil != err {
+		log.Errorf("error:%s", err.Error())
+		return *address, err
+	} else {
+		address.SetBytes(addressBytes)
+		return *address, nil
+	}
 }
 
 type RingState struct {
@@ -44,3 +87,5 @@ type RingState struct {
 	LegalFee    *EnlargedInt `json:"legalFee"`    //法币计算的fee
 	FeeMode     int          `json:"feeMode"`     //收费方式，0 lrc 1 share
 }
+
+

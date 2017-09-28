@@ -151,20 +151,16 @@ func (ei *EnlargedInt) CmpBigInt(x *big.Int) int {
 	return ei.RealValue().Cmp(x)
 }
 
-func (ei *EnlargedInt) UnmarshalJSON(input []byte) error {
-	length := len(input)
-	if length >= 2 && input[0] == '"' && input[length-1] == '"' {
-		input = input[1 : length-1]
-	}
+func (ei *EnlargedInt) UnmarshalText(input []byte) error {
 	bn := HexToBigint(string(input))
 	ei.Value = bn
 	ei.Decimals = big.NewInt(1)
 	return nil
 }
 
-func (ei *EnlargedInt) MarshalJSON() ([]byte, error) {
+func (ei *EnlargedInt) MarshalText() ([]byte, error) {
 	bn := ei.RealValue()
-	bytes := []byte("\"" + BigintToHex(bn)  + "\"")
+	bytes := []byte(BigintToHex(bn))
 	return bytes, nil
 }
 

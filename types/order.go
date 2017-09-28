@@ -57,8 +57,10 @@ type Order struct {
 	BuyNoMoreThanAmountB  bool `json:"buyNoMoreThanAmountB" gencodec:"required"`
 	SavingSharePercentage int `json:"savingSharePercentage" gencodec:"required"`// 不为0时支付给交易所的分润比例，否则视为100%
 	V                     uint8 `json:"v" gencodec:"required"`
-	R                     *big.Int `json:"r" gencodec:"required"`
-	S                     *big.Int `json:"s" gencodec:"required"`
+	R                     Sign `json:"r" gencodec:"required"`
+	S                     Sign `json:"s" gencodec:"required"`
+
+	Hash                  Hash `json:"-"`
 }
 
 type orderMarshaling struct {
@@ -67,11 +69,9 @@ type orderMarshaling struct {
 	Expiration *Big
 	Rand *Big
 	LrcFee *Big
-	R *Big
-	S *Big
 }
 
-func (o *Order) Hash() Hash {
+func (o *Order) GenerateHash() Hash {
 	h := &Hash{}
 	hashBytes := crypto.CryptoInstance.GenerateHash(
 		o.Protocol.Bytes(),
@@ -91,17 +91,18 @@ func (o *Order) Hash() Hash {
 }
 
 func (o *Order) ValidateSignatureValues() bool {
-	return crypto.CryptoInstance.ValidateSignatureValues(byte(o.V), o.R, o.S)
+	return crypto.CryptoInstance.ValidateSignatureValues(byte(o.V), o.R.Bytes(), o.S.Bytes())
 }
 
-func (o *Order) SignerAddress(hash Hash) (Address, error) {
+func (o *Order) SignerAddress() (Address, error) {
 	address := &Address{}
-	//todo:check hash is nil
-	if hash.Big().Cmp(big.NewInt(0)) <= 0 {
-		hash = o.Hash()
+	hash := o.Hash
+	//todo:how to check hash is nil,this use big.Int
+	if hash.Big().Cmp(big.NewInt(0)) == 0 {
+		hash = o.GenerateHash()
 	}
 
-	sig := crypto.CryptoInstance.VRSToSig(o.V, o.R, o.S)
+	sig := crypto.CryptoInstance.VRSToSig(o.V, o.R.Bytes(), o.S.Bytes())
 	log.Debugf("orderstate.hash:%s", hash.Hex())
 
 	if addressBytes, err := crypto.CryptoInstance.SigToAddress(hash.Bytes(), sig); nil != err {
@@ -146,7 +147,7 @@ type filledOrderMarshaling struct {
 type OrderState struct {
 	RawOrder        Order `json:"rawOrder"`
 	Owner           Address	`json:"owner" `
-	OrderHash       Hash `json:"orderHash"`
+	Hash            Hash `json:"hash"`
 	RemainedAmountS *big.Int `json:"remainedAmountS"`
 	RemainedAmountB *big.Int `json:"remainedAmountB"`
 	Status          OrderStatus `json:"status"`
