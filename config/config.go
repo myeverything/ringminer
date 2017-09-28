@@ -93,6 +93,23 @@ type MinerOptions struct {
 	LoopringFingerprints []ContractOpts `required:"true"`
 	RingMaxLength        int
 }
+type OrderBookOptions struct {
+	Filters struct {
+		BaseFilter struct {
+			MinLrcFee int
+		}
+		TokenSFilter struct {
+			Allow  []string
+			Denied []string
+		}
+		TokenBFilter struct {
+			Allow  []string
+			Denied []string
+		}
+	}
+
+	OrderMinAmounts map[string]int64 //最小的订单金额，低于该数，则终止匹配订单，每个token的值不同
+}
 
 type ContractOpts struct {
 	Abi     string `required:"true"`

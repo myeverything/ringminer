@@ -20,10 +20,12 @@ package orderbook
 
 import (
 	"encoding/json"
+	"errors"
 	"github.com/Loopring/ringminer/config"
 	"github.com/Loopring/ringminer/db"
 	"github.com/Loopring/ringminer/log"
 	"github.com/Loopring/ringminer/types"
+	"math/big"
 	"sync"
 )
 
@@ -47,22 +49,35 @@ type Whisper struct {
 }
 
 type OrderBook struct {
-	toml         config.DbOptions
+	options      config.OrderBookOptions
+	filters      []Filter
 	db           db.Database
 	finishTable  db.Database
 	partialTable db.Database
 	whisper      *Whisper
 	lock         sync.RWMutex
+
+	minAmount *big.Int
 }
 
-func NewOrderBook(database db.Database, whisper *Whisper) *OrderBook {
-	s := &OrderBook{}
+func NewOrderBook(database db.Database, whisper *Whisper, options config.OrderBookOptions) *OrderBook {
+	ob := &OrderBook{}
 
-	s.finishTable = db.NewTable(database, FINISH_TABLE_NAME)
-	s.partialTable = db.NewTable(database, PARTIAL_TABLE_NAME)
-	s.whisper = whisper
+	ob.finishTable = db.NewTable(database, FINISH_TABLE_NAME)
+	ob.partialTable = db.NewTable(database, PARTIAL_TABLE_NAME)
+	ob.whisper = whisper
 
-	return s
+	//todo:filters init
+	filters := []Filter{}
+	baseFilter := &BaseFilter{MinLrcFee: options.Filters.BaseFilter.MinLrcFee}
+	filters = append(filters, baseFilter)
+	tokenSFilter := &TokenSFilter{}
+	tokenBFilter := &TokenBFilter{}
+
+	filters = append(filters, tokenSFilter)
+	filters = append(filters, tokenBFilter)
+
+	return ob
 }
 
 func (ob *OrderBook) recoverOrder() error {
@@ -79,6 +94,18 @@ func (ob *OrderBook) recoverOrder() error {
 	return nil
 }
 
+func (ob *OrderBook) filter(o *types.Order) (bool, error) {
+	valid := true
+	var err error
+	for _, filter := range ob.filters {
+		valid, err = filter.filter(o)
+		if !valid {
+			return valid, err
+		}
+	}
+	return valid, nil
+}
+
 // Start start orderbook as a service
 func (ob *OrderBook) Start() {
 	ob.recoverOrder()
@@ -88,8 +115,12 @@ func (ob *OrderBook) Start() {
 			select {
 			case ord := <-ob.whisper.PeerOrderChan:
 				log.Debugf("accept data from peer:%s", ord.Protocol.Hex())
-				if err := ob.peerOrderHook(ord); nil != err {
-					log.Errorf("err:", err.Error())
+				if valid, err := ob.filter(ord); valid {
+					if err := ob.peerOrderHook(ord); nil != err {
+						log.Errorf("err:", err.Error())
+					}
+				} else {
+					log.Errorf("receive order but valid failed:%s", err.Error())
 				}
 			case ord := <-ob.whisper.ChainOrderChan:
 				ob.chainOrderHook(ord)
