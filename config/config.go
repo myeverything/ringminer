@@ -56,6 +56,7 @@ type GlobalConfig struct {
 	Ipfs        IpfsOptions
 	ChainClient ChainClientOptions
 	Miner       MinerOptions
+	ObOptions       OrderBookOptions
 	LogOptions  zap.Config
 }
 
@@ -96,7 +97,7 @@ type MinerOptions struct {
 type OrderBookOptions struct {
 	Filters struct {
 		BaseFilter struct {
-			MinLrcFee int
+			MinLrcFee int64
 		}
 		TokenSFilter struct {
 			Allow  []string
@@ -108,7 +109,7 @@ type OrderBookOptions struct {
 		}
 	}
 
-	OrderMinAmounts map[string]int64 //最小的订单金额，低于该数，则终止匹配订单，每个token的值不同
+	OrderMinAmounts map[string]string //最小的订单金额，低于该数，则终止匹配订单，每个token的值不同
 }
 
 type ContractOpts struct {

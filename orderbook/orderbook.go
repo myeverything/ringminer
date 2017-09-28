@@ -20,7 +20,6 @@ package orderbook
 
 import (
 	"encoding/json"
-	"errors"
 	"github.com/Loopring/ringminer/config"
 	"github.com/Loopring/ringminer/db"
 	"github.com/Loopring/ringminer/log"
@@ -60,7 +59,7 @@ type OrderBook struct {
 	minAmount *big.Int
 }
 
-func NewOrderBook(database db.Database, whisper *Whisper, options config.OrderBookOptions) *OrderBook {
+func NewOrderBook(options config.OrderBookOptions, database db.Database, whisper *Whisper) *OrderBook {
 	ob := &OrderBook{}
 
 	ob.finishTable = db.NewTable(database, FINISH_TABLE_NAME)
@@ -69,7 +68,7 @@ func NewOrderBook(database db.Database, whisper *Whisper, options config.OrderBo
 
 	//todo:filters init
 	filters := []Filter{}
-	baseFilter := &BaseFilter{MinLrcFee: options.Filters.BaseFilter.MinLrcFee}
+	baseFilter := &BaseFilter{MinLrcFee: big.NewInt(options.Filters.BaseFilter.MinLrcFee)}
 	filters = append(filters, baseFilter)
 	tokenSFilter := &TokenSFilter{}
 	tokenBFilter := &TokenBFilter{}
