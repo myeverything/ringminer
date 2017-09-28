@@ -35,4 +35,3 @@ type Crypto interface {
 	VRSToSig(v byte, r, s []byte) []byte
 	SigToVRS([]byte) (v byte, r []byte, s []byte)
 }
-

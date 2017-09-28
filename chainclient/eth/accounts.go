@@ -20,8 +20,8 @@ package eth
 
 import (
 	"crypto/ecdsa"
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/Loopring/ringminer/crypto"
+	"github.com/ethereum/go-ethereum/common"
 	ethCrypto "github.com/ethereum/go-ethereum/crypto"
 )
 
@@ -31,30 +31,28 @@ var Accounts map[string]*Account
 var passphrase []byte //as aes key
 
 type Account struct {
-	PrivKey *ecdsa.PrivateKey
-	PubKey  *ecdsa.PublicKey
-	Address common.Address
+	PrivKey          *ecdsa.PrivateKey
+	PubKey           *ecdsa.PublicKey
+	Address          common.Address
 	EncryptedPrivKey []byte
 }
 
-func (account *Account) Encrypted(passphrase []byte) ([]byte,error) {
-	encrypted,err := crypto.AesEncrypted(passphrase, account.PrivKey.D.Bytes())
+func (account *Account) Encrypted(passphrase []byte) ([]byte, error) {
+	encrypted, err := crypto.AesEncrypted(passphrase, account.PrivKey.D.Bytes())
 	if nil != err {
-		return nil,err
+		return nil, err
 	}
 	account.EncryptedPrivKey = encrypted
-	return encrypted,nil
+	return encrypted, nil
 }
 
-func (account *Account) Decrypted(passphrase []byte) ([]byte,error) {
-	decrypted,err := crypto.AesDecrypted(account.EncryptedPrivKey, passphrase)
+func (account *Account) Decrypted(passphrase []byte) ([]byte, error) {
+	decrypted, err := crypto.AesDecrypted(account.EncryptedPrivKey, passphrase)
 	if nil != err {
-		return nil,err
+		return nil, err
 	}
-	account.PrivKey,err = ethCrypto.ToECDSA(decrypted)
+	account.PrivKey, err = ethCrypto.ToECDSA(decrypted)
 	account.PubKey = &account.PrivKey.PublicKey
 	account.Address = ethCrypto.PubkeyToAddress(*account.PubKey)
-	return decrypted,nil
+	return decrypted, nil
 }
-
-

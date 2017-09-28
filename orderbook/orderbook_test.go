@@ -36,6 +36,7 @@ func file() string {
 	proj := "github.com/Loopring/ringminer"
 	return gopath + sep() + "src" + sep() + proj + sep() + dbname
 }
+
 //
 //func getOrderWrap() *types.OrderWrap {
 //	var (

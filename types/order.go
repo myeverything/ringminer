@@ -46,29 +46,29 @@ const (
 
 //go:generate gencodec -type Order -field-override orderMarshaling -out gen_order_json.go
 type Order struct {
-	Protocol              Address  `json:"protocol" gencodec:"required"`// 智能合约地址
-	TokenS                Address  `json:"tokenS" gencodec:"required"`// 卖出erc20代币智能合约地址
-	TokenB                Address  `json:"tokenB" gencodec:"required"`// 买入erc20代币智能合约地址
-	AmountS               *big.Int `json:"amountS" gencodec:"required"`// 卖出erc20代币数量上限
-	AmountB               *big.Int `json:"amountB" gencodec:"required"`// 买入erc20代币数量上限
-	Expiration            *big.Int `json:"expiration" gencodec:"required"`// 订单过期时间
+	Protocol              Address  `json:"protocol" gencodec:"required"`   // 智能合约地址
+	TokenS                Address  `json:"tokenS" gencodec:"required"`     // 卖出erc20代币智能合约地址
+	TokenB                Address  `json:"tokenB" gencodec:"required"`     // 买入erc20代币智能合约地址
+	AmountS               *big.Int `json:"amountS" gencodec:"required"`    // 卖出erc20代币数量上限
+	AmountB               *big.Int `json:"amountB" gencodec:"required"`    // 买入erc20代币数量上限
+	Expiration            *big.Int `json:"expiration" gencodec:"required"` // 订单过期时间
 	Rand                  *big.Int `json:"rand" gencodec:"required"`
-	LrcFee                *big.Int `json:"lrcFee" `// 交易总费用,部分成交的费用按该次撮合实际卖出代币额与比例计算
-	BuyNoMoreThanAmountB  bool `json:"buyNoMoreThanAmountB" gencodec:"required"`
-	SavingSharePercentage int `json:"savingSharePercentage" gencodec:"required"`// 不为0时支付给交易所的分润比例，否则视为100%
-	V                     uint8 `json:"v" gencodec:"required"`
-	R                     Sign `json:"r" gencodec:"required"`
-	S                     Sign `json:"s" gencodec:"required"`
+	LrcFee                *big.Int `json:"lrcFee" ` // 交易总费用,部分成交的费用按该次撮合实际卖出代币额与比例计算
+	BuyNoMoreThanAmountB  bool     `json:"buyNoMoreThanAmountB" gencodec:"required"`
+	SavingSharePercentage int      `json:"savingSharePercentage" gencodec:"required"` // 不为0时支付给交易所的分润比例，否则视为100%
+	V                     uint8    `json:"v" gencodec:"required"`
+	R                     Sign     `json:"r" gencodec:"required"`
+	S                     Sign     `json:"s" gencodec:"required"`
 
-	Hash                  Hash `json:"-"`
+	Hash Hash `json:"-"`
 }
 
 type orderMarshaling struct {
-	AmountS *Big
-	AmountB *Big
+	AmountS    *Big
+	AmountB    *Big
 	Expiration *Big
-	Rand *Big
-	LrcFee *Big
+	Rand       *Big
+	LrcFee     *Big
 }
 
 func (o *Order) GenerateHash() Hash {
@@ -95,10 +95,10 @@ func (o *Order) GenerateAndSetSignature(pkBytes []byte) error {
 	if o.Hash.Big().Cmp(big.NewInt(0)) == 0 {
 		o.Hash = o.GenerateHash()
 	}
-	if sig,err := crypto.CryptoInstance.Sign(o.Hash.Bytes(), pkBytes);nil != err {
+	if sig, err := crypto.CryptoInstance.Sign(o.Hash.Bytes(), pkBytes); nil != err {
 		return err
 	} else {
-		v,r,s := crypto.CryptoInstance.SigToVRS(sig)
+		v, r, s := crypto.CryptoInstance.SigToVRS(sig)
 		o.V = uint8(v)
 		o.R = BytesToSign(r)
 		o.S = BytesToSign(s)
@@ -134,17 +134,17 @@ func (o *Order) SignerAddress() (Address, error) {
 
 type FilledOrder struct {
 	OrderState       OrderState `json:"orderState" gencodec:"required"`
-	FeeSelection     int      `json:"feeSelection"`//0 -> lrc
-	RateAmountS      *big.Int `json:"rateAmountS"`//提交需要
-	AvailableAmountS *big.Int `json:"availableAmountS"`//需要，也是用于计算fee
+	FeeSelection     int        `json:"feeSelection"`     //0 -> lrc
+	RateAmountS      *big.Int   `json:"rateAmountS"`      //提交需要
+	AvailableAmountS *big.Int   `json:"availableAmountS"` //需要，也是用于计算fee
 	//AvailableAmountB *big.Int	//需要，也是用于计算fee
 	FillAmountS *EnlargedInt `json:"fillAmountS"`
-	FillAmountB *EnlargedInt `json:"fillAmountB"`//计算需要
+	FillAmountB *EnlargedInt `json:"fillAmountB"` //计算需要
 	LrcReward   *EnlargedInt `json:"lrcReward"`
 	LrcFee      *EnlargedInt `json:"lrcFee"`
 	FeeS        *EnlargedInt `json:"feeS"`
 	//FeeB             *EnlargedInt
-	LegalFee *EnlargedInt `json:"legalFee"`//法币计算的fee
+	LegalFee *EnlargedInt `json:"legalFee"` //法币计算的fee
 
 	EnlargedSPrice *EnlargedInt `json:"enlargedSPrice"`
 	EnlargedBPrice *EnlargedInt `json:"enlargedBPrice"`
@@ -153,18 +153,17 @@ type FilledOrder struct {
 }
 
 type filledOrderMarshaling struct {
-	RateAmountS *Big
+	RateAmountS      *Big
 	AvailableAmountS *Big
 }
 
-
 //go:generate gencodec -type OrderState -field-override orderStateMarshaling -out gen_orderstate_json.go
 type OrderState struct {
-	RawOrder        Order `json:"rawOrder"`
-	Owner           Address	`json:"owner" `
-	Hash            Hash `json:"hash"`
-	RemainedAmountS *big.Int `json:"remainedAmountS"`
-	RemainedAmountB *big.Int `json:"remainedAmountB"`
+	RawOrder        Order       `json:"rawOrder"`
+	Owner           Address     `json:"owner" `
+	Hash            Hash        `json:"hash"`
+	RemainedAmountS *big.Int    `json:"remainedAmountS"`
+	RemainedAmountB *big.Int    `json:"remainedAmountB"`
 	Status          OrderStatus `json:"status"`
 }
 
@@ -173,7 +172,5 @@ type orderStateMarshaling struct {
 	RemainedAmountB *Big
 }
 
-
 type OrderMined struct {
-
 }

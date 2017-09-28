@@ -19,11 +19,11 @@
 package types_test
 
 import (
-	"github.com/Loopring/ringminer/types"
-	"testing"
-	"math/big"
-	"github.com/ethereum/go-ethereum/common/hexutil"
 	"encoding/json"
+	"github.com/Loopring/ringminer/types"
+	"github.com/ethereum/go-ethereum/common/hexutil"
+	"math/big"
+	"testing"
 )
 
 func TestStringToAddress(t *testing.T) {
@@ -41,7 +41,7 @@ func (h Hash) Bytes() []byte { return h[:] }
 func (h Hash) Big() *big.Int { return new(big.Int).SetBytes(h[:]) }
 func (h Hash) Hex() string   { return hexutil.Encode(h[:]) }
 
-func HexToHash(s string) Hash    { return BytesToHash(types.FromHex(s)) }
+func HexToHash(s string) Hash { return BytesToHash(types.FromHex(s)) }
 
 func BytesToHash(b []byte) Hash {
 	var h Hash
@@ -72,7 +72,7 @@ func TestHash(t *testing.T) {
 	a.I = i
 	a.Name = "dd"
 
-	dataBytes,_ := json.Marshal(a)
+	dataBytes, _ := json.Marshal(a)
 	println(string(dataBytes))
 
 	s := `{"I":"0x0a","Name":"l"}`
@@ -93,6 +93,6 @@ func TestAddress(t *testing.T) {
 }
 
 type A struct {
-	I *types.EnlargedInt
+	I    *types.EnlargedInt
 	Name string `json:"-"`
 }

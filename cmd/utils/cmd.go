@@ -60,21 +60,21 @@ func chainclientCommands() cli.Command {
 //todo:imp it
 func accountCommands() cli.Command {
 	c := cli.Command{
-		Name: "account",
-		Usage:"account",
-		Category:"account Commands",
-		Subcommands:[]cli.Command {
+		Name:     "account",
+		Usage:    "account",
+		Category: "account Commands",
+		Subcommands: []cli.Command{
 			cli.Command{
-				Name: "generate",
+				Name:  "generate",
 				Usage: "generate a new account",
-				Flags:[]cli.Flag{
+				Flags: []cli.Flag{
 					cli.StringFlag{
-						Name:"display",
-						Usage:"display the privatekey",
+						Name:  "display",
+						Usage: "display the privatekey",
 					},
 					cli.StringFlag{
-						Name:"pass",
-						Usage:"passphrase for encrypted the private",
+						Name:  "pass",
+						Usage: "passphrase for encrypted the private",
 					},
 				},
 			},

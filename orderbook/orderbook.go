@@ -19,12 +19,12 @@
 package orderbook
 
 import (
+	"encoding/json"
 	"github.com/Loopring/ringminer/config"
 	"github.com/Loopring/ringminer/db"
 	"github.com/Loopring/ringminer/log"
 	"github.com/Loopring/ringminer/types"
 	"sync"
-	"encoding/json"
 )
 
 /**
@@ -33,7 +33,7 @@ todo:
 2. chain event
 3. 事件执行到第几个块等信息数据
 4. 订单完成的标志，以及需要发送到miner
- */
+*/
 
 const (
 	FINISH_TABLE_NAME  = "finished"
@@ -70,7 +70,7 @@ func (ob *OrderBook) recoverOrder() error {
 	for iterator.Next() {
 		dataBytes := iterator.Value()
 		state := &types.OrderState{}
-		if err := json.Unmarshal(dataBytes, state);nil != err {
+		if err := json.Unmarshal(dataBytes, state); nil != err {
 			log.Errorf("err:%s", err.Error())
 		} else {
 			ob.whisper.EngineOrderChan <- state
@@ -122,7 +122,7 @@ func (ob *OrderBook) peerOrderHook(ord *types.Order) error {
 	if input, err := ob.partialTable.Get(state.Hash.Bytes()); err != nil {
 		panic(err)
 	} else if len(input) == 0 {
-		if inpupt1,err1 := ob.finishTable.Get(state.Hash.Bytes());nil != err1 {
+		if inpupt1, err1 := ob.finishTable.Get(state.Hash.Bytes()); nil != err1 {
 			panic(err1)
 		} else if len(inpupt1) == 0 {
 			state.Status = types.ORDER_NEW
@@ -147,7 +147,7 @@ func (ob *OrderBook) peerOrderHook(ord *types.Order) error {
 		log.Debugf("state hash:%s", state.Hash.Hex())
 
 		//save to db
-		dataBytes,err := json.Marshal(state)
+		dataBytes, err := json.Marshal(state)
 		if err != nil {
 			return err
 		}

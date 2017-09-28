@@ -19,12 +19,12 @@
 package ipfs
 
 import (
+	"encoding/json"
 	"github.com/Loopring/ringminer/config"
 	"github.com/Loopring/ringminer/log"
 	"github.com/Loopring/ringminer/types"
 	"github.com/ipfs/go-ipfs-api"
 	"sync"
-	"encoding/json"
 )
 
 type Whisper struct {

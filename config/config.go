@@ -19,11 +19,11 @@
 package config
 
 import (
+	"errors"
 	"github.com/naoina/toml"
 	"go.uber.org/zap"
 	"os"
 	"reflect"
-	"errors"
 )
 
 func LoadConfig(file string) *GlobalConfig {
@@ -99,14 +99,13 @@ type ContractOpts struct {
 	Address string `required:"true"`
 }
 
-
 func Validator(cv reflect.Value) (bool, error) {
-	for i:=0;i<cv.NumField();i++ {
+	for i := 0; i < cv.NumField(); i++ {
 		cvt := cv.Type().Field(i)
 
-		if (cv.Field(i).Type().Kind() == reflect.Struct) {
-			if res,err := Validator(cv.Field(i));nil != err {
-				return res,err
+		if cv.Field(i).Type().Kind() == reflect.Struct {
+			if res, err := Validator(cv.Field(i)); nil != err {
+				return res, err
 			}
 		} else {
 			if "true" == cvt.Tag.Get("required") {
@@ -126,9 +125,9 @@ func isNil(v reflect.Value) bool {
 		return true
 	case reflect.String:
 		return v.String() == ""
-	case reflect.Uint,reflect.Uint8,reflect.Uint16,reflect.Uint32,reflect.Uint64:
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 		return v.Uint() == 0
-	case reflect.Int,reflect.Int8,reflect.Int16,reflect.Int32,reflect.Int64:
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		return v.Int() == 0
 	case reflect.Map:
 		return len(v.MapKeys()) == 0

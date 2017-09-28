@@ -19,18 +19,18 @@
 package eth
 
 import (
+	"errors"
 	"github.com/Loopring/ringminer/chainclient"
+	"github.com/Loopring/ringminer/config"
+	"github.com/Loopring/ringminer/log"
+	"github.com/Loopring/ringminer/types"
+	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/rlp"
 	"github.com/ethereum/go-ethereum/rpc"
 	"reflect"
-	"errors"
-	"github.com/Loopring/ringminer/config"
-	"github.com/Loopring/ringminer/log"
-	"github.com/ethereum/go-ethereum/common"
 	"time"
-	"github.com/Loopring/ringminer/types"
 )
 
 var rpcClient *rpc.Client
@@ -202,8 +202,8 @@ func Initialize(clientConfig config.ChainClientOptions) {
 	}
 
 	for addr, p := range clientConfig.Eth.PrivateKeys {
-		account := &Account{EncryptedPrivKey:types.FromHex(p)}
-		if _,err := account.Decrypted(passphrase);nil != err {
+		account := &Account{EncryptedPrivKey: types.FromHex(p)}
+		if _, err := account.Decrypted(passphrase); nil != err {
 			log.Errorf("err:%s", err.Error())
 			panic(err)
 		}

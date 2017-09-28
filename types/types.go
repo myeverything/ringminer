@@ -37,7 +37,7 @@ func HexToSign(s string) Sign    { return BytesToSign(FromHex(s)) }
 
 //MarshalJson
 func (a *Sign) MarshalText() ([]byte, error) {
-	return []byte(a.Hex()),nil
+	return []byte(a.Hex()), nil
 }
 
 func (a *Sign) UnmarshalText(input []byte) error {
@@ -72,7 +72,7 @@ func (h Hash) Hex() string   { return ToHex(h[:]) }
 
 //MarshalJson
 func (a *Hash) MarshalText() ([]byte, error) {
-	return []byte(a.Hex()),nil
+	return []byte(a.Hex()), nil
 }
 
 func (a *Hash) UnmarshalText(input []byte) error {
@@ -102,10 +102,10 @@ type Address [AddressLength]byte
 func (a Address) Str() string   { return string(a[:]) }
 func (a Address) Bytes() []byte { return a[:] }
 func (a Address) Big() *big.Int { return new(big.Int).SetBytes(a[:]) }
-func (a Address) Hex() string   {return ToHex(a[:])}
+func (a Address) Hex() string   { return ToHex(a[:]) }
 
 func (a *Address) MarshalText() ([]byte, error) {
-	return []byte(a.Hex()),nil
+	return []byte(a.Hex()), nil
 }
 
 func (a *Address) UnmarshalText(input []byte) error {

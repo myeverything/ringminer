@@ -22,8 +22,8 @@ import (
 	"github.com/Loopring/ringminer/types"
 	"testing"
 	//ethCrypto "github.com/ethereum/go-ethereum/crypto"
-	"math/big"
 	"encoding/json"
+	"math/big"
 )
 
 //func TestOrder_MarshalJson(t *testing.T) {
@@ -72,7 +72,7 @@ func TestA(t *testing.T) {
 	ei.Decimals = big.NewInt(1)
 	ei.Value = b
 	filledOrder.FillAmountB = ei
-	if bytes,err := json.Marshal(filledOrder);nil != err {
+	if bytes, err := json.Marshal(filledOrder); nil != err {
 		println(err.Error())
 	} else {
 		println(string(bytes))
@@ -83,7 +83,7 @@ func TestA(t *testing.T) {
 	b2 := &B{}
 	b2.Age = 2
 	b2.B1 = *b1
-	if bytes,err := json.Marshal(b2);nil != err {
+	if bytes, err := json.Marshal(b2); nil != err {
 		println(err.Error())
 	} else {
 		println(string(bytes))
@@ -183,7 +183,6 @@ func TestA(t *testing.T) {
 //	t.Log(string(data))
 //}
 
-
 func TestOrder_MarshalJson(t *testing.T) {
 	order := &types.Order{}
 	order.Protocol = types.HexToAddress("0x211c9fb2c5ad60a31587a4a11b289e37ed3ea520")
@@ -202,7 +201,7 @@ func TestOrder_MarshalJson(t *testing.T) {
 	order.R = big.NewInt(10000000)
 	order.S = big.NewInt(200000)
 
-	if bytes,err := order.MarshalJSON();err != nil {
+	if bytes, err := order.MarshalJSON(); err != nil {
 		t.Error(err)
 	} else {
 		t.Log(string(bytes))
@@ -220,7 +219,7 @@ func TestOrder_UnMarshalJson(t *testing.T) {
 		"\"lrcFee\":\"0x02540be400\"," +
 		"\"savingSharePercentage\":30," +
 		"\"buyNoMoreThanAmountB\":false," +
-		"\"v\":1,"  +
+		"\"v\":1," +
 		"\"r\":\"0x02540be400\"," +
 		"\"s\":\"0x02540be400\"" +
 		"}"
@@ -245,10 +244,9 @@ func TestOrder_UnMarshalJson(t *testing.T) {
 		//	println("r:", common.Bytes2Hex(r.Bytes()), " s:", common.Bytes2Hex(s.Bytes()))
 		//}
 		//addr, _ := state.SignerAddress()
-		t.Logf("protocol:%s, tokenS:%s, tokenB:%s, amountS:%d",ord.Protocol.Hex(),ord.TokenS.Hex(),ord.TokenB.Hex(),ord.AmountS.Int64())
+		t.Logf("protocol:%s, tokenS:%s, tokenB:%s, amountS:%d", ord.Protocol.Hex(), ord.TokenS.Hex(), ord.TokenB.Hex(), ord.AmountS.Int64())
 	}
 }
-
 
 func TestOrderState_MarshalJson(t *testing.T) {
 	//orderState := &types.OrderState{}

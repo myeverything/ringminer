@@ -19,6 +19,7 @@
 package eth
 
 import (
+	"errors"
 	"github.com/Loopring/ringminer/log"
 	types "github.com/Loopring/ringminer/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
@@ -27,7 +28,6 @@ import (
 	"math/big"
 	"reflect"
 	"strings"
-	"errors"
 )
 
 type AbiMethod struct {

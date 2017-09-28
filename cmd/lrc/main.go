@@ -28,8 +28,8 @@ import (
 	"gopkg.in/urfave/cli.v1"
 	"os"
 	"os/signal"
-	"sort"
 	"reflect"
+	"sort"
 )
 
 var (

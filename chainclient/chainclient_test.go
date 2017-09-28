@@ -21,17 +21,18 @@ package chainclient_test
 import (
 	"encoding/json"
 	"github.com/Loopring/ringminer/chainclient"
-	 "github.com/Loopring/ringminer/chainclient/eth"
+	"github.com/Loopring/ringminer/chainclient/eth"
+	"github.com/Loopring/ringminer/config"
 	"github.com/Loopring/ringminer/types"
 	"github.com/ethereum/go-ethereum/common"
 	"math/big"
 	"testing"
-	"github.com/Loopring/ringminer/config"
 )
 
 type A struct {
 	A1 *types.Big `json:"a1"`
 }
+
 func TestChainClient(t *testing.T) {
 	config := &config.ChainClientOptions{}
 	config.RawUrl = "http://127.0.0.1:8545"
@@ -48,7 +49,7 @@ func TestChainClient(t *testing.T) {
 	a := &A{}
 	a.A1 = a1
 
-	if bytes,err := json.Marshal(a);nil != err {
+	if bytes, err := json.Marshal(a); nil != err {
 		println(err.Error())
 	} else {
 		println(string(bytes))

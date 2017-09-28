@@ -72,12 +72,12 @@ type Transaction struct {
 type Log struct {
 	LogIndex         types.Big `json:"logIndex"`
 	BlockNumber      types.Big `json:"blockNumber"`
-	BlockHash        string          `json:"blockHash"`
-	TransactionHash  string          `json:"transactionHash"`
+	BlockHash        string    `json:"blockHash"`
+	TransactionHash  string    `json:"transactionHash"`
 	TransactionIndex types.Big `json:"transactionIndex"`
-	Address          string          `json:"address"`
-	Data             string          `json:"data"`
-	Topics           []string        `json:"topics"`
+	Address          string    `json:"address"`
+	Data             string    `json:"data"`
+	Topics           []string  `json:"topics"`
 }
 
 type FilterQuery struct {

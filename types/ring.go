@@ -19,9 +19,9 @@
 package types
 
 import (
-	"math/big"
 	"github.com/Loopring/ringminer/crypto"
 	"github.com/Loopring/ringminer/log"
+	"math/big"
 )
 
 // 旷工在成本节约和fee上二选一，撮合者计算出:
@@ -35,15 +35,14 @@ import (
 
 type Ring struct {
 	Orders                                      []*FilledOrder `json:"orderes"`
-	Miner                                       Address `json:"miner"`
-	FeeRecepient                                Address `json:"feeRecepient"`
-	ThrowIfTokenAllowanceOrBalanceIsInsuffcient bool `json:"throwIfTokenAllowanceOrBalanceIsInsuffcient"`
-	V                                           uint8 `json:"v"`
-	R                                           Sign  `json:"r"`
-	S                                           Sign  `json:"s"`
-	Hash Hash `json:"-"`
+	Miner                                       Address        `json:"miner"`
+	FeeRecepient                                Address        `json:"feeRecepient"`
+	ThrowIfTokenAllowanceOrBalanceIsInsuffcient bool           `json:"throwIfTokenAllowanceOrBalanceIsInsuffcient"`
+	V                                           uint8          `json:"v"`
+	R                                           Sign           `json:"r"`
+	S                                           Sign           `json:"s"`
+	Hash                                        Hash           `json:"-"`
 }
-
 
 func (ring *Ring) GenerateHash() Hash {
 	h := &Hash{}
@@ -61,10 +60,10 @@ func (ring *Ring) GenerateAndSetSignature(pkBytes []byte) error {
 	if ring.Hash.Big().Cmp(big.NewInt(0)) == 0 {
 		ring.Hash = ring.GenerateHash()
 	}
-	if sig,err := crypto.CryptoInstance.Sign(ring.Hash.Bytes(), pkBytes);nil != err {
+	if sig, err := crypto.CryptoInstance.Sign(ring.Hash.Bytes(), pkBytes); nil != err {
 		return err
 	} else {
-		v,r,s := crypto.CryptoInstance.SigToVRS(sig)
+		v, r, s := crypto.CryptoInstance.SigToVRS(sig)
 		ring.V = uint8(v)
 		ring.R = BytesToSign(r)
 		ring.S = BytesToSign(s)
@@ -103,5 +102,3 @@ type RingState struct {
 	LegalFee    *EnlargedInt `json:"legalFee"`    //法币计算的fee
 	FeeMode     int          `json:"feeMode"`     //收费方式，0 lrc 1 share
 }
-
-
