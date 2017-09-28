@@ -22,7 +22,6 @@ import (
 	"crypto/ecdsa"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/Loopring/ringminer/crypto"
-	"github.com/Loopring/ringminer/log"
 	ethCrypto "github.com/ethereum/go-ethereum/crypto"
 )
 
@@ -41,7 +40,6 @@ type Account struct {
 func (account *Account) Encrypted(passphrase []byte) ([]byte,error) {
 	encrypted,err := crypto.AesEncrypted(passphrase, account.PrivKey.D.Bytes())
 	if nil != err {
-		log.Errorf("err:%s",err.Error())
 		return nil,err
 	}
 	account.EncryptedPrivKey = encrypted
@@ -51,7 +49,6 @@ func (account *Account) Encrypted(passphrase []byte) ([]byte,error) {
 func (account *Account) Decrypted(passphrase []byte) ([]byte,error) {
 	decrypted,err := crypto.AesDecrypted(account.EncryptedPrivKey, passphrase)
 	if nil != err {
-		log.Errorf("err:%s",err.Error())
 		return nil,err
 	}
 	account.PrivKey,err = ethCrypto.ToECDSA(decrypted)

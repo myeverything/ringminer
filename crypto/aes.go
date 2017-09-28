@@ -23,33 +23,37 @@ import (
 	"crypto/cipher"
 )
 
-func AesEncrypted(key, inText []byte) ([]byte, error) {
+func AesEncrypted(key, data []byte) (encrypted []byte, err error) {
+	defer func() {
+		if e := recover(); e != nil {
+			err = e.(error)
+		}
+	}()
 	aesBlock, err := aes.NewCipher(key)
 	if err != nil {
 		return nil, err
 	}
 	iv := []byte(key)[:aes.BlockSize]
-	stream := cipher.NewCFBEncrypter(aesBlock, iv)
-	outText := make([]byte, len(inText))
-	stream.XORKeyStream(outText, inText)
-	return outText, err
+	encrypter := cipher.NewCFBEncrypter(aesBlock, iv)
+	encrypted = make([]byte, len(data))
+	encrypter.XORKeyStream(encrypted, data)
+	return encrypted, err
 }
 
-func AesDecrypted(src,key []byte) (decrypted []byte,err error) {
+func AesDecrypted(encrypted, key []byte) (decrypted []byte,err error) {
 	defer func() {
-		//错误处理
 		if e := recover(); e != nil {
 			err = e.(error)
 		}
 	}()
 	var iv = []byte(key)[:aes.BlockSize]
-	decrypted = make([]byte, len(src))
+	decrypted = make([]byte, len(encrypted))
 	var aesBlockDecrypter cipher.Block
 	aesBlockDecrypter, err = aes.NewCipher([]byte(key))
 	if err != nil {
 		return nil, err
 	}
 	aesDecrypter := cipher.NewCFBDecrypter(aesBlockDecrypter, iv)
-	aesDecrypter.XORKeyStream(decrypted, src)
+	aesDecrypter.XORKeyStream(decrypted, encrypted)
 	return decrypted, nil
 }

@@ -203,7 +203,10 @@ func Initialize(clientConfig config.ChainClientOptions) {
 
 	for addr, p := range clientConfig.Eth.PrivateKeys {
 		account := &Account{EncryptedPrivKey:types.FromHex(p)}
-		account.Decrypted(passphrase)
+		if _,err := account.Decrypted(passphrase);nil != err {
+			log.Errorf("err:%s", err.Error())
+			panic(err)
+		}
 		if account.Address.Hex() != addr {
 			log.Errorf("address:%s and privkey:%s not match", addr, p)
 			panic("address and privkey not match")
