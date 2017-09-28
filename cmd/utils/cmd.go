@@ -46,7 +46,7 @@ func matchengineCommands() cli.Command {
 }
 
 func chainclientCommands() cli.Command {
-	matchengineCommand := cli.Command{
+	c := cli.Command{
 		Name:        "chainclient",
 		Usage:       "chainclient ",
 		Category:    "Chainclient Commands",
@@ -54,5 +54,31 @@ func chainclientCommands() cli.Command {
 		//秘钥以及地址，生成时的密码
 		},
 	}
-	return matchengineCommand
+	return c
+}
+
+//todo:imp it
+func accountCommands() cli.Command {
+	c := cli.Command{
+		Name: "account",
+		Usage:"account",
+		Category:"account Commands",
+		Subcommands:[]cli.Command {
+			cli.Command{
+				Name: "generate",
+				Usage: "generate a new account",
+				Flags:[]cli.Flag{
+					cli.StringFlag{
+						Name:"display",
+						Usage:"display the privatekey",
+					},
+					cli.StringFlag{
+						Name:"pass",
+						Usage:"passphrase for encrypted the private",
+					},
+				},
+			},
+		},
+	}
+	return c
 }
