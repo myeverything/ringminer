@@ -61,7 +61,7 @@ func (ring *Ring) GenerateAndSetSignature(pkBytes []byte) error {
 	if ring.Hash.Big().Cmp(big.NewInt(0)) == 0 {
 		ring.Hash = ring.GenerateHash()
 	}
-	if sig,err := crypto.CryptoInstance.Sign(ring.Hash, pkBytes);nil != err {
+	if sig,err := crypto.CryptoInstance.Sign(ring.Hash.Bytes(), pkBytes);nil != err {
 		return err
 	} else {
 		v,r,s := crypto.CryptoInstance.SigToVRS(sig)

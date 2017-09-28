@@ -95,7 +95,7 @@ func (o *Order) GenerateAndSetSignature(pkBytes []byte) error {
 	if o.Hash.Big().Cmp(big.NewInt(0)) == 0 {
 		o.Hash = o.GenerateHash()
 	}
-	if sig,err := crypto.CryptoInstance.Sign(o.Hash, pkBytes);nil != err {
+	if sig,err := crypto.CryptoInstance.Sign(o.Hash.Bytes(), pkBytes);nil != err {
 		return err
 	} else {
 		v,r,s := crypto.CryptoInstance.SigToVRS(sig)
