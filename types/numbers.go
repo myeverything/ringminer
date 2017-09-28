@@ -106,6 +106,7 @@ func (ei *EnlargedInt) Sub(x, y *EnlargedInt) *EnlargedInt {
 
 	return ei
 }
+
 func (ei *EnlargedInt) Add(x, y *EnlargedInt) *EnlargedInt {
 
 	if ei.Value == nil {
@@ -171,10 +172,10 @@ func NewEnlargedInt(value *big.Int) *EnlargedInt {
 type Big big.Int
 
 func (h *Big) UnmarshalText(input []byte) error {
-	length := len(input)
-	if length >= 2 && input[0] == '"' && input[length-1] == '"' {
-		input = input[1 : length-1]
-	}
+	//length := len(input)
+	//if length >= 2 && input[0] == '"' && input[length-1] == '"' {
+	//	input = input[1 : length-1]
+	//}
 
 	hn := (*big.Int)(h)
 	hn.Set(HexToBigint(string(input)))

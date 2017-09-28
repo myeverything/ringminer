@@ -19,7 +19,6 @@
 package eth
 
 import (
-	"crypto/ecdsa"
 	"github.com/Loopring/ringminer/chainclient"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -70,12 +69,12 @@ func NewClient() *chainclient.Client {
 func signAndSendTransaction(result interface{}, args ...interface{}) error {
 	from := args[0].(string)
 	transaction := args[1].(*ethTypes.Transaction)
-	if privateKey, ok := PrivateMap[from]; !ok {
+	if account, ok := Accounts[from]; !ok {
 		return errors.New("there isn't a private key for this address:" + from)
 	} else {
 		signer := &ethTypes.HomesteadSigner{}
 
-		signature, err := crypto.Sign(signer.Hash(transaction).Bytes(), privateKey)
+		signature, err := crypto.Sign(signer.Hash(transaction).Bytes(), account.PrivKey)
 
 		log.Debugf("hash:%s, sig:%s", signer.Hash(transaction).Hex(), common.Bytes2Hex(signature))
 		if nil != err {
@@ -188,10 +187,27 @@ func Initialize(clientConfig config.ChainClientOptions) {
 	client, _ := rpc.Dial(clientConfig.RawUrl)
 	rpcClient = client
 	EthClient = NewClient()
-	PrivateMap = make(map[string]*ecdsa.PrivateKey)
-	//todo:the private key must be encrypted in config file.
+
+	Accounts = make(map[string]*Account)
+	passphrase = []byte(clientConfig.Eth.Password)
+	passphraseLength := len(passphrase)
+	if passphraseLength < 16 {
+		passphrase = types.LeftPadBytes(passphrase, 16)
+	} else if passphraseLength > 16 && passphraseLength < 24 {
+		passphrase = types.LeftPadBytes(passphrase, 24)
+	} else if passphraseLength > 24 && passphraseLength < 32 {
+		passphrase = types.LeftPadBytes(passphrase, 32)
+	} else if passphraseLength > 32 {
+		panic("eth.password too long")
+	}
+
 	for addr, p := range clientConfig.Eth.PrivateKeys {
-		privateKey, _ := crypto.HexToECDSA(p)
-		PrivateMap[addr] = privateKey
+		account := &Account{EncryptedPrivKey:types.FromHex(p)}
+		account.Decrypted(passphrase)
+		if account.Address.Hex() != addr {
+			log.Errorf("address:%s and privkey:%s not match", addr, p)
+			panic("address and privkey not match")
+		}
+		Accounts[addr] = account
 	}
 }

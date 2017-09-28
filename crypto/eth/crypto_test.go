@@ -9,7 +9,6 @@ import (
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"strconv"
 	"testing"
-	"time"
 )
 
 //func TestGenOrderHash(t *testing.T) {
@@ -71,7 +70,7 @@ func TestEthCrypto_SigToAddress(t *testing.T) {
 		//chainId := tx.ChainId()
 		vbint := int64(0)
 		println(vbint, "#", r.BitLen(), "#", s.BitLen())
-		valid := ethCrypto.ValidateSignatureValues(byte(0), r, s)
+		valid := ethCrypto.ValidateSignatureValues(byte(0), r.Bytes(), s.Bytes())
 		println(valid)
 		sig := make([]byte, 65)
 		copy(sig[32-len(r.Bytes()):32], r.Bytes())
@@ -130,4 +129,17 @@ func TestEthCrypto_GenerateHash(t *testing.T) {
 	bytes1 := [][]byte{bs}
 	res := ethCrypto.GenerateHash(bytes1...)
 	t.Log(common.Bytes2Hex(res))
+}
+
+func TestWallet(t *testing.T) {
+	s := "81181790552cbbff19077f2289e29992bdb5d0eee12ca1a7ce35ac2508406c3c"
+	pkstr := "d1d194d90e52aeae4cd3a727b1dbb6ea5f1de8d5379827acc5f358bf1b0acba9"
+	ethCrypto := &eth.EthCrypto{}
+	if sig,err := ethCrypto.Sign(types.FromHex(s), types.FromHex(pkstr));err != nil {
+		println(err.Error())
+	} else {
+		println(types.Bytes2Hex(sig))
+		addrBytes,_ := ethCrypto.SigToAddress(types.FromHex(s),sig)
+		println(types.Bytes2Hex(addrBytes))
+	}
 }
