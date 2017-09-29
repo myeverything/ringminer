@@ -35,67 +35,80 @@
 		{
 			"checksumSHA1": "0jw0bJgU/nyL8FUOybYnq7+FNFw=",
 			"path": "github.com/ethereum/go-ethereum/accounts/abi",
-			"revision": ""
+			"revision": "a660685746db17a41cd67b05c614cdb29e49340c",
+			"revisionTime": "2017-09-27T13:30:41Z"
 		},
 		{
-			"checksumSHA1": "7/SqzBGQs9s0R+D2UaqJ5uPUuOQ=",
+			"checksumSHA1": "/hO7lY99VYmQb9av8DXpVIWhcKs=",
 			"path": "github.com/ethereum/go-ethereum/common",
-			"revision": ""
+			"revision": "a660685746db17a41cd67b05c614cdb29e49340c",
+			"revisionTime": "2017-09-27T13:30:41Z"
 		},
 		{
 			"checksumSHA1": "jIwuv+0MX4hsh4E84S4i1Gyb6A0=",
 			"path": "github.com/ethereum/go-ethereum/common/hexutil",
-			"revision": ""
+			"revision": "a660685746db17a41cd67b05c614cdb29e49340c",
+			"revisionTime": "2017-09-27T13:30:41Z"
 		},
 		{
 			"checksumSHA1": "Hd1Y5DkzYULQzJlSgYv2w5SiEAo=",
 			"path": "github.com/ethereum/go-ethereum/common/math",
-			"revision": ""
+			"revision": "a660685746db17a41cd67b05c614cdb29e49340c",
+			"revisionTime": "2017-09-27T13:30:41Z"
 		},
 		{
-			"checksumSHA1": "k7XtvIQIXp0S9Updz66vr03iCWg=",
+			"checksumSHA1": "AfZR7RAh1UgrCN4s150xvsEnIjQ=",
 			"path": "github.com/ethereum/go-ethereum/core/types",
-			"revision": ""
+			"revision": "a660685746db17a41cd67b05c614cdb29e49340c",
+			"revisionTime": "2017-09-27T13:30:41Z"
 		},
 		{
 			"checksumSHA1": "rofYNlEqnMen5Lg1N2+VcihuaIU=",
 			"path": "github.com/ethereum/go-ethereum/crypto",
-			"revision": ""
+			"revision": "a660685746db17a41cd67b05c614cdb29e49340c",
+			"revisionTime": "2017-09-27T13:30:41Z"
 		},
 		{
 			"checksumSHA1": "VsqOiLFDRSDa67wPeqlxKJmE0XE=",
 			"path": "github.com/ethereum/go-ethereum/crypto/secp256k1",
-			"revision": ""
+			"revision": "a660685746db17a41cd67b05c614cdb29e49340c",
+			"revisionTime": "2017-09-27T13:30:41Z"
 		},
 		{
 			"checksumSHA1": "pQzUVRi0z/3Z4FpRyExSg1ROLSA=",
 			"path": "github.com/ethereum/go-ethereum/crypto/sha3",
-			"revision": ""
+			"revision": "a660685746db17a41cd67b05c614cdb29e49340c",
+			"revisionTime": "2017-09-27T13:30:41Z"
 		},
 		{
 			"checksumSHA1": "jYu7qwMf5Hc47JdZFx9aZPg9x3A=",
 			"path": "github.com/ethereum/go-ethereum/log",
-			"revision": ""
+			"revision": "a660685746db17a41cd67b05c614cdb29e49340c",
+			"revisionTime": "2017-09-27T13:30:41Z"
 		},
 		{
-			"checksumSHA1": "1yKsRK9I3q4SPoF4vkEQIJFh0Zg=",
+			"checksumSHA1": "e9fw3JSSzWwHRqPAvvJDOmMp7IA=",
 			"path": "github.com/ethereum/go-ethereum/params",
-			"revision": ""
+			"revision": "a660685746db17a41cd67b05c614cdb29e49340c",
+			"revisionTime": "2017-09-27T13:30:41Z"
 		},
 		{
 			"checksumSHA1": "Doemb0pCb5TGHWrVzVBan7hgu6I=",
 			"path": "github.com/ethereum/go-ethereum/rlp",
-			"revision": ""
+			"revision": "a660685746db17a41cd67b05c614cdb29e49340c",
+			"revisionTime": "2017-09-27T13:30:41Z"
 		},
 		{
-			"checksumSHA1": "GQGrVjEv2dLFdrDoElUiqL/llmM=",
+			"checksumSHA1": "svxKimY/iEIeUxHCdafPcp54TUA=",
 			"path": "github.com/ethereum/go-ethereum/rpc",
-			"revision": ""
+			"revision": "a660685746db17a41cd67b05c614cdb29e49340c",
+			"revisionTime": "2017-09-27T13:30:41Z"
 		},
 		{
-			"checksumSHA1": "KtkZ0F3zQBTMWNIDhG/KaAksDdU=",
+			"checksumSHA1": "WBhJebKaQbpkdIpQdBXR09izcT4=",
 			"path": "github.com/ethereum/go-ethereum/trie",
-			"revision": ""
+			"revision": "a660685746db17a41cd67b05c614cdb29e49340c",
+			"revisionTime": "2017-09-27T13:30:41Z"
 		},
 		{
 			"checksumSHA1": "7mjqCSFaOX9iRvNM8eX1K2l/m/o=",
@@ -113,7 +126,8 @@
 			"checksumSHA1": "KZ3QD2QgUS4RcoKiA3mn5pSlJxQ=",
 			"origin": "github.com/ethereum/go-ethereum/vendor/github.com/go-stack/stack",
 			"path": "github.com/go-stack/stack",
-			"revision": ""
+			"revision": "a660685746db17a41cd67b05c614cdb29e49340c",
+			"revisionTime": "2017-09-27T13:30:41Z"
 		},
 		{
 			"checksumSHA1": "gN5ZhO1jwguyrCYqQmCWY/zR+Tk=",
@@ -305,19 +319,22 @@
 			"checksumSHA1": "KAzbLjI9MzW2tjfcAsK75lVRp6I=",
 			"origin": "github.com/ethereum/go-ethereum/vendor/github.com/rcrowley/go-metrics",
 			"path": "github.com/rcrowley/go-metrics",
-			"revision": ""
+			"revision": "a660685746db17a41cd67b05c614cdb29e49340c",
+			"revisionTime": "2017-09-27T13:30:41Z"
 		},
 		{
 			"checksumSHA1": "LjPdvMphElL0GOVNQCsmZMVgWIw=",
 			"origin": "github.com/ethereum/go-ethereum/vendor/github.com/rs/cors",
 			"path": "github.com/rs/cors",
-			"revision": ""
+			"revision": "a660685746db17a41cd67b05c614cdb29e49340c",
+			"revisionTime": "2017-09-27T13:30:41Z"
 		},
 		{
 			"checksumSHA1": "hCRfPlNpqv8tvVivLzmXsoUOf1c=",
 			"origin": "github.com/ethereum/go-ethereum/vendor/github.com/rs/xhandler",
 			"path": "github.com/rs/xhandler",
-			"revision": ""
+			"revision": "a660685746db17a41cd67b05c614cdb29e49340c",
+			"revisionTime": "2017-09-27T13:30:41Z"
 		},
 		{
 			"checksumSHA1": "jAzqolwnRJhHsKXmmvKNrHqxqAw=",
@@ -497,31 +514,36 @@
 			"checksumSHA1": "Y+HGqEkYM15ir+J93MEaHdyFy0c=",
 			"origin": "github.com/ethereum/go-ethereum/vendor/golang.org/x/net/context",
 			"path": "golang.org/x/net/context",
-			"revision": ""
+			"revision": "a660685746db17a41cd67b05c614cdb29e49340c",
+			"revisionTime": "2017-09-27T13:30:41Z"
 		},
 		{
 			"checksumSHA1": "7EZyXN0EmZLgGxZxK01IJua4c8o=",
 			"origin": "github.com/ethereum/go-ethereum/vendor/golang.org/x/net/websocket",
 			"path": "golang.org/x/net/websocket",
-			"revision": ""
+			"revision": "a660685746db17a41cd67b05c614cdb29e49340c",
+			"revisionTime": "2017-09-27T13:30:41Z"
 		},
 		{
 			"checksumSHA1": "NGg7/qIJVUfXi7xnEyyDLocdi6Y=",
 			"origin": "github.com/ethereum/go-ethereum/vendor/gopkg.in/fatih/set.v0",
 			"path": "gopkg.in/fatih/set.v0",
-			"revision": ""
+			"revision": "a660685746db17a41cd67b05c614cdb29e49340c",
+			"revisionTime": "2017-09-27T13:30:41Z"
 		},
 		{
 			"checksumSHA1": "DQXNV0EivoHm4q+bkdahYXrjjfE=",
 			"origin": "github.com/ethereum/go-ethereum/vendor/gopkg.in/karalabe/cookiejar.v2/collections/prque",
 			"path": "gopkg.in/karalabe/cookiejar.v2/collections/prque",
-			"revision": ""
+			"revision": "a660685746db17a41cd67b05c614cdb29e49340c",
+			"revisionTime": "2017-09-27T13:30:41Z"
 		},
 		{
 			"checksumSHA1": "0xgs8lwcWLUffemlj+SsgKlxvDU=",
 			"origin": "github.com/ethereum/go-ethereum/vendor/gopkg.in/natefinch/npipe.v2",
 			"path": "gopkg.in/natefinch/npipe.v2",
-			"revision": ""
+			"revision": "a660685746db17a41cd67b05c614cdb29e49340c",
+			"revisionTime": "2017-09-27T13:30:41Z"
 		},
 		{
 			"checksumSHA1": "Yx1MU40fyGe7hhqW9+dkv8kXa60=",

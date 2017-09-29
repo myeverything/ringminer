@@ -116,9 +116,6 @@ type ServerCodec interface {
 	Closed() <-chan interface{}
 }
 
-
-
-
 type BlockNumber int64
 
 const (

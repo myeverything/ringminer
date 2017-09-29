@@ -11,8 +11,6 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
-var _ = (*headerMarshaling)(nil)
-
 func (h Header) MarshalJSON() ([]byte, error) {
 	type Header struct {
 		ParentHash  common.Hash    `json:"parentHash"       gencodec:"required"`

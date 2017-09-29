@@ -1,4 +1,4 @@
-// Copyright 2014 The go-ethereum Authors
+// Copyright 2017 The go-ethereum Authors
 // This file is part of the go-ethereum library.
 //
 // The go-ethereum library is free software: you can redistribute it and/or modify
@@ -14,28 +14,13 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with the go-ethereum library. If not, see <http://www.gnu.org/licenses/>.
 
-package types
+package params
 
-import (
-	"bytes"
+// These are network parameters that need to be constant between clients, but
+// aren't necesarilly consensus related.
 
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/rlp"
-	"github.com/ethereum/go-ethereum/trie"
+const (
+	// BloomBitsBlocks is the number of blocks a single bloom bit section vector
+	// contains.
+	BloomBitsBlocks uint64 = 4096
 )
-
-type DerivableList interface {
-	Len() int
-	GetRlp(i int) []byte
-}
-
-func DeriveSha(list DerivableList) common.Hash {
-	keybuf := new(bytes.Buffer)
-	trie := new(trie.Trie)
-	for i := 0; i < list.Len(); i++ {
-		keybuf.Reset()
-		rlp.Encode(keybuf, uint(i))
-		trie.Update(keybuf.Bytes(), list.GetRlp(i))
-	}
-	return trie.Hash()
-}
