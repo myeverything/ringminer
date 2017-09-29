@@ -47,7 +47,7 @@ func newOrder(outToken string, inToken string, outAmount, inAmount int64, buyFir
 	order.AmountB = big.NewInt(inAmount)
 	order.BuyNoMoreThanAmountB = buyFirstEnough
 	order.LrcFee = big.NewInt(10)
-	order.SavingSharePercentage = 30
+	order.MarginSplitPercentage = 30
 	h := &types.Hash{}
 	h.SetBytes([]byte(strconv.Itoa(*idx)))
 	orderState.RawOrder = *order

@@ -191,10 +191,10 @@ func TestOrder_MarshalJson(t *testing.T) {
 	order.AmountS = big.NewInt(100000)
 	order.AmountB = big.NewInt(100000000)
 
-	order.Rand = big.NewInt(10000)
-	order.Expiration = big.NewInt(1000000)
+	order.Salt = big.NewInt(10000)
+	order.Ttl = big.NewInt(1000000)
 	order.LrcFee = big.NewInt(10000000000)
-	order.SavingSharePercentage = 40
+	order.MarginSplitPercentage = 40
 	order.BuyNoMoreThanAmountB = false
 
 	order.V = byte(1)

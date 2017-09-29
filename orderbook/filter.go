@@ -19,6 +19,7 @@
 package orderbook
 
 import (
+	"errors"
 	"github.com/Loopring/ringminer/types"
 	"math/big"
 )
@@ -41,13 +42,20 @@ type SignFilter struct {
 
 //todo:order 中是否需要增加地址字段
 func (f *SignFilter) filter(o *types.Order) (bool, error) {
-	//hash := o.GenerateHash()
+	o.Hash = o.GenerateHash()
+
 	//if hash != o.Hash {
 	//	return false
 	//}
 
 	if valid := o.ValidateSignatureValues(); !valid {
 		return false, nil
+	}
+
+	if addr, err := o.SignerAddress(); nil != err {
+		return false, err
+	} else if addr != o.Owner {
+		return false, errors.New("o.Owner and signeraddress are not match.")
 	}
 
 	return true, nil

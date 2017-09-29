@@ -56,7 +56,7 @@ type GlobalConfig struct {
 	Ipfs        IpfsOptions
 	ChainClient ChainClientOptions
 	Miner       MinerOptions
-	ObOptions       OrderBookOptions
+	ObOptions   OrderBookOptions
 	LogOptions  zap.Config
 }
 

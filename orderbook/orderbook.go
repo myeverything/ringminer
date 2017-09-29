@@ -167,13 +167,7 @@ func (ob *OrderBook) peerOrderHook(ord *types.Order) error {
 
 	//do nothing when types.ORDER_NEW != state.Status
 	if types.ORDER_NEW == state.Status {
-		if addr, err := state.RawOrder.SignerAddress(); err != nil {
-			//log.Errorf("err:%s", err.Error())
-			return err
-		} else {
-			log.Debugf("addrreeseresrs:%s", addr.Hex())
-			state.Owner = addr
-		}
+
 		log.Debugf("state hash:%s", state.Hash.Hex())
 
 		//save to db

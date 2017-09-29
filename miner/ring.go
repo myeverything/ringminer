@@ -206,7 +206,7 @@ func ComputeRing(ring *types.RingState) {
 	//todo:取最小的分润比例
 	for _, order := range ring.RawRing.Orders {
 		//todo:根据分润比例计算收益, 现在分润方式确定，都是先看lrcfee，然后看分润，因此无所谓的分润方式的选择
-		percentage := int64(order.OrderState.RawOrder.SavingSharePercentage)
+		percentage := int64(order.OrderState.RawOrder.MarginSplitPercentage)
 		if shareRate.Value.Int64() > percentage {
 			shareRate.Value = big.NewInt(percentage)
 		}
